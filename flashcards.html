@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSM Flashcards</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--red:#c86e6e;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.6;padding:0 0 60px;min-height:100vh;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 24px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(28px,4vw,42px);font-weight:400;line-height:1.15;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+
+    .filter-bar{max-width:760px;margin:24px auto 0;padding:0 24px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+    .filter-btn{padding:6px 14px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;text-transform:uppercase;letter-spacing:0.05em;}
+    .filter-btn:hover{border-color:var(--accent);color:var(--accent);}
+    .filter-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.08);}
+
+    .stats{max-width:760px;margin:20px auto 0;padding:0 24px;display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:12px;}
+    .stat-mastered{color:#9ec86e;}
+    .stat-good{color:var(--done);}
+    .stat-fail{color:var(--red);}
+    .stat-rem{color:var(--accent);}
+
+    .progress-outer{max-width:760px;margin:8px auto 0;padding:0 24px;}
+    .progress-inner{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--done));width:0%;transition:width 0.4s ease;}
+
+    .card-wrap{perspective:1500px;max-width:760px;margin:32px auto 0;padding:0 24px;}
+    .card{position:relative;width:100%;min-height:340px;transition:transform 0.6s;transform-style:preserve-3d;cursor:pointer;}
+    .card.flipped{transform:rotateY(180deg);}
+    .face{position:absolute;width:100%;min-height:340px;backface-visibility:hidden;-webkit-backface-visibility:hidden;border-radius:12px;padding:36px 40px;display:flex;flex-direction:column;justify-content:center;background:var(--surface);border:1px solid var(--border);}
+    .face.back{transform:rotateY(180deg);background:linear-gradient(135deg,#1a1a1f,#161618);border-color:rgba(200,169,110,0.35);}
+    .card-cat{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:0.15em;margin-bottom:18px;text-align:center;}
+    .card-content{font-size:17px;line-height:1.55;text-align:center;}
+    .card-content.back-content{font-size:15px;line-height:1.7;text-align:left;}
+    .card-hint{position:absolute;bottom:16px;left:0;right:0;text-align:center;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;}
+
+    .controls{max-width:760px;margin:28px auto 0;padding:0 24px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+    .btn{padding:10px 20px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+    .btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+    .btn:disabled{opacity:0.35;cursor:not-allowed;}
+    .btn.primary{border-color:rgba(200,169,110,0.6);color:var(--accent);}
+    .btn.success{border-color:rgba(110,200,122,0.5);color:var(--done);}
+    .btn.success:hover{background:rgba(110,200,122,0.08);border-color:var(--done);}
+    .btn.fail{border-color:rgba(200,110,110,0.5);color:var(--red);}
+    .btn.fail:hover{background:rgba(200,110,110,0.08);border-color:var(--red);}
+
+    .small-controls{max-width:760px;margin:16px auto 0;padding:0 24px;display:flex;gap:12px;justify-content:center;}
+    .small-btn{padding:6px 12px;background:transparent;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;cursor:pointer;letter-spacing:0.08em;}
+    .small-btn:hover{color:var(--accent);}
+
+    .complete{max-width:760px;margin:32px auto 0;padding:40px 36px;text-align:center;background:linear-gradient(135deg,rgba(110,200,122,0.07),rgba(200,169,110,0.04));border:1px solid rgba(110,200,122,0.3);border-radius:16px;display:none;}
+    .complete-emoji{font-size:52px;line-height:1;margin-bottom:16px;}
+    .complete h2{font-family:'DM Serif Display',serif;font-size:32px;font-weight:400;color:var(--done);margin-bottom:6px;}
+    .complete-sub{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);margin-bottom:28px;letter-spacing:0.05em;}
+    .complete-stars{font-size:30px;letter-spacing:4px;margin-bottom:28px;}
+    .complete-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px;}
+    .complete-cell{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:16px 10px;}
+    .complete-cell.c-mastered{border-color:rgba(158,200,110,0.35);}
+    .complete-cell.c-known{border-color:rgba(110,200,122,0.3);}
+    .complete-cell.c-fail{border-color:rgba(200,110,110,0.3);}
+    .complete-cell-val{font-family:'DM Serif Display',serif;font-size:36px;font-weight:400;line-height:1;margin-bottom:6px;}
+    .c-mastered .complete-cell-val{color:#9ec86e;}
+    .c-known .complete-cell-val{color:var(--done);}
+    .c-fail .complete-cell-val{color:var(--red);}
+    .complete-cell-lbl{font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+    .complete-msg{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6;}
+
+    @media(max-width:700px){header,a.back{padding-left:24px;padding-right:24px;}.face{padding:28px 24px;}.card-content{font-size:15px;}}
+    .bottom-home-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:10px 16px;}
+    .bottom-home-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 24px;border:1px solid rgba(200,169,110,0.3);border-radius:5px;color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,background 0.2s;}
+    .bottom-home-btn:hover{border-color:var(--accent);background:rgba(200,169,110,0.07);}
+    .retry-badge{position:absolute;top:14px;right:14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--red);background:rgba(200,110,110,0.12);border:1px solid rgba(200,110,110,0.25);border-radius:3px;padding:2px 7px;letter-spacing:0.05em;}
+    .saved-info{max-width:760px;margin:6px auto 0;padding:0 24px;text-align:center;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+    .saved-info span{color:var(--done);}
+    .small-btn-reset{color:var(--red)!important;opacity:0.8;}
+    .small-btn-reset:hover{opacity:1;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">TSM Beugró · Flashcards</div>
+  <h1>Definíciók, <em>képletek, tételek</em></h1>
+  <div class="meta">Kattints a kártyára a megfordításhoz · Tudtam/Nem tudtam gombokkal haladsz</div>
+</header>
+
+<div class="filter-bar">
+  <button class="filter-btn active" data-cat="all">Összes</button>
+  <button class="filter-btn" data-cat="def">Definíciók</button>
+  <button class="filter-btn" data-cat="dist">Eloszlások</button>
+  <button class="filter-btn" data-cat="thm">Tételek</button>
+  <button class="filter-btn" data-cat="ml">ML & Hipotézis</button>
+  <button class="filter-btn" data-cat="other">PCA/Faktor/Egyéb</button>
+</div>
+
+<div class="stats">
+  <span class="stat-mastered">Megtanultam: <span id="masteredC">0</span></span>
+  <span class="stat-good">Tudtam: <span id="knownC">0</span></span>
+  <span class="stat-rem">Hátra: <span id="remC">0</span></span>
+  <span class="stat-fail">Nem tudtam: <span id="failC">0</span></span>
+</div>
+<div class="progress-outer"><div class="progress-inner"><div class="progress-fill" id="progress"></div></div></div>
+
+<div class="card-wrap">
+  <div class="card" id="card" onclick="flip()">
+    <div class="face front">
+      <div class="card-cat" id="frontCat">Kategória</div>
+      <div class="retry-badge" id="retryBadge" style="display:none"></div>
+      <div class="card-content" id="frontContent">Tartalom betöltése…</div>
+      <div class="card-hint">Kattints a megfordításhoz ↻</div>
+    </div>
+    <div class="face back">
+      <div class="card-cat" id="backCat">Válasz</div>
+      <div class="card-content back-content" id="backContent">Válasz</div>
+      <div class="card-hint">Tudtad? Nyomd meg lent</div>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <button class="btn fail" id="failBtn" onclick="markFail()">✗ Nem tudtam</button>
+  <button class="btn primary" id="flipBtn" onclick="flip()">↻ Megfordítás</button>
+  <button class="btn success" id="goodBtn" onclick="markGood()">✓ Tudtam</button>
+</div>
+
+<div class="small-controls">
+  <button class="small-btn" onclick="shuffleDeck()">Keverés</button>
+  <button class="small-btn" onclick="resetAll()">Újrakezdés</button>
+  <button class="small-btn small-btn-reset" onclick="clearSaved()" title="Törli az összes mentett (megjegyzett) kártyát">Alaphelyzet</button>
+</div>
+<div class="saved-info" id="savedInfo"></div>
+
+<div class="complete" id="completeBox">
+  <div class="complete-emoji" id="completeEmoji">&#127919;</div>
+  <h2 id="completeTitle">Kör vége!</h2>
+  <div class="complete-sub" id="completeSub"></div>
+  <div class="complete-stars" id="completeStars"></div>
+  <div class="complete-grid">
+    <div class="complete-cell c-mastered">
+      <div class="complete-cell-val" id="endMastered">0</div>
+      <div class="complete-cell-lbl">Megtanultam</div>
+    </div>
+    <div class="complete-cell c-known">
+      <div class="complete-cell-val" id="endKnown">0</div>
+      <div class="complete-cell-lbl">Tudtam</div>
+    </div>
+    <div class="complete-cell c-fail">
+      <div class="complete-cell-val" id="endFail">0</div>
+      <div class="complete-cell-lbl">Hiba</div>
+    </div>
+  </div>
+  <p class="complete-msg" id="completeMsg"></p>
+  <button class="btn primary" onclick="resetAll()">Még egyszer</button>
+</div>
+
+<script>
+const ALL_CARDS = [
+  // ─── DEFINÍCIÓK ───
+  { cat:'def', frontCat:'Definíció', backCat:'Wishart-eloszlás',
+    front:'Mi a $W_p(\\Sigma, n)$ Wishart-eloszlás definíciója?',
+    back:'$W = \\sum_{i=1}^n \\underline{\\xi}_i\\underline{\\xi}_i^T$, ahol $\\underline{\\xi}_i \\sim N_p(0,\\Sigma)$ függetlenek. Tehát $n$ db $p$-dim normális vektor „négyzetösszege" mátrix-értelemben. ($\\chi^2_n$ általánosítása mátrixra.)' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Normális adatmátrix',
+    front:'Mi a normális adatmátrix?',
+    back:'Egy $n\\times p$-s mátrix $\\tilde{X}$, melynek <strong>sorai</strong> független, azonos eloszlású $N_p(\\mu,\\Sigma)$ vektorok. Pl. $n$ ember $p$ jellemzőjének mérése, mindenki ugyanúgy normális.' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Hotelling T²',
+    front:'Mi a Hotelling T² eloszlás definíciója?',
+    back:'$\\underline{d}\\sim N_p(0, I_p)$, $M\\sim W_p(\\Sigma, m)$ függetlenek, $m\\geq p$. Ekkor $m\\,\\underline{d}^T M^{-1}\\underline{d} \\sim T^2(p, m)$. A Student-t többdim. általánosítása.' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Wilks-lambda',
+    front:'Mi a Wilks-lambda eloszlás definíciója?',
+    back:'$A\\sim W_p(\\Sigma, m)$, $B\\sim W_p(\\Sigma, n)$ függetlenek, $m\\geq p$, $\\Sigma>0$. Ekkor $\\frac{|A|}{|A+B|}\\sim \\Lambda(p, m, n)$.' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Kopula',
+    front:'Mi a kopula?',
+    back:'$C:[0,1]^p\\to[0,1]$ olyan, hogy létezik $U_1,\\dots,U_p\\sim E(0,1)$ közös eloszlásfüggvénnyel $C$. Tehát $C$ egy speciális $p$-dim. EFV, melynek minden marginálisa egyenletes $[0,1]$-en.' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Euklideszi távolságmátrix',
+    front:'Mikor mondjuk, hogy egy $D$ távolságmátrix euklideszi?',
+    back:'$D$ euklideszi, ha $\\exists\\, p\\geq 1$ és $\\underline{x}_1,\\dots,\\underline{x}_n\\in\\mathbb{R}^p$ pontok, melyekre $d_{r,s}^2 = \\|\\underline{x}_r - \\underline{x}_s\\|^2$. (Vagyis kirakható egy euklideszi térbe a megadott távolságokkal.)' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Logit függvény',
+    front:'Mi a logit függvény?',
+    back:'$\\text{logit}(p) = \\log\\frac{p}{1-p}$. A $(0,1)$ intervallumot bijektíven viszi $\\mathbb{R}$-re. A $\\frac{p}{1-p}$ az „odds" (esélyhányados).' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'k-faktormodell',
+    front:'Mi a $k$-faktormodell?',
+    back:'$\\underline{\\xi} = AF + W + \\mu$, ahol $F\\sim N_k(0, I_k)$ közös faktor, $W\\sim N_p(0, \\Psi)$ egyedi zaj ($\\Psi$ diagonális, $\\geq 0$), $A$ a $p\\times k$-as „loading" mátrix, és $F\\perp W$.' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Bayes-i diszkriminanciaszabály',
+    front:'Mi a Bayes-i diszkriminanciaszabály?',
+    back:'$\\underline{x}$-et a $\\Pi_j$-be soroljuk, ha $\\pi_j L_j(\\underline{x}) = \\max_{1\\leq i\\leq g}\\pi_i L_i(\\underline{x})$. Tehát az <strong>a priori valószínűség × likelihood</strong> szorzatot maximalizáljuk.' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'ML diszkriminanciaszabály',
+    front:'Mi a maximum likelihood diszkriminanciaszabály?',
+    back:'$\\underline{x}$-et a $\\Pi_j$-be soroljuk, ha $L_j(\\underline{x}) = \\max_{1\\leq i\\leq g}L_i(\\underline{x})$. Csak a likelihoodot maximalizáljuk, prior infó nélkül.' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Centráló mátrix',
+    front:'Mi a $H = I_n - \\frac{1}{n}\\mathbf{1}_n\\mathbf{1}_n^T$ centráló mátrix tulajdonságai?',
+    back:'Szimmetrikus, idempotens ($H^2=H$), $H\\mathbf{1}_n = \\underline{0}$, $\\text{tr}(H) = n-1$. Egy $\\underline{z}$ vektorra $H\\underline{z}$ az $\\underline{z}$ centráltja: $z_i$ minusz az átlag.' },
+
+  { cat:'def', frontCat:'Definíció', backCat:'Mahalanobis távolság',
+    front:'Mi az $\\underline{a}, \\underline{b}$ Mahalanobis-távolsága?',
+    back:'$(\\underline{a}-\\underline{b})^T\\Sigma^{-1}(\\underline{a}-\\underline{b})$. Ha $\\Sigma$ ismeretlen, helyette $S^{-1}$. Az euklideszi távolság általánosítása, amely figyelembe veszi a koordináták korreláltságát.' },
+
+  // ─── ELOSZLÁSOK / KÉPLETEK ───
+  { cat:'dist', frontCat:'Karakterisztikus függvény', backCat:'Standard Wishart',
+    front:'Mi a $M\\sim W_p(I_p, n)$ standard Wishart KFV-e?',
+    back:'$\\varphi_M(A) = |I_p - 2iA|^{-n/2}$, ahol $A:p\\times p$ szimmetrikus.' },
+
+  { cat:'dist', frontCat:'Karakterisztikus függvény', backCat:'Általános Wishart',
+    front:'Mi a $M\\sim W_p(\\Sigma, n)$ Wishart KFV-e?',
+    back:'$\\varphi_M(A) = |I_p - 2iA\\Sigma|^{-n/2}$.' },
+
+  { cat:'dist', frontCat:'Karakterisztikus függvény', backCat:'χ²ₙ',
+    front:'Mi a $\\chi^2_n$ eloszlás karakterisztikus függvénye?',
+    back:'$\\varphi(t) = (1-2it)^{-n/2}$. Egyetlen $\\xi^2 \\sim \\chi^2_1$ KFV-e: $(1-2it)^{-1/2}$.' },
+
+  { cat:'dist', frontCat:'Eloszlás', backCat:'Mintaátlag',
+    front:'Ha $\\underline{\\xi}_1,\\dots,\\underline{\\xi}_n\\sim N_p(\\mu,\\Sigma)$ minta, mi $\\bar{\\underline{\\xi}}$ eloszlása?',
+    back:'$\\bar{\\underline{\\xi}} \\sim N_p\\!\\left(\\mu, \\frac{\\Sigma}{n}\\right)$.' },
+
+  { cat:'dist', frontCat:'Eloszlás', backCat:'nS — tap. szórásmátrix',
+    front:'Mi $nS$ eloszlása ($n$-elemű $N_p(\\mu,\\Sigma)$ minta esetén)?',
+    back:'$nS \\sim W_p(\\Sigma, n-1)$. (Cochran tétel c) része.) Független $\\bar{\\underline{\\xi}}$-től.' },
+
+  { cat:'dist', frontCat:'Eloszlás', backCat:'Hotelling T² ↔ F',
+    front:'Mi a Hotelling T² ↔ F kapcsolat?',
+    back:'$T^2(p, m) \\sim \\dfrac{mp}{m-p+1}\\, F_{p, m-p+1}$.' },
+
+  { cat:'dist', frontCat:'Eloszlás', backCat:'Wishart-összeg',
+    front:'Független Wishart-mátrixok összege?',
+    back:'Ha $M_1 \\sim W_p(\\Sigma, n_1)$ és $M_2 \\sim W_p(\\Sigma, n_2)$ <strong>függetlenek</strong> és <strong>azonos $\\Sigma$-jú</strong>, akkor $M_1 + M_2 \\sim W_p(\\Sigma, n_1+n_2)$.' },
+
+  { cat:'dist', frontCat:'Eloszlás', backCat:'Wishart determináns',
+    front:'Mi $|M|$ eloszlása, ha $M\\sim W_p(\\Sigma, m)$?',
+    back:'$|M| \\sim |\\Sigma|\\cdot\\prod_{i=1}^p \\xi_i$, ahol $\\xi_i \\sim \\chi^2_{m+1-i}$ függetlenek.' },
+
+  { cat:'dist', frontCat:'Lemma', backCat:'a^T M^-1 a inverz',
+    front:'Mi $\\dfrac{\\underline{a}^T \\Sigma^{-1}\\underline{a}}{\\underline{a}^T M^{-1}\\underline{a}}$ eloszlása?',
+    back:'$\\sim \\chi^2_{m-p+1}$, ha $M\\sim W_p(\\Sigma, m)$, $m>p$, $\\Sigma>0$, $\\underline{a}\\neq\\underline{0}$ fix. (A Hotelling T² bizonyítás kulcs-lemmája.)' },
+
+  // ─── TÉTELEK ───
+  { cat:'thm', frontCat:'Tétel', backCat:'Normális korreláció — feltételes VÉ',
+    front:'Mi a normális korreláció tétele a) része? ($\\underline{\\xi}, \\underline{\\eta}$ együtt normális)',
+    back:'$E(\\underline{\\xi}\\mid\\underline{\\eta}) = \\underline{\\mu}_1 + \\Sigma_{12}\\Sigma_{22}^{-1}(\\underline{\\eta} - \\underline{\\mu}_2)$. Lineáris függvénye a feltételnek.' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'Normális korreláció — feltételes V',
+    front:'Mi a normális korreláció tétele b) része?',
+    back:'$V(\\underline{\\xi}\\mid\\underline{\\eta}) = \\Sigma_{11} - \\Sigma_{12}\\Sigma_{22}^{-1}\\Sigma_{21}$. Nem függ a feltétel értékétől (homoszkedaszticitás).' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'Cochran (X^T C X eloszlás)',
+    front:'$\\tilde{X}\\sim N_p(0,\\Sigma)$ AM, $C$ szimmetrikus. Mit mond a Cochran tétel?',
+    back:'$\\tilde{X}^T C \\tilde{X} = \\sum_i \\lambda_i W_i$, $W_i\\sim W_p(\\Sigma,1)$ független. $\\tilde{X}^T C \\tilde{X}$ Wishart $\\Leftrightarrow$ $C$ idempotens. Speciálisan $nS\\sim W_p(\\Sigma, n-1)$.' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'Craig — függetlenség',
+    front:'Craig tétel: mikor függetlenek $\\tilde{X}^T C_1 \\tilde{X}$ és $\\tilde{X}^T C_2 \\tilde{X}$?',
+    back:'Ha $C_i$-k szimmetrikusak és $C_1 C_2 = 0$. (Ez kell pl. tap. közép és szórásmátrix függetlenségéhez.)' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'Sklar tétele',
+    front:'Mit mond ki Sklar tétele?',
+    back:'Minden $p$-dim. EFV $F$ felírható $F(\\underline{x}) = C(F_1(x_1),\\dots,F_p(x_p))$ alakban, ahol $F_i$ marginális EFV-k és $C$ kopula. Folytonos $F_i$-knél $C$ egyértelmű.' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'AXB normalitása',
+    front:'Mikor lesz $A\\tilde{X}B$ normális AM (ha $\\tilde{X}\\sim N_p(\\mu,\\Sigma)$ AM)?',
+    back:'Mindkettő kell: <strong>(i)</strong> $A\\mathbf{1}_n=\\alpha\\mathbf{1}_m$ <em>VAGY</em> $B^T\\mu=\\underline{0}$, és <strong>(ii)</strong> $AA^T=\\beta I_m$ <em>VAGY</em> $B^T\\Sigma B=0$.' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'AXB és CXD függetlensége',
+    front:'Mikor függetlenek $A\\tilde{X}B$ és $C\\tilde{X}D$?',
+    back:'Ha $B^T\\Sigma D = 0$ <em>VAGY</em> $AC^T = 0$.' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'Euklideszi távmátrix',
+    front:'Mikor euklideszi egy $D$ távolságmátrix?',
+    back:'$D$ euklideszi $\\Leftrightarrow$ $B = HAH \\geq 0$ (PSD), ahol $A = -\\frac{1}{2}D^{(2)}$ ($a_{r,s}=-\\frac{1}{2}d_{r,s}^2$) és $H$ a centráló mátrix.' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'k-faktormodell létezése',
+    front:'Mikor létezik $k$-faktormodell ($\\Sigma > 0$ esetén)?',
+    back:'Pontosan akkor, ha $\\Sigma = AA^T + \\Psi$, ahol $A$ egy $p\\times k$-as mátrix és $\\Psi$ nemnegatív, diagonális.' },
+
+  { cat:'thm', frontCat:'Tétel', backCat:'Tap. közép és szórásmátrix',
+    front:'Mit tudunk $\\bar{\\underline{\\xi}}$ és $S$ kapcsolatáról?',
+    back:'Normális minta esetén $\\bar{\\underline{\\xi}}$ és $S$ <strong>függetlenek</strong> (Fisher-Bartlett tétel).' },
+
+  // ─── ML & HIPOTÉZIS ───
+  { cat:'ml', frontCat:'ML becslés', backCat:'μ, Σ — alap eset',
+    front:'Mi $\\mu$ és $\\Sigma$ ML-becslése $N_p(\\mu, \\Sigma)$ minta esetén?',
+    back:'$\\hat{\\mu} = \\bar{\\underline{\\xi}}$, $\\hat{\\Sigma} = S$ (tapasztalati átlag és szórásmátrix).' },
+
+  { cat:'ml', frontCat:'ML becslés', backCat:'μ = k·μ₀, ismert Σ',
+    front:'$\\mu = k\\,\\underline{\\mu}_0$ kényszer, $\\Sigma$ <strong>ismert</strong>. Mi $\\hat{k}$?',
+    back:'$\\hat{k} = \\dfrac{\\underline{\\mu}_0^T \\Sigma^{-1}\\bar{\\underline{\\xi}}}{\\underline{\\mu}_0^T \\Sigma^{-1}\\underline{\\mu}_0}$.' },
+
+  { cat:'ml', frontCat:'ML becslés', backCat:'μ = k·μ₀, ismeretlen Σ',
+    front:'$\\mu = k\\,\\underline{\\mu}_0$ kényszer, $\\Sigma$ <strong>ismeretlen</strong>. Mi $\\hat{k}$?',
+    back:'$\\hat{k} = \\dfrac{\\underline{\\mu}_0^T S^{-1}\\bar{\\underline{\\xi}}}{\\underline{\\mu}_0^T S^{-1}\\underline{\\mu}_0}$ (csak $\\Sigma^{-1}$ helyén $S^{-1}$).' },
+
+  { cat:'ml', frontCat:'ML becslés', backCat:'R·μ = r kényszer (ismert Σ)',
+    front:'$R\\mu = \\underline{r}$ lineáris kényszer, $\\Sigma$ ismert. Mi $\\hat{\\mu}$?',
+    back:'$\\hat{\\mu} = \\bar{\\underline{\\xi}} - \\Sigma R^T (R\\Sigma R^T)^{-1}(R\\bar{\\underline{\\xi}}-\\underline{r})$ — vetítéssel.' },
+
+  { cat:'ml', frontCat:'Hipotézis', backCat:'H₀: μ = μ₀ (ismert Σ)',
+    front:'$H_0: \\mu = \\underline{\\mu}_0$, $\\Sigma$ ismert. Mi a tesztstatisztika és eloszlása?',
+    back:'$-2\\log\\lambda = n(\\bar{\\underline{\\xi}}-\\underline{\\mu}_0)^T \\Sigma^{-1}(\\bar{\\underline{\\xi}}-\\underline{\\mu}_0) \\sim \\chi^2_p$ a $H_0$ alatt.' },
+
+  { cat:'ml', frontCat:'Hipotézis', backCat:'H₀: μ = μ₀ (ismeretlen Σ)',
+    front:'$H_0: \\mu = \\underline{\\mu}_0$, $\\Sigma$ ismeretlen. Mit használunk?',
+    back:'Hotelling T²: $(n-1)(\\bar{\\underline{\\xi}}-\\underline{\\mu}_0)^T S^{-1}(\\bar{\\underline{\\xi}}-\\underline{\\mu}_0) \\sim T^2(p, n-1) \\sim \\frac{(n-1)p}{n-p}F_{p,n-p}$.' },
+
+  { cat:'ml', frontCat:'Hipotézis', backCat:'H₀: R·μ = r (ismert Σ)',
+    front:'$H_0: R\\mu = \\underline{r}$, $\\Sigma$ ismert. Mi a tesztstatisztika?',
+    back:'$-2\\log\\lambda = n(R\\bar{\\underline{\\xi}}-\\underline{r})^T (R\\Sigma R^T)^{-1}(R\\bar{\\underline{\\xi}}-\\underline{r}) \\sim \\chi^2_k$, ahol $k$ a kényszerek száma.' },
+
+  // ─── PCA / EGYÉB ───
+  { cat:'other', frontCat:'PCA', backCat:'Főkomponens transzformáció',
+    front:'Mi a főkomponens transzformáció?',
+    back:'$\\underline{\\xi} \\to \\Gamma^T(\\underline{\\xi}-\\mu)$, ahol $\\Gamma$ a $\\Sigma$ ortonormált sajátvektorai csökkenő sajátérték-sorrendben. $i$-edik főkomponens: $Y_i = \\underline{\\gamma}_{(i)}^T(\\underline{\\xi}-\\mu)$.' },
+
+  { cat:'other', frontCat:'PCA', backCat:'Y_i varianciája',
+    front:'Mi $D^2(Y_i)$, az $i$-edik főkomponens varianciája?',
+    back:'$D^2(Y_i) = \\lambda_i$, a $\\Sigma$ $i$-edik (csökkenő sorrendű) sajátértéke.' },
+
+  { cat:'other', frontCat:'PCA', backCat:'Varianciahányadrész',
+    front:'Mi az első $k$ főkomponens varianciahányadrésze?',
+    back:'$\\dfrac{\\lambda_1+\\dots+\\lambda_k}{\\lambda_1+\\dots+\\lambda_p}$. (Nyom egyenlő a sajátértékek összegével: $\\text{tr}(\\Sigma) = \\sum\\lambda_i$.)' },
+
+  { cat:'other', frontCat:'Logisztikus reg.', backCat:'Modell',
+    front:'Mi a logisztikus regresszió modellje?',
+    back:'$\\text{logit}(p_i) = \\log\\frac{p_i}{1-p_i} = \\beta^T\\underline{x}_i$, ahonnan $p_i = \\frac{e^{\\beta^T\\underline{x}_i}}{1+e^{\\beta^T\\underline{x}_i}}$.' },
+
+  { cat:'other', frontCat:'Logisztikus reg.', backCat:'Likelihood',
+    front:'Mi a logisztikus regresszió likelihood függvénye?',
+    back:'$L(\\underline{y},\\beta) = \\prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}$. Loglikelihood: $\\ell(\\beta) = \\sum y_i\\beta^T\\underline{x}_i - \\sum\\log(1+e^{\\beta^T\\underline{x}_i})$.' },
+
+  { cat:'other', frontCat:'Monoton reg.', backCat:'PAV / Shepard-Kruskal',
+    front:'Mi a négyzetes monoton regresszió algoritmusa?',
+    back:'<strong>Pool Adjacent Violators:</strong> 1) $x$ szerint rendezzük az indexeket. 2) Ha $y$-ok már nem-csökkenőek: kész. 3) Sértő blokkokat (pl. $y_i > y_{i+1}$) <strong>helyettesítjük az átlagukkal</strong>. 4) Ismételjük míg minden monoton.' },
+
+  { cat:'other', frontCat:'MDS', backCat:'Klasszikus megoldás',
+    front:'Hogyan állítjuk vissza a pontokat egy euklideszi $D$ távolságmátrixból?',
+    back:'$B = HAH$ spektrálfelbontása $B = \\sum \\lambda_i \\underline{x}_i\\underline{x}_i^T$. A pontok koordinátái: $\\underline{z}_r$ az $r$-edik koordinátái az $\\underline{x}_i$ sajátvektoroknak ($\\underline{x}_i^T\\underline{x}_i = \\lambda_i$).' },
+
+  { cat:'other', frontCat:'Diszkr.', backCat:'Fisher LDA',
+    front:'Mi a Fisher-féle lineáris diszkriminanciafüggvény célja?',
+    back:'Olyan $\\underline{a}$-t keresünk, hogy $\\underline{a}^T \\underline{\\xi}$ maximalizálja a „csoportok közötti" / „csoporton belüli" négyzetösszeg arányt: $\\frac{\\underline{a}^T B \\underline{a}}{\\underline{a}^T W \\underline{a}}$. Megoldás: $W^{-1}B$ legnagyobb sajátértékéhez tartozó SV.' },
+];
+
+// ── localStorage helpers ──
+const STORAGE_KEY = 'tsm_fc_good';
+function loadSaved() {
+  try { return new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')); }
+  catch(e) { return new Set(); }
+}
+function persistSaved(origIdx) {
+  const s = loadSaved();
+  s.add(origIdx);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...s]));
+  updateSavedInfo();
+}
+function clearSaved() {
+  if (!confirm('Törlöd az összes mentett (megjegyzett) kártyát?\nAz alaphelyzetbe áll vissza.')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(SESSION_KEY);
+  updateSavedInfo();
+  resetAll();
+}
+function updateSavedInfo() {
+  const el = document.getElementById('savedInfo');
+  if (!el) return;
+  const n = loadSaved().size;
+  el.innerHTML = n === 0
+    ? 'Nincs elmentett haladás'
+    : '<span>' + n + ' k\u00e1rtya megjegyezve</span> \u00b7 ezek ki vannak hagyva az aktu\u00e1lis paklib\u00f3l';
+}
+
+// ── session persistence ──
+const SESSION_KEY = 'tsm_fc_session';
+
+function saveSession() {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify({
+      cat: currentCat, idx, mastered, known, fail,
+      deck: deck.map(c => ({ o: c._origIdx, l: c._left, k: c._clean }))
+    }));
+  } catch(e) {}
+}
+function loadSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }
+  catch(e) { return null; }
+}
+function restoreSession(s) {
+  currentCat = s.cat;
+  document.querySelectorAll('.filter-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.cat === currentCat));
+  const saved = loadSaved();
+  deck = s.deck
+    .map(d => { const c = ALL_CARDS[d.o]; return c ? { ...c, _origIdx: d.o, _left: d.l, _clean: d.k !== false } : null; })
+    .filter(d => d && !saved.has(d._origIdx));
+  idx      = 0;
+  mastered = s.mastered || 0;
+  known    = s.known    || 0;
+  fail     = s.fail     || 0;
+}
+
+// ── interval helper ──
+function insertAtInterval(c, minOff, maxOff) {
+  deck.splice(idx, 1);
+  const offset = minOff + Math.floor(Math.random() * (maxOff - minOff + 1));
+  const pos = Math.min(idx + offset, deck.length);
+  deck.splice(pos, 0, c);
+}
+
+let deck = [], idx = 0, mastered = 0, known = 0, fail = 0, currentCat = 'all', flipped = false;
+
+function init() {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.onclick = () => {
+      currentCat = b.dataset.cat;
+      document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      localStorage.removeItem(SESSION_KEY);
+      resetAll();
+    };
+  });
+  updateSavedInfo();
+  const s = loadSession();
+  if (s && s.deck && s.deck.length > 0) {
+    restoreSession(s);
+    document.getElementById('completeBox').style.display = 'none';
+    document.querySelector('.card-wrap').style.display = '';
+    document.querySelector('.controls').style.display = '';
+    renderCard();
+  } else {
+    resetAll();
+  }
+}
+function buildDeck() {
+  const saved = loadSaved();
+  deck = (currentCat === 'all' ? ALL_CARDS : ALL_CARDS.filter(c => c.cat === currentCat))
+    .map(c => ({ ...c, _origIdx: ALL_CARDS.indexOf(c), _left: null, _clean: true }))
+    .filter(c => !saved.has(c._origIdx));
+  shuffle(deck);
+}
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+function shuffleDeck() {
+  const remaining = deck.slice(idx);
+  shuffle(remaining);
+  deck.splice(idx, deck.length - idx, ...remaining);
+  saveSession();
+  renderCard();
+}
+function resetAll() {
+  localStorage.removeItem(SESSION_KEY);
+  buildDeck();
+  idx = 0; mastered = 0; known = 0; fail = 0; flipped = false;
+  document.getElementById('completeBox').style.display = 'none';
+  document.querySelector('.card-wrap').style.display = '';
+  document.querySelector('.controls').style.display = '';
+  renderCard();
+}
+function renderCard() {
+  if (idx >= deck.length) { showComplete(); return; }
+  const c = deck[idx];
+  flipped = false;
+  document.getElementById('card').classList.remove('flipped');
+  document.getElementById('frontCat').textContent = c.frontCat;
+  document.getElementById('backCat').textContent = c.backCat;
+  document.getElementById('frontContent').innerHTML = c.front;
+  document.getElementById('backContent').innerHTML = c.back;
+  const badge = document.getElementById('retryBadge');
+  if (c._left !== null && c._left > 0) {
+    badge.textContent = c._left + '\u00d7 maradt';
+    badge.style.display = '';
+  } else {
+    badge.style.display = 'none';
+  }
+  updateStats();
+  if (window.MathJax) MathJax.typesetPromise([document.getElementById('card')]);
+}
+function flip() {
+  flipped = !flipped;
+  document.getElementById('card').classList.toggle('flipped');
+}
+function markGood() {
+  const c = deck[idx];
+  if (c._left === null) {
+    // Első "Tudtam" → még 1× megerősítés, 10–15 kártyával később
+    c._left = 1;
+    insertAtInterval(c, 10, 15);
+  } else {
+    c._left--;
+    if (c._left === 0) {
+      // Megerősítve → mentve
+      persistSaved(c._origIdx);
+      if (c._clean) { mastered++; } else { known++; }
+      deck.splice(idx, 1);
+    } else {
+      // Még nem elég, 10–15 kártyával később
+      insertAtInterval(c, 10, 15);
+    }
+  }
+  saveSession();
+  renderCard();
+}
+function markFail() {
+  fail++;
+  const c = deck[idx];
+  c._clean = false;   // már nem "tiszta" → nem lehet Megtanultam
+  c._left = 3;        // 3× helyes válasz kell a mentéshez
+  insertAtInterval(c, 5, 7);
+  saveSession();
+  renderCard();
+}
+function updateStats() {
+  document.getElementById('masteredC').textContent = mastered;
+  document.getElementById('knownC').textContent = known;
+  document.getElementById('failC').textContent = fail;
+  const rem = deck.length - idx;
+  document.getElementById('remC').textContent = rem;
+  const done = mastered + known;
+  const total = done + rem;
+  const pct = total > 0 ? (done / total * 100) : 0;
+  document.getElementById('progress').style.width = pct + '%';
+}
+function showComplete() {
+  document.querySelector('.card-wrap').style.display = 'none';
+  document.querySelector('.controls').style.display = 'none';
+  document.getElementById('completeBox').style.display = 'block';
+  localStorage.removeItem(SESSION_KEY);
+
+  const total = mastered + (known - mastered) + fail; // known includes mastered
+  const failRatio = fail > 0 ? fail / (known + fail) : 0;
+  const masterRatio = known > 0 ? mastered / known : 0;
+
+  // stars: based on mastered ratio and fail count
+  const starScore = masterRatio * 5 - failRatio * 2;
+  const stars = Math.min(5, Math.max(0, Math.round(starScore)));
+  const starStr = '★'.repeat(stars) + '☆'.repeat(5 - stars);
+
+  let emoji, title, msg;
+  if (stars === 5) {
+    emoji = '&#129351;'; title = 'Mester szint!';
+    msg = 'Hibátlan kör, mindet elsőre megtanultad. Erre érdemes búszkénak lenni.';
+  } else if (stars >= 4) {
+    emoji = '&#127881;'; title = 'Nagyon jó!';
+    msg = 'A legtöbbet megcsnáltad elsőre. Még egy kör és teli lesz a csillag.';
+  } else if (stars >= 3) {
+    emoji = '&#128170;'; title = 'Haladsz!';
+    msg = 'Szolíd teljesítmény. A hibás kártyák megjegyezve — maradjanak megnyomva!';
+  } else if (stars >= 2) {
+    emoji = '&#128218;'; title = 'Van még mit tanulni';
+    msg = 'Nehezen ment, de ez megéri az ismétlést. Próbáld meg még egyszer!';
+  } else {
+    emoji = '&#128513;'; title = 'Csak a kezdet nehéz';
+    msg = 'Első kör mindig a legtanulságosabb. Menj újra, sokkal jobb lesz!';
+  }
+
+  document.getElementById('completeEmoji').innerHTML = emoji;
+  document.getElementById('completeTitle').textContent = title;
+  document.getElementById('completeSub').textContent =
+    known + ' kártya megerősítve · ' + fail + ' hibával';
+  document.getElementById('completeStars').textContent = starStr;
+  document.getElementById('endMastered').textContent = mastered;
+  document.getElementById('endKnown').textContent = known;
+  document.getElementById('endFail').textContent = fail;
+  document.getElementById('completeMsg').textContent = msg;
+}
+init();
+</script>
+
+<nav class="bottom-home-nav"><a href="index.html" class="bottom-home-btn">&#8962; Vissza a f&#337;oldalra</a></nav>
+</body>
+</html>

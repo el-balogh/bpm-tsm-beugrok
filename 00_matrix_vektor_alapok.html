@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>00 — Mátrix és vektor műveletek</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--blue:#6e9ec8;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .toc{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin-bottom:48px;}
+    .toc-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:14px;}
+    .toc ol{padding-left:20px;font-size:14px;}
+    .toc li{margin-bottom:4px;}
+    .toc a{color:var(--accent);text-decoration:none;}
+    .toc a:hover{text-decoration:underline;}
+    .step{margin-bottom:52px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    h3{font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;margin:18px 0 8px;color:var(--accent);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .box.blue{border-color:rgba(110,158,200,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    .note{background:rgba(110,158,200,0.06);border-left:3px solid var(--blue);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#a0bcd8;}
+    .note strong{color:var(--blue);}
+    .warn{background:rgba(200,110,110,0.06);border-left:3px solid #c86e6e;padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#d4a0a0;}
+    .warn strong{color:#c86e6e;}
+    ul,ol{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0;}
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px 20px;}
+    .card-title{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;}
+    table.prop{width:100%;border-collapse:collapse;font-size:14px;margin:12px 0;}
+    table.prop th{text-align:left;padding:6px 12px;color:var(--muted);font-weight:400;font-family:'DM Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;border-bottom:1px solid var(--border);}
+    table.prop td{padding:8px 12px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle;}
+    table.prop tr:last-child td{border-bottom:none;}
+    table.prop td.label{color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;white-space:nowrap;}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}.grid2{grid-template-columns:1fr;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">00 · Segédanyag · Lineáris algebra gyorstalpaló</div>
+  <h1>Mátrix és vektor <em>műveletek</em></h1>
+  <div class="meta">Referenciakártya — összeadás, szorzás, transzponált, deriválás</div>
+</header>
+
+<main>
+
+<div class="toc">
+  <div class="toc-title">Tartalomjegyzék</div>
+  <ol>
+    <li><a href="#jeloles">Jelölések és alapfogalmak</a></li>
+    <li><a href="#osszeadas">Összeadás, kivonás, skalárszorzás</a></li>
+    <li><a href="#szorzas">Mátrixszorzás</a></li>
+    <li><a href="#transzponalt">Transzponált szabályai</a></li>
+    <li><a href="#gram">AᵀA és AAᵀ — Gram-mátrixok</a></li>
+    <li><a href="#nyom">Nyom (trace) és tulajdonságai</a></li>
+    <li><a href="#determinans">Determináns alapszabályai</a></li>
+    <li><a href="#derivalas">Deriválás vektorok és mátrixok szerint</a></li>
+    <li><a href="#spektral">Spektrálfelbontás</a></li>
+  </ol>
+</div>
+
+<!-- 1. JELÖLÉSEK -->
+<div class="step" id="jeloles">
+  <div class="step-label">1. fejezet — Jelölések és alapfogalmak</div>
+  <h2>Vektorok és mátrixok</h2>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Oszlopvektor</div>
+      <p style="font-size:14px;margin:0;">$\underline{x} \in \mathbb{R}^n$: $n$ elemű oszlopvektor:</p>
+      $$\underline{x} = \begin{pmatrix}x_1\\\vdots\\x_n\end{pmatrix}$$
+    </div>
+    <div class="card">
+      <div class="card-title">Sorvektor (transzponált)</div>
+      <p style="font-size:14px;margin:0;">$\underline{x}^T \in \mathbb{R}^{1\times n}$: sorvektor:</p>
+      $$\underline{x}^T = (x_1,\,\dots,\,x_n)$$
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Mátrix</div>
+      <p style="font-size:14px;margin:0;">$A \in \mathbb{R}^{m\times n}$: $m$ sor, $n$ oszlop. Az $(i,j)$ elem: $A_{ij}$ vagy $a_{ij}$.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Speciális mátrixok</div>
+      <p style="font-size:14px;margin:0;">$I_n$: $n\times n$-es egységmátrix &nbsp;·&nbsp; $\mathbf{0}$: nullmátrix &nbsp;·&nbsp; $\mathbf{1}_n$: csupa-1-es vektor</p>
+    </div>
+  </div>
+
+  <div class="note"><strong>Dimenzióellenőrzés:</strong> mindig ellenőrizd a méreteket! Egy $m\times n$-es és egy $n\times p$-s mátrix szorzata $m\times p$-s. Ha a belső dimenziók nem egyeznek, a szorzás nem értelmezett.</div>
+</div>
+
+<!-- 2. ÖSSZEADÁS -->
+<div class="step" id="osszeadas">
+  <div class="step-label">2. fejezet — Összeadás, kivonás, skalárszorzás</div>
+  <h2>Elemenként végzett műveletek</h2>
+
+  <p>Két mátrix csak akkor adható össze, ha <strong>azonos méretűek</strong>. Az eredmény az elemek összeadásával kapható:</p>
+  $$(A + B)_{ij} = A_{ij} + B_{ij}.$$
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">Skalárszorzás</div>
+      $$(\lambda A)_{ij} = \lambda \cdot A_{ij}$$
+      <p style="font-size:13px;margin-top:8px;color:var(--muted);">Minden elemet megszoroz $\lambda$-val.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Tulajdonságok</div>
+      <p style="font-size:14px;margin:0;">$A+B = B+A$ &nbsp;(kommutatív)<br>$(A+B)+C = A+(B+C)$<br>$\lambda(A+B) = \lambda A + \lambda B$</p>
+    </div>
+  </div>
+
+  <div class="warn"><strong>Figyelem:</strong> mátrixszorzás <em>nem</em> kommutatív! $AB \neq BA$ általában. Az összeadás igen, a szorzás nem.</div>
+</div>
+
+<!-- 3. SZORZÁS -->
+<div class="step" id="szorzas">
+  <div class="step-label">3. fejezet — Mátrixszorzás</div>
+  <h2>A szorzás definíciója</h2>
+
+  <p>Ha $A \in \mathbb{R}^{m\times n}$ és $B \in \mathbb{R}^{n\times p}$, akkor $C = AB \in \mathbb{R}^{m\times p}$, ahol:</p>
+  <div class="box accent">
+    $$C_{ij} = \sum_{k=1}^n A_{ik}\,B_{kj} = \text{(az } i\text{-edik sor)} \cdot \text{(a } j\text{-edik oszlop skaláris szorzata)}.$$
+  </div>
+
+  <h3>Mátrix–vektor szorzat</h3>
+  <p>$A\underline{x}$: az eredmény egy oszlopvektor, amelynek $i$-edik eleme az $A$ $i$-edik sorának és $\underline{x}$-nek a skaláris szorzata:</p>
+  $$(A\underline{x})_i = \sum_k A_{ik}\,x_k.$$
+
+  <h3>Skalárszorzat vektorra</h3>
+  <p>$\underline{x}^T\underline{y}$: két azonos méretű oszlopvektor skalárszorzata — az eredmény egyetlen szám:</p>
+  $$\underline{x}^T\underline{y} = \sum_{k=1}^n x_k\,y_k \in \mathbb{R}.$$
+
+  <h3>Külső szorzat</h3>
+  <p>$\underline{x}\,\underline{y}^T$: az eredmény mátrix ($n\times n$), amelynek $(i,j)$ eleme $x_i y_j$:</p>
+  $$(\underline{x}\,\underline{y}^T)_{ij} = x_i\,y_j.$$
+  <div class="why"><strong>Mikor látjuk ezt?</strong> Spektrálfelbontásnál: $A = \sum_k \lambda_k \underline{v}_k\underline{v}_k^T$ — minden tag egy külső szorzat (rangú projektor).</div>
+
+  <h3>Fontosabb azonosságok</h3>
+  <table class="prop">
+    <tr><th>azonosság</th><th>feltétel</th></tr>
+    <tr><td>$(AB)C = A(BC)$</td><td class="label">asszociatív</td></tr>
+    <tr><td>$A(B+C) = AB + AC$</td><td class="label">disztributív</td></tr>
+    <tr><td>$AI = IA = A$</td><td class="label">egységelem</td></tr>
+    <tr><td>$AB \neq BA$ általában</td><td class="label">nem kommutatív</td></tr>
+    <tr><td>$A\mathbf{0} = \mathbf{0}$</td><td class="label">nullmátrix</td></tr>
+  </table>
+
+  <h3>Konkrét példa — $2\times3$ szorozva $3\times2$-vel</h3>
+  <p>Legyen:</p>
+  $$A = \begin{pmatrix}1 & 2 & 3\\4 & 5 & 6\end{pmatrix}, \quad B = \begin{pmatrix}7 & 8\\9 & 10\\11 & 12\end{pmatrix}.$$
+  <p>$A$ mérete $2\times 3$, $B$ mérete $3\times 2$, tehát $C = AB$ mérete $2\times 2$. Elemenként:</p>
+  $$C_{11} = 1\cdot7 + 2\cdot9 + 3\cdot11 = 7+18+33 = 58,$$
+  $$C_{12} = 1\cdot8 + 2\cdot10 + 3\cdot12 = 8+20+36 = 64,$$
+  $$C_{21} = 4\cdot7 + 5\cdot9 + 6\cdot11 = 28+45+66 = 139,$$
+  $$C_{22} = 4\cdot8 + 5\cdot10 + 6\cdot12 = 32+50+72 = 154.$$
+  <div class="box green">
+    $$AB = \begin{pmatrix}58 & 64\\139 & 154\end{pmatrix}.$$
+  </div>
+  <div class="why"><strong>Emlékeztető:</strong> $C_{ij}$ = az $A$ <em>$i$-edik sora</em> és $B$ <em>$j$-edik oszlopa</em> közti skaláris szorzat. Például $C_{12}$: az $A$ első sora $(1,2,3)$ és $B$ második oszlopa $(8,10,12)$ szorzata.</div>
+
+  <h3>Konkrét példa — mátrix–vektor szorzat</h3>
+  <p>Legyen $A = \begin{pmatrix}2 & 1\\0 & 3\end{pmatrix}$ és $\underline{x} = \begin{pmatrix}4\\-1\end{pmatrix}$. Ekkor:</p>
+  $$A\underline{x} = \begin{pmatrix}2\cdot4 + 1\cdot(-1)\\0\cdot4 + 3\cdot(-1)\end{pmatrix} = \begin{pmatrix}7\\-3\end{pmatrix}.$$
+
+  <h3>Konkrét példa — $BA$ a fordított sorrend</h3>
+  <p>A fenti $A$ ($2\times3$) és $B$ ($3\times2$) esetén $BA$ mérete $3\times3$ — más méretű, mint $AB$! Ez is megmutatja, hogy $AB \neq BA$.</p>
+  $$BA = \begin{pmatrix}7&8\\9&10\\11&12\end{pmatrix}\begin{pmatrix}1&2&3\\4&5&6\end{pmatrix} = \begin{pmatrix}39&54&69\\49&68&87\\59&82&105\end{pmatrix}.$$
+
+<!-- 4. TRANSZPONÁLT -->
+<div class="step" id="transzponalt">
+  <div class="step-label">4. fejezet — Transzponált szabályai</div>
+  <h2>A transzponált definíciója</h2>
+
+  <p>$A^T$ az $A$ mátrix transzponáltja: az $(i,j)$ elem és a $(j,i)$ elem helyet cserél:</p>
+  $$(A^T)_{ij} = A_{ji}.$$
+  <p>Ha $A \in \mathbb{R}^{m\times n}$, akkor $A^T \in \mathbb{R}^{n\times m}$.</p>
+
+  <div class="box accent">
+    <table class="prop">
+      <tr><th>szabály</th><th>megjegyzés</th></tr>
+      <tr><td>$(A^T)^T = A$</td><td class="label">kétszeres transzponált</td></tr>
+      <tr><td>$(A + B)^T = A^T + B^T$</td><td class="label">összeadás</td></tr>
+      <tr><td>$(\lambda A)^T = \lambda A^T$</td><td class="label">skalár</td></tr>
+      <tr><td>$(AB)^T = B^T A^T$</td><td class="label">szorzat — sorrend megfordul!</td></tr>
+      <tr><td>$(ABC)^T = C^T B^T A^T$</td><td class="label">háromszoros szorzat</td></tr>
+    </table>
+  </div>
+
+  <div class="warn"><strong>Leggyakoribb hiba:</strong> $(AB)^T = B^T A^T$, nem $A^T B^T$! A sorrend megfordul.</div>
+
+  <h3>Szimmetrikus mátrix</h3>
+  <p>$A$ szimmetrikus, ha $A = A^T$, azaz $A_{ij} = A_{ji}$ minden $i,j$-re. Kovariancia-mátrixok, Gram-mátrixok mindig szimmetrikusak.</p>
+
+  <h3>Transzponált és skalárszorzat</h3>
+  <p>Ha $\underline{x}, \underline{y} \in \mathbb{R}^n$ és $A \in \mathbb{R}^{n\times n}$:</p>
+  <div class="box green">
+    $$\underline{x}^T A \underline{y} = \underline{y}^T A^T \underline{x}.$$
+  </div>
+  <div class="why"><strong>Miért?</strong> Skalár transzponáltja önmaga: $(\underline{x}^T A \underline{y})^T = \underline{y}^T A^T \underline{x}$. Ha $A$ szimmetrikus ($A=A^T$), akkor $\underline{x}^T A \underline{y} = \underline{y}^T A \underline{x}$.</div>
+</div>
+
+<!-- 5. GRAM -->
+<div class="step" id="gram">
+  <div class="step-label">5. fejezet — AᵀA és AAᵀ — Gram-mátrixok</div>
+  <h2>Miért fontosak?</h2>
+
+  <p>Ha $X \in \mathbb{R}^{n\times p}$, akkor mindkét $X^TX$ és $XX^T$ szimmetrikus és <strong>pozitív szemidefinit (PSD)</strong>.</p>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="card-title">$X^T X \in \mathbb{R}^{p\times p}$</div>
+      <p style="font-size:14px;">Az oszlopok közti skaláris szorzatokat tartalmazza. $(X^TX)_{ij} = \underline{x}_{(i)}^T\underline{x}_{(j)}$, ahol $\underline{x}_{(j)}$ a $j$-edik oszlop.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">$X X^T \in \mathbb{R}^{n\times n}$</div>
+      <p style="font-size:14px;">A sorok közti skaláris szorzatokat tartalmazza. $(XX^T)_{ij} = \underline{z}_{i}^T\underline{z}_{j}$, ahol $\underline{z}_i$ az $i$-edik sor.</p>
+    </div>
+  </div>
+
+  <h3>Miért PSD?</h3>
+  <div class="box green">
+    <p>Bármely $\underline{y}$-ra: $\underline{y}^T(X^TX)\underline{y} = (X\underline{y})^T(X\underline{y}) = \|X\underline{y}\|^2 \geq 0.$</p>
+  </div>
+  <p>Ez az érvelés közvetlen: a négyzetes norma soha nem negatív. Ugyanígy $XX^T$ is PSD.</p>
+
+  <h3>Transzponálásnál mi változik?</h3>
+  <table class="prop">
+    <tr><th>kifejezés</th><th>méret</th><th>szimmetrikus?</th><th>PSD?</th></tr>
+    <tr><td>$X^TX$</td><td class="label">$p\times p$</td><td>igen</td><td>igen</td></tr>
+    <tr><td>$XX^T$</td><td class="label">$n\times n$</td><td>igen</td><td>igen</td></tr>
+    <tr><td>$XY^T$ (ahol $Y\neq X$)</td><td class="label">$n\times m$</td><td>nem feltétlenül</td><td>nem feltétlenül</td></tr>
+  </table>
+
+  <h3>Szimmetrizálás</h3>
+  <p>Ha $A$ négyzetes, akkor $A + A^T$ szimmetrikus, $A - A^T$ ferdén szimmetrikus. Bármely mátrix felbontható: $A = \tfrac{1}{2}(A+A^T) + \tfrac{1}{2}(A-A^T)$.</p>
+
+  <h3>Kétoldali szorzás: $BAB^T$ és $B^TAB$</h3>
+  <p>Ha $A$ szimmetrikus, akkor $BAB^T$ és $B^TAB$ is szimmetrikusak:</p>
+  $$(BAB^T)^T = (B^T)^T A^T B^T = BAB^T. \checkmark$$
+  <p>Ha $A$ PSD, akkor $B^TAB$ is PSD (bármely $B$-re):</p>
+  $$\underline{y}^T(B^TAB)\underline{y} = (B\underline{y})^T A (B\underline{y}) \geq 0.$$
+  <div class="why"><strong>Mikor látjuk ezt?</strong> Kovariancia-transzformációnál: ha $\underline{\xi}\sim N(\mu,\Sigma)$ és $\eta = C\underline{\xi}$, akkor $\text{Cov}(\eta) = C\Sigma C^T$ — ez pont a $BAB^T$ alakú kétoldali szorzat.</div>
+</div>
+
+<!-- 6. NYOM -->
+<div class="step" id="nyom">
+  <div class="step-label">6. fejezet — Nyom (trace)</div>
+  <h2>Definíció</h2>
+
+  <p>Négyzetes mátrix főátlóelemeinek összege:</p>
+  $$\text{tr}(A) = \sum_{i=1}^n A_{ii}.$$
+
+  <div class="box accent">
+    <table class="prop">
+      <tr><th>tulajdonság</th><th>megjegyzés</th></tr>
+      <tr><td>$\text{tr}(A+B) = \text{tr}(A)+\text{tr}(B)$</td><td class="label">linearitás</td></tr>
+      <tr><td>$\text{tr}(\lambda A) = \lambda\,\text{tr}(A)$</td><td class="label">skalár</td></tr>
+      <tr><td>$\text{tr}(A^T) = \text{tr}(A)$</td><td class="label">transzponált</td></tr>
+      <tr><td>$\text{tr}(AB) = \text{tr}(BA)$</td><td class="label">ciklikus — sorrend felcserélhető!</td></tr>
+      <tr><td>$\text{tr}(ABC) = \text{tr}(BCA) = \text{tr}(CAB)$</td><td class="label">ciklikus permutáció</td></tr>
+    </table>
+  </div>
+
+  <div class="warn"><strong>Fontos:</strong> $\text{tr}(ABC) = \text{tr}(BCA)$, de $\text{tr}(ABC) \neq \text{tr}(BAC)$ általában! Csak ciklikus csere szabad, tetszőleges permutáció nem.</div>
+
+  <h3>Nyom és skalárszorzat kapcsolata</h3>
+  <div class="box green">
+    $$\underline{x}^T\underline{y} = \text{tr}(\underline{x}^T\underline{y}) = \text{tr}(\underline{y}\,\underline{x}^T).$$
+  </div>
+  <p>Általánosabban: $\text{tr}(A^TB) = \sum_{i,j} A_{ij}B_{ij}$ — ez a mátrixok „skaláris szorzata" (Frobenius belső szorzat).</p>
+
+  <h3>Mikor jön elő a nyom?</h3>
+  <p>Mátrix-értékű véletlen változó karakterisztikus függvényénél: $\varphi_M(A) = E(e^{i\,\text{tr}(AM)})$. A nyom azért szerepel, mert szimmetrikus mátrixoknál $\text{tr}(AM)$ lineárisan kombinálja az összes lényeges elemet.</p>
+</div>
+
+<!-- 7. DETERMINÁNS -->
+<div class="step" id="determinans">
+  <div class="step-label">7. fejezet — Determináns alapszabályai</div>
+  <h2>Fontosabb azonosságok</h2>
+
+  <div class="box accent">
+    <table class="prop">
+      <tr><th>szabály</th><th>megjegyzés</th></tr>
+      <tr><td>$|AB| = |A|\cdot|B|$</td><td class="label">szorzat determinánsa</td></tr>
+      <tr><td>$|A^T| = |A|$</td><td class="label">transzponált</td></tr>
+      <tr><td>$|A^{-1}| = 1/|A|$</td><td class="label">inverz</td></tr>
+      <tr><td>$|\lambda A| = \lambda^n |A|$ &nbsp;($A$ $n\times n$)</td><td class="label">skalárszorzás</td></tr>
+      <tr><td>$|CAC^T| = |C|^2|A|$</td><td class="label">kétoldali szorzás</td></tr>
+      <tr><td>$|CAC^T| = |A|$ ha $C$ ortogonális</td><td class="label">$|C|=\pm 1$ ortogonálisnál</td></tr>
+    </table>
+  </div>
+
+  <h3>Diagonális mátrix determinánsa</h3>
+  <div class="box green">
+    $$|\text{diag}(\lambda_1,\dots,\lambda_n)| = \prod_{k=1}^n \lambda_k.$$
+  </div>
+  <p>Spektrálfelbontásnál ($A = C\Lambda C^T$, $C$ ortogonális): $|A| = |C||\Lambda||C^T| = |\Lambda| = \prod_k\lambda_k$.</p>
+
+  <h3>Determináns és sajátértékek</h3>
+  <p>Általánosan: $|A| = \prod_k \lambda_k$, ahol $\lambda_k$ az $A$ sajátértékei (multiplicitással számolva). Ezért ha $A$ szinguláris (van nulla sajátértéke), $|A|=0$.</p>
+</div>
+
+<!-- 8. DERIVÁLÁS -->
+<div class="step" id="derivalas">
+  <div class="step-label">8. fejezet — Deriválás vektorok és mátrixok szerint</div>
+  <h2>Gradiens: vektor szerinti derivált</h2>
+
+  <p>Ha $f: \mathbb{R}^n \to \mathbb{R}$ skalárfüggvény és $\underline{\beta} \in \mathbb{R}^n$, akkor a <strong>gradiens</strong> egy oszlopvektor:</p>
+  $$\frac{\partial f}{\partial \underline{\beta}} = \begin{pmatrix}\partial f/\partial\beta_1\\\vdots\\\partial f/\partial\beta_n\end{pmatrix} \in \mathbb{R}^n.$$
+
+  <h3>Alap esetek</h3>
+  <div class="box accent">
+    <table class="prop">
+      <tr><th>$f(\underline{\beta})$</th><th>$\dfrac{\partial f}{\partial \underline{\beta}}$</th><th class="label">megjegyzés</th></tr>
+      <tr><td>$\underline{a}^T\underline{\beta}$</td><td>$\underline{a}$</td><td class="label">lineáris forma</td></tr>
+      <tr><td>$\underline{\beta}^T\underline{a}$</td><td>$\underline{a}$</td><td class="label">ugyanaz (skalár szimmetriája)</td></tr>
+      <tr><td>$\underline{\beta}^T\underline{\beta}$</td><td>$2\underline{\beta}$</td><td class="label">négyzetes norma</td></tr>
+      <tr><td>$\underline{\beta}^T A\underline{\beta}$ &nbsp;($A$ szimm.)</td><td>$2A\underline{\beta}$</td><td class="label">kvadratikus forma</td></tr>
+      <tr><td>$\underline{\beta}^T A\underline{\beta}$ &nbsp;($A$ nem szimm.)</td><td>$(A+A^T)\underline{\beta}$</td><td class="label">általános eset</td></tr>
+    </table>
+  </div>
+
+  <h3>Miért $\underline{a}$ a lineáris forma deriváltja?</h3>
+  <div class="why"><strong>Levezetés:</strong> $\underline{a}^T\underline{\beta} = \sum_k a_k\beta_k$. A $j$-edik koordinátára: $\dfrac{\partial}{\partial\beta_j}\sum_k a_k\beta_k = a_j$. Tehát a gradiens épp $\underline{a}$.</div>
+
+  <h3>Miért $2A\underline{\beta}$ a kvadratikus forma deriváltja?</h3>
+  <div class="why"><strong>Levezetés:</strong> $\underline{\beta}^TA\underline{\beta} = \sum_{i,j}A_{ij}\beta_i\beta_j$. Deriválva $\beta_k$ szerint: az összegből kiemelkednek a $k$-t tartalmazó tagok:
+    $$\frac{\partial}{\partial\beta_k}\sum_{i,j}A_{ij}\beta_i\beta_j = \sum_j A_{kj}\beta_j + \sum_i A_{ik}\beta_i = (A\underline{\beta})_k + (A^T\underline{\beta})_k.$$
+    Ha $A$ szimmetrikus ($A=A^T$): $= 2(A\underline{\beta})_k$, tehát gradiens $= 2A\underline{\beta}$.</div>
+
+  <h3>Összetett függvény — láncszabály</h3>
+  <p>Ha $f(\underline{\beta}) = g(h(\underline{\beta}))$, ahol $h: \mathbb{R}^n\to\mathbb{R}$:</p>
+  $$\frac{\partial f}{\partial\beta_j} = g'(h(\underline{\beta}))\cdot\frac{\partial h}{\partial\beta_j}.$$
+
+  <div class="box accent">
+    <p><strong>Logisztikus regresszió példa:</strong> $h(\underline{\beta}) = \underline{\beta}^T\underline{x}_i$, $g(u) = \log(1+e^u)$.</p>
+    $$\frac{\partial}{\partial\beta_j}\log(1+e^{\underline{\beta}^T\underline{x}_i}) = \frac{e^{\underline{\beta}^T\underline{x}_i}}{1+e^{\underline{\beta}^T\underline{x}_i}}\cdot x_{i,j} = p_i\,x_{i,j}.$$
+  </div>
+
+  <h3>Nyom szerinti deriválás (mátrix esetén)</h3>
+  <p>Ha $f(A) = \text{tr}(BA)$, ahol $B$ konstans:</p>
+  $$\frac{\partial\,\text{tr}(BA)}{\partial A} = B^T.$$
+  <p>Ha $f(A) = \text{tr}(A^TBA)$ ($B$ szimmetrikus):</p>
+  $$\frac{\partial\,\text{tr}(A^TBA)}{\partial A} = (B+B^T)A = 2BA.$$
+
+  <h3>Összefoglaló táblázat — leggyakoribb esetek</h3>
+  <div class="box green">
+    <table class="prop">
+      <tr><th>kifejezés</th><th>változó</th><th>derivált</th></tr>
+      <tr><td>$\underline{a}^T\underline{x}$</td><td class="label">$\underline{x}$ szerint</td><td>$\underline{a}$</td></tr>
+      <tr><td>$\underline{x}^T A\underline{x}$, $A$ szimm.</td><td class="label">$\underline{x}$ szerint</td><td>$2A\underline{x}$</td></tr>
+      <tr><td>$\|\underline{x}-\underline{\mu}\|^2$</td><td class="label">$\underline{x}$ szerint</td><td>$2(\underline{x}-\underline{\mu})$</td></tr>
+      <tr><td>$(\underline{y}-X\underline{\beta})^T(\underline{y}-X\underline{\beta})$</td><td class="label">$\underline{\beta}$ szerint</td><td>$-2X^T(\underline{y}-X\underline{\beta})$</td></tr>
+      <tr><td>$\log|A|$, $A$ szimm. PD</td><td class="label">$A$ szerint</td><td>$(A^{-1})^T = A^{-1}$</td></tr>
+    </table>
+  </div>
+
+  <div class="note"><strong>OLS becslés levezetése:</strong> A $\|\underline{y}-X\underline{\beta}\|^2$ minimalizálásánál a derivált nullává tételéből: $-2X^T(\underline{y}-X\underline{\beta}) = 0 \Rightarrow X^TX\underline{\beta} = X^T\underline{y} \Rightarrow \hat{\underline{\beta}} = (X^TX)^{-1}X^T\underline{y}$. Ez pontosan a normálegyenlet.</div>
+</div>
+
+<!-- 9. SPEKTRÁLFELBONTÁS -->
+<div class="step" id="spektral">
+  <div class="step-label">9. fejezet — Spektrálfelbontás</div>
+  <h2>Mi a spektrálfelbontás?</h2>
+
+  <p>Minden <strong>szimmetrikus</strong> $A \in \mathbb{R}^{n\times n}$ mátrix felírható a következő alakban:</p>
+  <div class="box green">
+    $$A = Q\Lambda Q^T = \sum_{k=1}^n \lambda_k\,\underline{q}_k\underline{q}_k^T,$$
+    ahol $Q = (\underline{q}_1,\dots,\underline{q}_n)$ <strong>ortogonális</strong> mátrix (oszlopai az egységnyi sajátvektorok), és $\Lambda = \text{diag}(\lambda_1,\dots,\lambda_n)$ a sajátértékek átlóban.
+  </div>
+
+  <h3>Mi az a sajátvektor és sajátérték?</h3>
+  <p>$\underline{q}_k$ és $\lambda_k$ kielégítik az $A\underline{q}_k = \lambda_k\underline{q}_k$ egyenletet: $A$ csak „nyújtja" a $\underline{q}_k$ irányt, nem forgatja el. A nyújtás mértéke $\lambda_k$.</p>
+  <div class="why"><strong>Intuitívan:</strong> A spektrálfelbontás azt mondja, hogy minden szimmetrikus mátrix „egy forgatás + átló menti nyújtás + visszaforgatás" — az ortogonális $Q$ forog, a $\Lambda$ nyújt.</div>
+
+  <h3>Ortogonális mátrix tulajdonságai</h3>
+  <p>$Q$ ortogonális, ha $Q^TQ = QQ^T = I$, azaz $Q^{-1} = Q^T$. Következmények:</p>
+  <ul>
+    <li>Az oszlopok egymásra merőlegesek és egységnyiek: $\underline{q}_i^T\underline{q}_j = \delta_{ij}$.</li>
+    <li>$|Q| = \pm 1$ — ortogonális mátrix nem „nyújt", csak forgat/tükröz.</li>
+    <li>$\|Q\underline{x}\| = \|\underline{x}\|$ — megőrzi a vektorok hosszát.</li>
+  </ul>
+
+  <h3>A felbontás összege rangú projektorokból</h3>
+  <p>Minden $\lambda_k\underline{q}_k\underline{q}_k^T$ tag egy <strong>rangú projektor</strong> $\lambda_k$ szorzóval: $\underline{q}_k\underline{q}_k^T$ vetíti a vektorokat a $\underline{q}_k$ irányra. Így $A$ hatása felbomlik $n$ egymásra merőleges irány mentén:</p>
+  $$A\underline{x} = \sum_{k=1}^n \lambda_k\,(\underline{q}_k^T\underline{x})\,\underline{q}_k.$$
+  <div class="why"><strong>Olvasata:</strong> $\underline{q}_k^T\underline{x}$ az $\underline{x}$ vektor $k$-adik sajátirányba eső komponense; $A$ ezt a komponenst $\lambda_k$-szorosára nyújtja.</div>
+
+  <h3>PSD feltétel és a sajátértékek</h3>
+  <table class="prop">
+    <tr><th>feltétel $A$-ra</th><th>sajátértékek</th></tr>
+    <tr><td>$A$ szimmetrikus</td><td class="label">valós $\lambda_k$-k</td></tr>
+    <tr><td>$A$ pozitív szemidefinit (PSD)</td><td class="label">$\lambda_k \geq 0$ minden $k$-ra</td></tr>
+    <tr><td>$A$ pozitív definit (PD)</td><td class="label">$\lambda_k > 0$ minden $k$-ra</td></tr>
+    <tr><td>$A$ szinguláris</td><td class="label">legalább egy $\lambda_k = 0$</td></tr>
+  </table>
+
+  <h3>Determináns és nyom a sajátértékekkel</h3>
+  <div class="box accent">
+    $$|A| = \prod_{k=1}^n \lambda_k, \qquad \text{tr}(A) = \sum_{k=1}^n \lambda_k.$$
+  </div>
+  <div class="why"><strong>Miért?</strong> $|A| = |Q\Lambda Q^T| = |Q||\Lambda||Q^T| = 1\cdot\prod\lambda_k\cdot 1$. Nyomra: $\text{tr}(Q\Lambda Q^T) = \text{tr}(\Lambda Q^TQ) = \text{tr}(\Lambda) = \sum\lambda_k$ (ciklikus tulajdonság + $Q^TQ=I$).</div>
+
+  <h3>Konkrét példa — $2\times2$-es szimmetrikus mátrix</h3>
+  <p>Legyen $A = \begin{pmatrix}3 & 1\\1 & 3\end{pmatrix}$. Sajátértékek: $\det(A-\lambda I) = 0$:</p>
+  $$(3-\lambda)^2 - 1 = 0 \implies \lambda^2 - 6\lambda + 8 = 0 \implies \lambda_1 = 4,\; \lambda_2 = 2.$$
+  <p>Sajátvektorok ($A\underline{q} = \lambda\underline{q}$, majd normálás):</p>
+  <ul>
+    <li>$\lambda_1 = 4$: $(A-4I)\underline{q}=0 \Rightarrow \begin{pmatrix}-1&1\\1&-1\end{pmatrix}\underline{q}=0 \Rightarrow \underline{q}_1 = \tfrac{1}{\sqrt{2}}\begin{pmatrix}1\\1\end{pmatrix}$</li>
+    <li>$\lambda_2 = 2$: $(A-2I)\underline{q}=0 \Rightarrow \begin{pmatrix}1&1\\1&1\end{pmatrix}\underline{q}=0 \Rightarrow \underline{q}_2 = \tfrac{1}{\sqrt{2}}\begin{pmatrix}1\\-1\end{pmatrix}$</li>
+  </ul>
+  <p>Visszaellenőrzés ($\lambda_k\underline{q}_k\underline{q}_k^T$ összegzéssel):</p>
+  <div class="box green">
+    $$4\cdot\frac{1}{2}\begin{pmatrix}1&1\\1&1\end{pmatrix}+2\cdot\frac{1}{2}\begin{pmatrix}1&-1\\-1&1\end{pmatrix} = \begin{pmatrix}2&2\\2&2\end{pmatrix}+\begin{pmatrix}1&-1\\-1&1\end{pmatrix} = \begin{pmatrix}3&1\\1&3\end{pmatrix} = A. \checkmark$$
+  </div>
+  <p>Ellenőrzés nyomra és determinánsra: $\text{tr}(A) = 6 = 4+2$ ✓, $\;|A| = 8 = 4\cdot2$ ✓.</p>
+
+  <h3>Gyök és inverz spektrálfelbontással</h3>
+  <p>Ha $A = Q\Lambda Q^T$ PSD, akkor könnyen definiálható:</p>
+  <div class="box accent">
+    $$A^{1/2} = Q\Lambda^{1/2}Q^T, \quad\text{ahol}\quad \Lambda^{1/2} = \text{diag}(\sqrt{\lambda_1},\dots,\sqrt{\lambda_n}).$$
+    $$A^{-1} = Q\Lambda^{-1}Q^T, \quad\text{ahol}\quad \Lambda^{-1} = \text{diag}(1/\lambda_1,\dots,1/\lambda_n) \quad(\text{ha }\lambda_k>0).$$
+  </div>
+  <div class="note"><strong>Mikor látjuk ezt?</strong> Wishart-mátrixoknál, Mahalanobis-távolságnál ($d^2 = (\underline{x}-\mu)^T\Sigma^{-1}(\underline{x}-\mu)$), és a $\Sigma^{-1/2}$ fehérítő transzformációnál, amivel standard Wishartra lehet visszavezetni.</div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item active"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <span class="pbn-btn pbn-disabled">&#8592; El&#337;z&#337;</span>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="01_euklideszi_tavmátrix.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>04 — Hipotézisvizsgálat μ₁+μ₂=4</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .step{margin-bottom:44px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .box.red{border-color:rgba(200,110,110,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    ul{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;}
+    td,th{border:1px solid var(--border);padding:10px 14px;text-align:left;}
+    th{background:var(--surface);font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">04 · 8. Tétel · Hipotézisvizsgálat 1.</div>
+  <h1>Hipotézisvizsgálat — <em>$H_0: \mu_1+\mu_2=4$</em></h1>
+  <div class="meta">4 pont &nbsp;·&nbsp; Rμ = r típusú próba, ismert Σ, χ² teszt &nbsp;·&nbsp; Dóri jegyzet ~31. oldal</div>
+</header>
+
+<main>
+
+<div class="step">
+  <div class="step-label">0. lépés — Probléma és eszközök</div>
+  <h2>Mi van adva?</h2>
+  <ul>
+    <li>$n=7$ elemű $N_2(\mu,\Sigma)$ minta</li>
+    <li>Tapasztalati közép: $\bar{\underline{\xi}} = \binom{3}{4}$</li>
+    <li>Kovarianciamátrix <strong>ismert</strong>: $\Sigma = \begin{pmatrix}2&1\\1&3\end{pmatrix}$</li>
+    <li>$\mu$ ismeretlen</li>
+  </ul>
+  <div class="box accent">
+    $H_0: \mu_1+\mu_2 = 4$ &nbsp; vs. &nbsp; $H_1: \mu_1+\mu_2 \neq 4$
+  </div>
+
+  <h2>A modell felismerése — $R\mu = r$ típusú próba</h2>
+  <p>A $H_0$ átírható <strong>lineáris kényszer alakba</strong>:</p>
+  $$H_0:\; R\mu = r, \quad R=(1\;1),\quad r=4.$$
+  <p>$R$ egy $1\times 2$-es mátrix ($k=1$ kényszer, $p=2$ dimenzió), $r$ skalár.</p>
+  <div class="why"><strong>Miért éri meg ezt az alakot felismerni?</strong> Mert ismert $\Sigma$ + $H_0: R\mu=r$ típusra van kész képletünk, és a tesztstatisztika eloszlása $\chi^2_k$ lesz.</div>
+
+  <h2>Kakukkfű-lista</h2>
+  <ul>
+    <li><strong>Tesztstatisztika:</strong> $-2\log\lambda = n\,(R\bar{\underline{\xi}}-r)^T(R\Sigma R^T)^{-1}(R\bar{\underline{\xi}}-r)$</li>
+    <li><strong>Eloszlás $H_0$ alatt:</strong> $-2\log\lambda\sim\chi^2_k$ (ahol $k$ a kényszerek száma)</li>
+    <li><strong>Döntés (5%-os szint):</strong> ha $-2\log\lambda > \chi^2_k(0.95)$ → elvetjük $H_0$-t</li>
+  </ul>
+  <table>
+    <tr><th>$k$</th><th>$\chi^2_k(0.95)$ kritikus érték</th></tr>
+    <tr><td>1</td><td>3.84</td></tr>
+    <tr><td>2</td><td>5.99</td></tr>
+    <tr><td>3</td><td>7.81</td></tr>
+  </table>
+</div>
+
+<div class="step">
+  <div class="step-label">1–5. lépés — Számítás</div>
+
+  <h2>1. lépés — Paraméterek azonosítása</h2>
+  <ul>
+    <li>$n=7$, $R=(1\;1)$, $r=4$, $k=1$</li>
+    <li>$\bar{\underline{\xi}}=\binom{3}{4}$, $\Sigma=\begin{pmatrix}2&1\\1&3\end{pmatrix}$</li>
+  </ul>
+
+  <h2>2. lépés — $R\bar{\underline{\xi}}-r$ kiszámítása</h2>
+  $$R\bar{\underline{\xi}} = (1\;1)\binom{3}{4} = 3+4 = 7.$$
+  $$R\bar{\underline{\xi}}-r = 7-4 = 3.$$
+  <div class="why"><strong>Szemléletesen:</strong> A tapasztalati átlag-összeg $7$, a hipotézis szerint $4$ kellene. Az eltérés $3$. A kérdés: ez az eltérés szignifikáns-e?</div>
+
+  <h2>3. lépés — $R\Sigma R^T$ kiszámítása</h2>
+  $$\Sigma R^T = \begin{pmatrix}2&1\\1&3\end{pmatrix}\binom{1}{1} = \binom{3}{4}.$$
+  $$R\Sigma R^T = (1\;1)\binom{3}{4} = 3+4 = 7.$$
+  <div class="why"><strong>Mit jelent ez?</strong> Ez a $\xi_{i,1}+\xi_{i,2}$ változó varianciája: $\text{Var}(\xi_1+\xi_2)=\text{Var}(\xi_1)+\text{Var}(\xi_2)+2\text{Cov}(\xi_1,\xi_2)=2+3+2=7$. ✓</div>
+
+  <h2>4. lépés — Tesztstatisztika kiszámítása</h2>
+  <p>$(R\Sigma R^T)^{-1} = \tfrac{1}{7}$ (skalár inverze).</p>
+  $$-2\log\lambda = n\cdot(R\bar{\underline{\xi}}-r)^T\cdot(R\Sigma R^T)^{-1}\cdot(R\bar{\underline{\xi}}-r) = 7\cdot 3\cdot\frac{1}{7}\cdot 3 = 9.$$
+
+  <h2>5. lépés — Döntés</h2>
+  <p>$H_0$ alatt: $-2\log\lambda\sim\chi^2_1$. Kritikus érték 5%-on: $\chi^2_1(0.95)=3.84$.</p>
+
+  <div class="box red">
+    Mivel $9 > 3.84$, a $H_0:\mu_1+\mu_2=4$ hipotézist <strong>elvetjük</strong> 5%-os szignifikancia szinten.
+  </div>
+
+  <div class="why"><strong>Szemléletesen:</strong> A $\xi_{i,1}+\xi_{i,2}$ szórása $\sqrt{7}\approx 2.65$, az átlag-összeg szórása $\sqrt{7}/\sqrt{7}=1$. A standardizált eltérés $(7-4)/1=3$, négyzete $9$ — ez az amit kaptunk ($\chi^2_1$ pont egy std. normális négyzete). Ilyen nagy eltérés $\approx 0.27\%$ valószínűségű $H_0$ alatt — elvetjük.</div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item active"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="03_wilks_lambda.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="05_normalis_korr_tetele.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

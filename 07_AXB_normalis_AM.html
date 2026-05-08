@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>07 — AXB normális adatmátrix-e?</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--red:#c86e6e;--green:#6ec87a;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .step{margin-bottom:44px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .box.red{border-color:rgba(200,110,110,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    ul,ol{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    .check-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:12px 16px;border:1px solid var(--border);border-radius:6px;margin:10px 0;background:rgba(255,255,255,0.02);}
+    .check-row.fail{border-color:rgba(200,110,110,0.3);}
+    .check-row .label{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+    .check-row .verdict{font-family:'DM Mono',monospace;font-size:12px;}
+    .check-row.fail .verdict{color:var(--red);}
+    .check-row .formula{font-size:14px;}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">07 · 2. Tétel · Normális adatmátrixok</div>
+  <h1>$AXB$ normális adatmátrix-e? — <em>konkrét példa</em></h1>
+  <div class="meta">3–4 pont &nbsp;·&nbsp; $A\mathbf{1}_n=\alpha\mathbf{1}_m$ ÉS $AA^T=\beta I_m$ feltételek &nbsp;·&nbsp; Dóri jegyzet ~7. oldal</div>
+</header>
+
+<main>
+
+<div class="step">
+  <div class="step-label">0. lépés — Probléma és eszközök</div>
+
+  <h2>Mi van adva?</h2>
+  <p>$\tilde{X}$ <strong>normális adatmátrix</strong> $N_2(\mu,\Sigma)$ eloszlással, ahol:</p>
+  $$\mu = \binom{3}{1},\quad \Sigma = \begin{pmatrix}4 & 1\\ 1 & 4\end{pmatrix},\quad A = \begin{pmatrix}1 & 2 & 0\\ 3 & 4 & 1\end{pmatrix},\quad B = \begin{pmatrix}2 & 1\\ 1 & 1\end{pmatrix}.$$
+  <p><strong>Kérdés:</strong> Normális adatmátrix-e $A\tilde{X}B$?</p>
+
+  <div class="why"><strong>Mi az a normális adatmátrix?</strong> Egy $n\times p$-s mátrix, melynek <em>sorai</em> független, azonos eloszlású $N_p(\mu,\Sigma)$ vektorok. Pl. „$n$ ember $p$ jellemzőjének mérése, mindenki ugyanúgy normális".</div>
+
+  <h2>Dimenziók azonosítása</h2>
+  <p>A 2. tétel szerint $\tilde{Y}_{m\times q} = A_{m\times n}\,\tilde{X}_{n\times p}\,B_{p\times q}$. Itt:</p>
+  <ul>
+    <li>$A$ mérete $2\times 3$ ⇒ $m = 2$, $n = 3$</li>
+    <li>$\tilde{X}$ mérete $n\times p = 3\times 2$ (mert $N_2$, így $p=2$)</li>
+    <li>$B$ mérete $2\times 2$ ⇒ $q = 2$</li>
+  </ul>
+  <p>Tehát $\tilde{X}$ egy $3\times 2$-es adatmátrix (3 megfigyelés, 2 ismérv), $A\tilde{X}B$ pedig $2\times 2$-es.</p>
+
+  <h2>A tétel feltételei</h2>
+  <div class="box accent">
+    <strong>Tétel:</strong> $A\tilde{X}B$ normális adatmátrix $\Leftrightarrow$ MINDKÉT feltétel teljesül:
+    <br><br>
+    <strong>(i)</strong> $A\mathbf{1}_n = \alpha\mathbf{1}_m$ valamilyen $\alpha\in\mathbb{R}$, &nbsp;<strong>VAGY</strong>&nbsp; $B^T\mu = \underline{0}$
+    <br><br>
+    <strong>(ii)</strong> $AA^T = \beta I_m$ valamilyen $\beta\in\mathbb{R}$, &nbsp;<strong>VAGY</strong>&nbsp; $B^T\Sigma B = 0$
+  </div>
+
+  <div class="why"><strong>Stratégia:</strong> Mindkét sorban (i és ii) elég ha legalább <em>egyik</em> VAGY-ág teljesül. Ha viszont valamelyik sorban <em>egyik ág sem</em> teljesül, akkor $A\tilde{X}B$ <strong>nem</strong> normális AM. Tehát keresünk egy sort, ahol mindkét feltétel megsérül — és ezzel készen is vagyunk.</div>
+</div>
+
+<div class="step">
+  <div class="step-label">1. lépés — (i) feltétel ellenőrzése</div>
+
+  <h2>(i) első ág: $A\mathbf{1}_n \stackrel{?}{=} \alpha\mathbf{1}_m$</h2>
+  $$A\mathbf{1}_3 = \begin{pmatrix}1 & 2 & 0\\ 3 & 4 & 1\end{pmatrix}\begin{pmatrix}1\\1\\1\end{pmatrix} = \begin{pmatrix}1+2+0\\ 3+4+1\end{pmatrix} = \binom{3}{8}.$$
+  <p>Ez nem $\alpha\mathbf{1}_2 = \alpha\binom{1}{1}$ alakú, mivel $3\neq 8$.</p>
+  <div class="check-row fail">
+    <div class="label">VAGY-ág 1</div>
+    <div class="formula">$A\mathbf{1}_3 = \binom{3}{8} \neq \alpha\mathbf{1}_2$</div>
+    <div class="verdict">✗ nem teljesül</div>
+  </div>
+
+  <h2>(i) második ág: $B^T\mu \stackrel{?}{=} \underline{0}$</h2>
+  $$B^T\mu = \begin{pmatrix}2 & 1\\ 1 & 1\end{pmatrix}\binom{3}{1} = \binom{2\cdot 3 + 1\cdot 1}{1\cdot 3 + 1\cdot 1} = \binom{7}{4}.$$
+  <div class="check-row fail">
+    <div class="label">VAGY-ág 2</div>
+    <div class="formula">$B^T\mu = \binom{7}{4} \neq \underline{0}$</div>
+    <div class="verdict">✗ nem teljesül</div>
+  </div>
+
+  <div class="box red">
+    <strong>(i) feltétel összefoglalva:</strong> Egyik VAGY-ág sem teljesül $\Rightarrow$ az (i) feltétel sérül.
+  </div>
+  <div class="why"><strong>Ez már elég a válaszhoz!</strong> Ha az (i) feltétel sérül, akkor a tétel szerint $A\tilde{X}B$ nem lehet normális AM, függetlenül attól, mi a helyzet (ii)-vel. De a teljesség kedvéért megnézzük (ii)-t is.</div>
+</div>
+
+<div class="step">
+  <div class="step-label">2. lépés — (ii) feltétel ellenőrzése (illusztráció)</div>
+
+  <h2>(ii) első ág: $AA^T \stackrel{?}{=} \beta I_m$</h2>
+  $$AA^T = \begin{pmatrix}1 & 2 & 0\\ 3 & 4 & 1\end{pmatrix}\begin{pmatrix}1 & 3\\ 2 & 4\\ 0 & 1\end{pmatrix} = \begin{pmatrix}1\cdot 1+2\cdot 2+0 & 1\cdot 3+2\cdot 4+0\\ 3\cdot 1+4\cdot 2+1\cdot 0 & 3\cdot 3+4\cdot 4+1\cdot 1\end{pmatrix} = \begin{pmatrix}5 & 11\\ 11 & 26\end{pmatrix}.$$
+  <p>Ez nem $\beta I_2$ alakú (a főátlón nem azonos elemek és van nem-nulla a főátlón kívül).</p>
+  <div class="check-row fail">
+    <div class="label">VAGY-ág 1</div>
+    <div class="formula">$AA^T = \begin{pmatrix}5 & 11\\ 11 & 26\end{pmatrix} \neq \beta I_2$</div>
+    <div class="verdict">✗ nem teljesül</div>
+  </div>
+
+  <h2>(ii) második ág: $B^T\Sigma B \stackrel{?}{=} 0$</h2>
+  <p>Először $\Sigma B$:</p>
+  $$\Sigma B = \begin{pmatrix}4 & 1\\ 1 & 4\end{pmatrix}\begin{pmatrix}2 & 1\\ 1 & 1\end{pmatrix} = \begin{pmatrix}4\cdot 2+1\cdot 1 & 4\cdot 1+1\cdot 1\\ 1\cdot 2+4\cdot 1 & 1\cdot 1+4\cdot 1\end{pmatrix} = \begin{pmatrix}9 & 5\\ 6 & 5\end{pmatrix}.$$
+  <p>Most $B^T(\Sigma B)$:</p>
+  $$B^T\Sigma B = \begin{pmatrix}2 & 1\\ 1 & 1\end{pmatrix}\begin{pmatrix}9 & 5\\ 6 & 5\end{pmatrix} = \begin{pmatrix}18+6 & 10+5\\ 9+6 & 5+5\end{pmatrix} = \begin{pmatrix}24 & 15\\ 15 & 10\end{pmatrix}.$$
+  <div class="check-row fail">
+    <div class="label">VAGY-ág 2</div>
+    <div class="formula">$B^T\Sigma B = \begin{pmatrix}24 & 15\\ 15 & 10\end{pmatrix} \neq 0$</div>
+    <div class="verdict">✗ nem teljesül</div>
+  </div>
+
+  <div class="box red">
+    <strong>(ii) feltétel is sérül.</strong>
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-label">3. lépés — Konklúzió</div>
+  <div class="box red">
+    Mivel (i) feltétel <strong>sérül</strong> (és ráadásul (ii) is), ezért a tétel szerint:
+    $$A\tilde{X}B \text{ NEM normális adatmátrix.}$$
+  </div>
+  <div class="why"><strong>Megjegyzés:</strong> A vizsgán elég lett volna kimutatni hogy az (i) feltétel sérül — onnantól a válasz egyértelmű. Az (ii) ellenőrzése csak illusztráció: itt minden lehetséges helyen elbukik, ami egy elég „durván nem-normális" példa.</div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item active"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="06_std_wishart_karfv.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="08_euklideszi_konkret.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

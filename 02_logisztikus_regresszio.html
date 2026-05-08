@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>02 — Logisztikus regresszió</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0f0f11; --surface:#17171a; --border:#2a2a30; --accent:#c8a96e; --done:#6ec87a; --text:#e8e6e0; --muted:#7a7870; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .step{margin-bottom:44px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    ul,ol{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">02 · 15. Tétel vége / ZV tétel · Logisztikus regresszió</div>
+  <h1>Logisztikus regresszió — <em>modell és likelihood</em></h1>
+  <div class="meta">7 pont &nbsp;·&nbsp; Dóri jegyzet ~59. oldal</div>
+</header>
+
+<main>
+
+<div class="step">
+  <div class="step-label">0. lépés — Probléma és eszközök</div>
+  <h2>Mit kérdez a feladat?</h2>
+  <p>Adott $n$ db megfigyelés, minden megfigyelésnél van egy <strong>bináris kimenetel</strong> $Y_i\in\{0,1\}$ (pl. beteg/egészséges, csődbe megy/nem) és egy <strong>magyarázó változó vektor</strong> $\underline{x}_i\in\mathbb{R}^q$.</p>
+  <p><strong>Cél:</strong> Modellezni $P(Y_i=1)$-et $\underline{x}_i$ függvényében.</p>
+  <div class="why"><strong>Miért nem sima lineáris regresszió?</strong> Ha $P(Y_i=1) = \beta^T\underline{x}_i$ alakot tennénk fel, ez bármilyen valós szám lehetne — akár negatív vagy 1-nél nagyobb is. Valószínűségnek $[0,1]$-ben kell maradni!</div>
+  <p><strong>Megoldás:</strong> Nem $p_i$-t modellezzük lineárisan, hanem annak <strong>logitját</strong>.</p>
+  <div class="box accent">
+    <strong>Mi az a logit?</strong> $\text{logit}(p) = \log\dfrac{p}{1-p}$. Ez a $(0,1)$ intervallumot bijektíven viszi $\mathbb{R}$-re, tehát nyugodtan írhatunk rá lineáris modellt. A $\dfrac{p}{1-p}$ az ún. <em>odds</em> (esélyhányados): pl. $p=0.75$ esetén odds $= 3$, tehát háromszor valószínűbb a bekövetkezés mint a nem-bekövetkezés.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-label">1. lépés — A modell</div>
+  <h2>A logisztikus regresszió modellje</h2>
+  <div class="box accent">
+    $$\text{logit}(p_i) = \log\frac{p_i}{1-p_i} = \beta^T\underline{x}_i,$$
+    ahol $p_i = P(Y_i = 1)$, $\beta\in\mathbb{R}^q$ ismeretlen paramétervektor, $\underline{x}_i\in\mathbb{R}^q$ ismert.
+  </div>
+  <p>Visszarendezve $p_i$-re ($\tfrac{p_i}{1-p_i}=e^{\beta^T\underline{x}_i}$ egyenletet megoldjuk):</p>
+  $$p_i = \frac{e^{\beta^T\underline{x}_i}}{1+e^{\beta^T\underline{x}_i}}, \qquad 1-p_i = \frac{1}{1+e^{\beta^T\underline{x}_i}}.$$
+  <div class="why"><strong>Ellenőrzés:</strong> Ha $\beta^T\underline{x}_i\to+\infty$, akkor $p_i\to 1$. Ha $\to-\infty$, akkor $p_i\to 0$. Pont amit szerettünk volna!</div>
+</div>
+
+<div class="step">
+  <div class="step-label">2–4. lépés — A likelihood függvény</div>
+
+  <h2>2. lépés — Egyetlen tag</h2>
+  <p>Mivel $Y_i\in\{0,1\}$ Bernoulli-változó, a valószínűségét <strong>egy formulában</strong> írjuk:</p>
+  $$P(Y_i = y_i) = p_i^{y_i}(1-p_i)^{1-y_i}.$$
+  <div class="why"><strong>Miért működik ez a trükk?</strong> Ha $y_i=1$: $p_i^1(1-p_i)^0 = p_i$. ✓ &nbsp; Ha $y_i=0$: $p_i^0(1-p_i)^1 = 1-p_i$. ✓ &nbsp; Ez a Bernoulli-eloszlás standard felírása.</div>
+
+  <h2>3. lépés — Teljes likelihood (független megfigyelések szorzata)</h2>
+  <div class="box accent">
+    $$L(\underline{y},\beta) = \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i} = \prod_{i=1}^n\left(\frac{e^{\beta^T\underline{x}_i}}{1+e^{\beta^T\underline{x}_i}}\right)^{y_i}\!\!\left(\frac{1}{1+e^{\beta^T\underline{x}_i}}\right)^{1-y_i}.$$
+  </div>
+
+  <h2>4. lépés — Loglikelihood (ezt deriváljuk a becsléshez)</h2>
+  <p>A $\log$ a szorzatból összeget csinál — könnyebb kezelni:</p>
+  $$\ell(\beta) = \log L = \sum_{i=1}^n\left[y_i\log p_i + (1-y_i)\log(1-p_i)\right].$$
+  <p>Behelyettesítve $\log p_i = \beta^T\underline{x}_i - \log(1+e^{\beta^T\underline{x}_i})$ és $\log(1-p_i) = -\log(1+e^{\beta^T\underline{x}_i})$:</p>
+  <div class="box green">
+    $$\ell(\beta) = \sum_{i=1}^n y_i\beta^T\underline{x}_i \;-\; \sum_{i=1}^n\log\!\left(1+e^{\beta^T\underline{x}_i}\right).$$
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-label">5. lépés — Likelihood-egyenlet</div>
+  <h2>Deriválás $\beta_j$ szerint</h2>
+  <p>A maximumot keressük, tehát nullává tesszük a parciális deriváltakat. A $\beta$ paramétervektor <strong>egyetlen $j$-edik komponense</strong> szerint deriválunk (ez egy skalár derivált, nem gradiens) — ezt elvégezzük minden $j$-re, így kapunk $q$ db egyenletet.</p>
+  <p>A loglikelihood két részből áll — deriváljuk külön-külön:</p>
+
+  <p><strong>1. rész:</strong> $\dfrac{\partial}{\partial\beta_j}\displaystyle\sum_i y_i\beta^T\underline{x}_i$</p>
+  <p>Mivel $\beta^T\underline{x}_i = \sum_k \beta_k x_{i,k}$, ez $\beta_j$ szerint lineáris, és:</p>
+  $$\frac{\partial}{\partial\beta_j}\sum_i y_i\beta^T\underline{x}_i = \sum_i y_i\,x_{i,j}.$$
+
+  <p><strong>2. rész:</strong> $\dfrac{\partial}{\partial\beta_j}\displaystyle\sum_i\log\!\left(1+e^{\beta^T\underline{x}_i}\right)$</p>
+  <p>Láncszabállyal: $\log(1+e^u)$ deriváltja $u$ szerint $\dfrac{e^u}{1+e^u}$, és $u = \beta^T\underline{x}_i$ deriváltja $\beta_j$ szerint $x_{i,j}$. Tehát:</p>
+  $$\frac{\partial}{\partial\beta_j}\log\!\left(1+e^{\beta^T\underline{x}_i}\right) = \frac{e^{\beta^T\underline{x}_i}}{1+e^{\beta^T\underline{x}_i}}\cdot x_{i,j} = p_i\,x_{i,j}.$$
+  <div class="why"><strong>Miért épp $p_i$?</strong> Mert $p_i = \dfrac{e^{\beta^T\underline{x}_i}}{1+e^{\beta^T\underline{x}_i}}$ — pontosan az 1. lépés modellje. A derivált „véletlenül" pont a modellezett valószínűséget adja.</div>
+
+  <p><strong>Összerakva</strong> (1. rész $-$ 2. rész $= 0$):</p>
+  <div class="box green">
+    $$\frac{\partial\ell}{\partial\beta_j} = \sum_{i=1}^n y_i\,x_{i,j} - \sum_{i=1}^n p_i\,x_{i,j} = \sum_{i=1}^n(y_i - p_i)\,x_{i,j} = 0.$$
+  </div>
+  <p>Ez minden $j = 0,1,\dots,q-1$ koordinátára egy-egy egyenlet — összesen $q$ db egyenlet $q$ db ismeretlenre ($\beta_0,\dots,\beta_{q-1}$). <strong>Vektorosan:</strong> $X^T(\underline{y} - \underline{p}) = \underline{0}$, ahol $X$ a designmátrix.</p>
+  <div class="why"><strong>Fontos megjegyzés:</strong> Ez a rendszer <em>nem oldható meg zárt alakban</em>, mert $p_i$ maga is $\beta$-tól függ (nemlineárisan). A $\hat{\beta}$ ML-becslést <strong>iteratív</strong> módszerekkel (Newton–Raphson, IRLS) számolják. A vizsgán erre elég utalni.</div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item active"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="01_euklideszi_tavmátrix.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="03_wilks_lambda.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

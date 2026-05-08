@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>08 — Euklideszi távolságmátrix-e?</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--red:#c86e6e;--green:#6ec87a;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .step{margin-bottom:44px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .box.red{border-color:rgba(200,110,110,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    ul,ol{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    .check-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:12px 16px;border:1px solid var(--border);border-radius:6px;margin:10px 0;background:rgba(255,255,255,0.02);}
+    .check-row.pass{border-color:rgba(110,200,122,0.3);}
+    .check-row.fail{border-color:rgba(200,110,110,0.3);}
+    .check-row .label{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+    .check-row .verdict{font-family:'DM Mono',monospace;font-size:12px;}
+    .check-row.pass .verdict{color:var(--green);}
+    .check-row.fail .verdict{color:var(--red);}
+    .check-row .formula{font-size:14px;}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">08 · 14. Tétel · Többdimenziós skálázás</div>
+  <h1>Euklideszi távolságmátrix-e? — <em>3×3-as konkrét példa</em></h1>
+  <div class="meta">4 pont &nbsp;·&nbsp; $D = \begin{pmatrix}0&4&2\\4&0&3\\2&3&0\end{pmatrix}$ &nbsp;·&nbsp; $B = HAH \geq 0$ ellenőrzése</div>
+</header>
+
+<main>
+
+<div class="step">
+  <div class="step-label">0. lépés — Probléma és eszközök</div>
+
+  <h2>Mit kérdez?</h2>
+  <p>Adott a $D = \begin{pmatrix}0&4&2\\4&0&3\\2&3&0\end{pmatrix}$ mátrix. Eldöntendő: <strong>euklideszi távolságmátrix-e</strong>?</p>
+  <p>Azaz: létezik-e olyan $\underline{x}_1,\underline{x}_2,\underline{x}_3$ pont valamilyen $\mathbb{R}^p$-ben, hogy páronkénti euklideszi távolságuk pont 4, 2 és 3 legyen?</p>
+
+  <div class="box accent">
+    <strong>Tétel (01-es feladatból):</strong> $D$ pontosan akkor euklideszi, ha
+    $a_{r,s} = -\tfrac{1}{2}d_{r,s}^2$, $A = (a_{r,s})$, $H = I_n - \tfrac{1}{n}\mathbf{1}_n\mathbf{1}_n^T$, és
+    $$B = HAH \geq 0 \text{ (PSD)}.$$
+  </div>
+
+  <h2>Két stratégia 3 pontra</h2>
+  <ul>
+    <li><strong>Gyors („háromszög-trükk"):</strong> 3 pont mindig kirakható a síkban, ha a háromszög-egyenlőtlenség teljesül. Tehát ha az oldalak ($d_{12},d_{13},d_{23}$) háromszöget alkotnak, akkor euklideszi.</li>
+    <li><strong>Formális (általánosan érvényes):</strong> Számítsuk ki $B = HAH$-t és nézzük meg PSD-e. Ezt fogjuk csinálni.</li>
+  </ul>
+  <div class="why"><strong>Miért érdemes a formálisat csinálni?</strong> Mert vizsgán pontot ad, és a tétel kimondása is része lehet a 8 pontos beugró #1-nek. A háromszög-trükköt csak ellenőrzésre használjuk.</div>
+</div>
+
+<div class="step">
+  <div class="step-label">1. lépés — Háromszög-egyenlőtlenség (gyors ellenőrzés)</div>
+
+  <p>$d_{12}=4$, $d_{13}=2$, $d_{23}=3$. A háromszög-egyenlőtlenségek:</p>
+  <div class="check-row pass">
+    <div class="label">$d_{12} \leq d_{13}+d_{23}$</div>
+    <div class="formula">$4 \leq 2+3 = 5$</div>
+    <div class="verdict">✓</div>
+  </div>
+  <div class="check-row pass">
+    <div class="label">$d_{13} \leq d_{12}+d_{23}$</div>
+    <div class="formula">$2 \leq 4+3 = 7$</div>
+    <div class="verdict">✓</div>
+  </div>
+  <div class="check-row pass">
+    <div class="label">$d_{23} \leq d_{12}+d_{13}$</div>
+    <div class="formula">$3 \leq 4+2 = 6$</div>
+    <div class="verdict">✓</div>
+  </div>
+  <p><strong>Mind teljesül</strong> — tehát a 4, 2, 3 oldalú háromszög megrajzolható a síkban, így várhatóan $D$ euklideszi. De ezt formálisan is leellenőrizzük a $B \geq 0$ teszttel.</p>
+</div>
+
+<div class="step">
+  <div class="step-label">2. lépés — A $A$ mátrix kiszámítása</div>
+
+  <p>A „négyzetes" mátrix (elemenként négyzeten):</p>
+  $$D^{(2)} = \begin{pmatrix}0 & 16 & 4\\ 16 & 0 & 9\\ 4 & 9 & 0\end{pmatrix}.$$
+  <p>Ezzel:</p>
+  $$A = -\tfrac{1}{2}D^{(2)} = \begin{pmatrix}0 & -8 & -2\\ -8 & 0 & -\tfrac{9}{2}\\ -2 & -\tfrac{9}{2} & 0\end{pmatrix}.$$
+</div>
+
+<div class="step">
+  <div class="step-label">3. lépés — Sor-, oszlop- és teljes átlagok</div>
+
+  <p>Mivel $A$ szimmetrikus, sor- és oszlopátlagok megegyeznek. Számoljuk:</p>
+  <ul>
+    <li>$\bar{a}_{1\cdot} = \dfrac{0 + (-8) + (-2)}{3} = -\dfrac{10}{3}$</li>
+    <li>$\bar{a}_{2\cdot} = \dfrac{(-8) + 0 + (-9/2)}{3} = -\dfrac{25}{6}$</li>
+    <li>$\bar{a}_{3\cdot} = \dfrac{(-2) + (-9/2) + 0}{3} = -\dfrac{13}{6}$</li>
+  </ul>
+  <p>Teljes átlag:</p>
+  $$\bar{a}_{\cdot\cdot} = \dfrac{1}{3}\big(\bar{a}_{1\cdot}+\bar{a}_{2\cdot}+\bar{a}_{3\cdot}\big) = \dfrac{1}{3}\left(-\tfrac{10}{3}-\tfrac{25}{6}-\tfrac{13}{6}\right) = \dfrac{1}{3}\cdot\left(-\tfrac{20+25+13}{6}\right) = -\dfrac{58}{18} = -\dfrac{29}{9}.$$
+</div>
+
+<div class="step">
+  <div class="step-label">4. lépés — A $B$ mátrix kiszámítása</div>
+
+  <p>Az 1. feladatban beláttuk: $B_{r,s} = a_{r,s} - \bar{a}_{r\cdot} - \bar{a}_{\cdot s} + \bar{a}_{\cdot\cdot}$.</p>
+  <p>Számoljunk minden elemet közös nevezőre (LCD = 18) hozva. Pl.:</p>
+  $$B_{1,1} = 0 - \big(-\tfrac{10}{3}\big) - \big(-\tfrac{10}{3}\big) + \big(-\tfrac{29}{9}\big) = \tfrac{60}{9} - \tfrac{29}{9} = \tfrac{31}{9} = \tfrac{62}{18}.$$
+  <p>Hasonlóan:</p>
+  <ul>
+    <li>$B_{2,2} = 0 - \big(-\tfrac{25}{6}\big)\cdot 2 + \big(-\tfrac{29}{9}\big) = \tfrac{25}{3} - \tfrac{29}{9} = \tfrac{75-29}{9} = \tfrac{46}{9} = \tfrac{92}{18}$</li>
+    <li>$B_{3,3} = 0 - \big(-\tfrac{13}{6}\big)\cdot 2 + \big(-\tfrac{29}{9}\big) = \tfrac{13}{3} - \tfrac{29}{9} = \tfrac{10}{9} = \tfrac{20}{18}$</li>
+    <li>$B_{1,2} = -8 + \tfrac{10}{3} + \tfrac{25}{6} - \tfrac{29}{9} = \tfrac{-144+60+75-58}{18} = -\tfrac{67}{18}$</li>
+    <li>$B_{1,3} = -2 + \tfrac{10}{3} + \tfrac{13}{6} - \tfrac{29}{9} = \tfrac{-36+60+39-58}{18} = \tfrac{5}{18}$</li>
+    <li>$B_{2,3} = -\tfrac{9}{2} + \tfrac{25}{6} + \tfrac{13}{6} - \tfrac{29}{9} = \tfrac{-81+75+39-58}{18} = -\tfrac{25}{18}$</li>
+  </ul>
+  <div class="box accent">
+    $$B = \frac{1}{18}\begin{pmatrix}62 & -67 & 5\\ -67 & 92 & -25\\ 5 & -25 & 20\end{pmatrix}.$$
+  </div>
+
+  <h2>Ellenőrzés: sorösszegek 0 kell legyen</h2>
+  <p>Mivel $H\mathbf{1}_n = 0$, ezért $B\mathbf{1}_n = HAH\mathbf{1}_n = 0$. Tehát $B$ minden sorának összege 0.</p>
+  <ul>
+    <li>1. sor: $62 - 67 + 5 = 0$ ✓</li>
+    <li>2. sor: $-67 + 92 - 25 = 0$ ✓</li>
+    <li>3. sor: $5 - 25 + 20 = 0$ ✓</li>
+  </ul>
+  <p>(Számítási hibákat ezzel ki tudjuk szűrni.)</p>
+</div>
+
+<div class="step">
+  <div class="step-label">5. lépés — $B \geq 0$ ellenőrzése (PSD-teszt)</div>
+
+  <h2>Általános gondolat</h2>
+  <p>Mivel $B\mathbf{1}_3 = 0$, $\mathbf{1}_3$ sajátvektora $B$-nek $\lambda_1 = 0$ sajátértékkel. Tehát $B$ mindig <strong>szinguláris</strong> ($\det B = 0$), és van legalább egy 0 sajátértéke. A kérdés: a másik két sajátérték nemnegatív-e?</p>
+
+  <h2>Trükk: nyom és „2-szintű" elemi szimmetrikus polinom</h2>
+  <p>A három sajátérték $\lambda_1=0,\lambda_2,\lambda_3$. Ekkor:</p>
+  <ul>
+    <li>$\lambda_2 + \lambda_3 = \text{tr}(B)$ (mert $\lambda_1=0$)</li>
+    <li>$\lambda_2 \lambda_3 = \sum_{i&lt;j}\det B^{(i,j)}$ (a $2\times 2$-es <em>fő-aldetermináns-összeg</em>) — szintén $\lambda_1=0$ miatt egyszerűsödik így</li>
+  </ul>
+  <p>Mindkét sajátérték nemnegatív $\Leftrightarrow$ az összegük és szorzatuk is nemnegatív.</p>
+
+  <h2>$\text{tr}(B)$</h2>
+  $$\text{tr}(B) = \dfrac{62+92+20}{18} = \dfrac{174}{18} = \dfrac{29}{3} \approx 9.67 > 0.\quad\checkmark$$
+
+  <h2>$2\times 2$-es fő-aldeterminánsok</h2>
+  <p>Számoljuk a $\tilde{B} = 18B$ főminorait (egyszerűbb), majd $1/18^2$-tel skálázzuk vissza.</p>
+  <ul>
+    <li>$\tilde{B}^{(1,1)} = \det\begin{pmatrix}92 & -25\\ -25 & 20\end{pmatrix} = 1840 - 625 = 1215$</li>
+    <li>$\tilde{B}^{(2,2)} = \det\begin{pmatrix}62 & 5\\ 5 & 20\end{pmatrix} = 1240 - 25 = 1215$</li>
+    <li>$\tilde{B}^{(3,3)} = \det\begin{pmatrix}62 & -67\\ -67 & 92\end{pmatrix} = 5704 - 4489 = 1215$</li>
+  </ul>
+  <p>Mind $1215$ — szép, szimmetrikus eset! Az összeg: $3\cdot 1215 = 3645$. Visszaskálázva $B$-re:</p>
+  $$\lambda_2\lambda_3 = \dfrac{3645}{18^2} = \dfrac{3645}{324} = \dfrac{45}{4} = 11.25 > 0.\quad\checkmark$$
+
+  <div class="box green">
+    <strong>Sajátértékek:</strong> $\lambda_1=0$, és $\lambda_2,\lambda_3$ olyanok, hogy
+    $$\lambda_2+\lambda_3 = \tfrac{29}{3}>0, \quad \lambda_2\lambda_3 = \tfrac{45}{4}>0.$$
+    Ebből pozitív-pozitív kell legyen mindkettő (mert ha egyik negatív, a szorzat is az lenne). Tehát $B$ <strong>minden sajátértéke nemnegatív</strong>, így $B \geq 0$.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-label">6. lépés — Konklúzió</div>
+  <div class="box green">
+    A megadott $D = \begin{pmatrix}0&4&2\\4&0&3\\2&3&0\end{pmatrix}$ <strong>euklideszi távolságmátrix</strong>.
+  </div>
+  <div class="why"><strong>Másodlagos ellenőrzés (intuíció):</strong> A 4, 2, 3 oldalú háromszög egy nem-elfajuló háromszög a síkban (mind a 3 háromszög-egyenlőtlenség szigorúan teljesül), tehát 3 pont kirakható $\mathbb{R}^2$-ben. Pl. $\underline{x}_1=(0,0)$, $\underline{x}_2=(4,0)$, és $\underline{x}_3$ a $|x_3-x_1|=2$, $|x_3-x_2|=3$ feltételeknek megfelelően a síkban valahol. Ez konkrét realizáció — az $\mathbb{R}^2$ dimenzió pont megfelel a $B$ rangjával ($r(B) = 2$, mert egy 0 sajátértéke van).</div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item active"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="07_AXB_normalis_AM.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="09_sklar_tetel.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

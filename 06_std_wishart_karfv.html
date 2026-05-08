@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>06 — Standard Wishart karakterisztikus függvénye</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .step{margin-bottom:44px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    ul,ol{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">06 · 4. Tétel · Wishart mátrixok</div>
+  <h1>Standard Wishart eloszlás <em>karakterisztikus függvénye</em></h1>
+  <div class="meta">7 pont &nbsp;·&nbsp; (levezetéssel együtt) &nbsp;·&nbsp; Dóri jegyzet ~15. oldal</div>
+</header>
+
+<main>
+
+<div class="step">
+  <div class="step-label">0. lépés — Probléma és eszközök</div>
+
+  <h2>Mit kérdez a feladat?</h2>
+  <p>Adott $M\sim W_p(I_p, n)$ standard Wishart eloszlású $p\times p$-s véletlen mátrix. Határozzuk meg a karakterisztikus függvényét.</p>
+
+  <div class="box accent">
+    <strong>Standard Wishart definíció:</strong> $M\sim W_p(I_p,n)$, ha $M = \tilde{X}^T\tilde{X}$, ahol $\tilde{X}$ egy $n\times p$-s mátrix, melynek elemei <strong>független $N(0,1)$</strong> változók. Egyenértékűen: $M = \sum_{k=1}^n \underline{\xi}_k\underline{\xi}_k^T$, ahol $\underline{\xi}_k\sim N_p(0,I_p)$ függetlenek.
+  </div>
+
+  <div class="box accent">
+    <strong>Mátrix-értékű változó karakterisztikus függvénye:</strong> $M$ szimmetrikus véletlen mátrix esetén
+    $$\varphi_M(A) = E\big(e^{i\,\text{tr}(AM)}\big),$$
+    ahol $A:p\times p$ szimmetrikus mátrix.
+  </div>
+
+  <div class="why"><strong>Miért pont $\text{tr}(AM)$?</strong> Mivel $M$ és $A$ szimmetrikusak, a $\text{tr}(AM)=\sum_{k}A_{kk}M_{kk}+2\sum_{k&lt;j}A_{kj}M_{kj}$ alakú szumma <em>minden lényeges</em> elemét lineárisan kombinálja $M$-nek (a főátló és afölötti rész — lentinél a szimmetria miatt nincs új info). Így $\text{tr}(AM)$ futtatása minden $A$-ra meghatározza $M$ eloszlását.</div>
+
+  <h2>A tétel kimondása</h2>
+  <div class="box green">
+    $$\varphi_M(A) = |I_p - 2iA|^{-n/2}.$$
+  </div>
+
+  <h2>Kakukkfű-lista</h2>
+  <ul>
+    <li><strong>Spektrálfelbontás szimmetrikus mátrixra:</strong> $A = C\Lambda C^T$, ahol $C$ ortogonális ($CC^T = C^TC = I_p$), $\Lambda$ diagonális.</li>
+    <li><strong>Nyom ciklikus tulajdonsága:</strong> $\text{tr}(XYZ)=\text{tr}(YZX)=\text{tr}(ZXY)$.</li>
+    <li><strong>Ortogonális transzformáció normálist normálisba visz:</strong> Ha $\tilde{X}$ csupa független $N(0,1)$-ből áll és $C$ ortogonális, akkor $\tilde{X}C$ is csupa független $N(0,1)$-ből áll. (Mert ortogonális = forgatás/tükrözés, nem nyújt és megőrzi a függetlenséget.)</li>
+    <li><strong>$\chi^2_n$ karakterisztikus függvénye:</strong> $E(e^{it\,Y}) = (1-2it)^{-n/2}$, ahol $Y\sim\chi^2_n$.</li>
+    <li><strong>$N(0,1)$ négyzete $\chi^2_1$:</strong> Ha $\xi\sim N(0,1)$, akkor $\xi^2\sim\chi^2_1$. És $n$ db független ilyen összege $\chi^2_n$.</li>
+    <li><strong>Determináns diagonális mátrixra:</strong> $|\Lambda| = \prod_k\lambda_k$, és ortogonális transzformáció megőrzi a determinánst: $|C\Lambda C^T| = |\Lambda|$.</li>
+  </ul>
+</div>
+
+<div class="step">
+  <div class="step-label">1–2. lépés — Visszavezetés diagonális esetre</div>
+
+  <h2>1. lépés — $A$ spektrálfelbontása</h2>
+  <p>$A$ szimmetrikus, így létezik $A = C\Lambda C^T$ alak, ahol $C$ ortogonális, $\Lambda = \text{diag}(\lambda_1,\dots,\lambda_p)$.</p>
+
+  <h2>2. lépés — $\text{tr}(AM)$ átalakítása</h2>
+  $$\text{tr}(AM) = \text{tr}(C\Lambda C^T\,\tilde{X}^T\tilde{X}).$$
+  <p>Használjuk a nyom ciklikusságát ($\text{tr}(XYZ)=\text{tr}(YZX)$):</p>
+  $$\text{tr}(C\Lambda C^T\tilde{X}^T\tilde{X}) = \text{tr}(\Lambda C^T\tilde{X}^T\tilde{X}C) = \text{tr}\big(\Lambda\,(\tilde{X}C)^T(\tilde{X}C)\big).$$
+
+  <h2>3. lépés — $\tilde{X}C$ ugyanolyan eloszlású, mint $\tilde{X}$</h2>
+  <p>$\tilde{X}$ csupa független $N(0,1)$ elemekből áll, $C$ ortogonális ($p\times p$). Mátrixszorzás után $\tilde{X}C$ is $n\times p$-s, és <strong>elemei is csupa független $N(0,1)$</strong>.</p>
+  <div class="why"><strong>Miért?</strong> Egy ortogonális transzformáció független standard normálisokat független standard normálisokba visz át. Sorról sorra: $\tilde{X}$ minden sora $N_p(0,I_p)$ vektor, $\tilde{X}C$ adott sora ennek ortogonális transzformáltja, ami szintén $N_p(0,CC^T)=N_p(0,I_p)$.</div>
+
+  <p>Tehát $(\tilde{X}C)^T(\tilde{X}C)$ ugyanolyan eloszlású, mint $\tilde{X}^T\tilde{X} = M$.</p>
+
+  <div class="box accent">
+    <strong>Következmény:</strong> Feltehetjük, hogy $A$ már eleve diagonális ($A=\Lambda$).
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-label">4–5. lépés — Diagonális A esetén</div>
+
+  <h2>4. lépés — $\text{tr}(\Lambda M)$ kifejtése</h2>
+  $$\text{tr}(\Lambda M) = \sum_{k=1}^p \lambda_k\, M_{k,k},$$
+  <p>ahol $M_{k,k}$ az $M$ mátrix $k$-adik főátló-eleme.</p>
+
+  <h2>5. lépés — $M_{k,k}$ eloszlása és függetlensége</h2>
+  <p>Mivel $M = \tilde{X}^T\tilde{X}$:</p>
+  $$M_{k,k} = \sum_{j=1}^n \tilde{X}_{j,k}^2,$$
+  <p>azaz $M_{k,k}$ a $\tilde{X}$ <strong>$k$-adik oszlopa</strong> elemeinek négyzetösszege. Mivel ezek független $N(0,1)$-ek, ezért <strong>$M_{k,k}\sim\chi^2_n$</strong>.</p>
+  <div class="why"><strong>Függetlenség különböző $k$-kra:</strong> $M_{k,k}$ csak a $k$-adik oszlopot használja, $M_{k',k'}$ pedig csak a $k'$-iket. Mivel $\tilde{X}$ minden eleme független, így $M_{1,1},M_{2,2},\dots,M_{p,p}$ <strong>függetlenek</strong>.</div>
+</div>
+
+<div class="step">
+  <div class="step-label">6–7. lépés — A szorzat felírása</div>
+
+  <h2>6. lépés — Karakterisztikus függvény mint szorzat</h2>
+  $$\varphi_M(A) = E\big(e^{i\,\text{tr}(\Lambda M)}\big) = E\Big(e^{i\sum_{k}\lambda_k M_{k,k}}\Big) = \prod_{k=1}^p E\big(e^{i\lambda_k M_{k,k}}\big).$$
+  <div class="why"><strong>Miért lett szorzat?</strong> Független változók exponenciáljainak várható értéke a várható értékek szorzata: $E(e^{X+Y})=E(e^X)E(e^Y)$ ha $X\perp Y$. Itt $\lambda_k M_{k,k}$-k függetlenek (5. lépés).</div>
+
+  <h2>7. lépés — $\chi^2_n$ karakterisztikus függvénye</h2>
+  <p>Egyetlen tag: $E(e^{i\lambda_k M_{k,k}}) = \big(\varphi_{\xi^2}(\lambda_k)\big)^n$, ahol $\xi\sim N(0,1)$.</p>
+  <p><strong>Számoljuk $\varphi_{\xi^2}(t) = E(e^{it\xi^2})$-t:</strong></p>
+  $$E(e^{it\xi^2}) = \int_{-\infty}^{\infty}\frac{1}{\sqrt{2\pi}}\,e^{its^2}\,e^{-s^2/2}\,ds = \int_{-\infty}^{\infty}\frac{1}{\sqrt{2\pi}}\,e^{-s^2(1-2it)/2}\,ds.$$
+  <p>Ez Gauss-integrál „$\sigma^2 = \tfrac{1}{1-2it}$" szórással. Általánosan:</p>
+  $$\int_{-\infty}^{\infty}\frac{1}{\sqrt{2\pi}}\,e^{-s^2/(2\sigma^2)}\,ds = \sigma$$
+  <p>(mert $\frac{1}{\sqrt{2\pi}\sigma}\int e^{-s^2/(2\sigma^2)}ds=1$, csak nincs az $1/\sigma$ szorzónk). Tehát:</p>
+  $$\varphi_{\xi^2}(t) = \frac{1}{\sqrt{1-2it}} = (1-2it)^{-1/2}.$$
+  <p>Innen $\chi^2_n = \xi_1^2+\dots+\xi_n^2$ karakterisztikus függvénye (független tagok karfv-szorzata):</p>
+  $$\varphi_{\chi^2_n}(t) = (1-2it)^{-n/2}.$$
+</div>
+
+<div class="step">
+  <div class="step-label">8. lépés — Összerakjuk a végeredményt</div>
+
+  <p>A 6. és 7. lépés alapján:</p>
+  $$\varphi_M(A) = \prod_{k=1}^p (1-2i\lambda_k)^{-n/2} = \Big(\prod_{k=1}^p(1-2i\lambda_k)\Big)^{-n/2}.$$
+  <p>A szorzat éppen $|I_p - 2i\Lambda|$ (diagonális mátrix determinánsa = főátló elemeinek szorzata):</p>
+  $$\prod_{k=1}^p(1-2i\lambda_k) = |I_p - 2i\Lambda|.$$
+  <p>Visszatérve az általános esetre ($A = C\Lambda C^T$): mivel $C$ ortogonális, $|C(\cdot)C^T| = |\cdot|$, tehát:</p>
+  $$|I_p - 2i\Lambda| = |C(I_p-2i\Lambda)C^T| = |I_p - 2iC\Lambda C^T| = |I_p - 2iA|.$$
+
+  <div class="box green">
+    $$\Rightarrow\quad \varphi_M(A) = |I_p - 2iA|^{-n/2}. \qquad\blacksquare$$
+  </div>
+
+  <div class="why"><strong>Bónusz — általános Wishart:</strong> Ha $M\sim W_p(\Sigma,n)$ (nem feltétlenül standard), akkor a $\Sigma^{-1/2}M\Sigma^{-1/2}\sim W_p(I_p,n)$ átírással kapható: $\varphi_M(A) = |I_p - 2iA\Sigma|^{-n/2}$.</div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item active"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="05_normalis_korr_tetele.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="07_AXB_normalis_AM.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

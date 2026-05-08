@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>05 — Normális korreláció tétele</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .step{margin-bottom:44px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    ul,ol{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">05 · 1. Tétel · Többdimenziós normális eloszlás</div>
+  <h1>Normális <em>korreláció tétele</em> — kimondás és levezetés</h1>
+  <div class="meta">8 pont &nbsp;·&nbsp; (felteheti, hogy „létezik az inverz") &nbsp;·&nbsp; Dóri jegyzet ~4–5. oldal</div>
+</header>
+
+<main>
+
+<div class="step">
+  <div class="step-label">0. lépés — Probléma és eszközök</div>
+
+  <h2>Mit mond ki a tétel szemléletesen?</h2>
+  <p>Adott két <strong>együttesen normális</strong> valószínűségi vektorváltozó $\underline{\xi}$ ($p$-dim) és $\underline{\eta}$ ($q$-dim). Tegyük fel, hogy <strong>megfigyeljük</strong> $\underline{\eta}$-t (pl. valamilyen mérés eredménye), és szeretnénk megbecsülni $\underline{\xi}$-t. A normális korreláció tétele azt mondja meg:</p>
+  <ul>
+    <li>Mi <strong>$\underline{\xi}$ feltételes várható értéke</strong> $\underline{\eta}$-ra nézve (azaz a legjobb becslés alapja)</li>
+    <li>Mi <strong>$\underline{\xi}$ feltételes szórása/kovarianciamátrixa</strong> $\underline{\eta}$-ra nézve (a becslés bizonytalansága)</li>
+  </ul>
+  <div class="why"><strong>Miért fontos?</strong> Mert a normális esetben a feltételes VÉ <em>lineáris</em> függvénye a feltételnek (ezért könnyen számolható), és a feltételes variancia <em>nem függ a feltétel értékétől</em> (homoszkedasztikus).</div>
+
+  <h2>Setup és jelölések</h2>
+  <p>$\binom{\underline{\xi}}{\underline{\eta}}$ együttesen normális, $(p+q)$-dimenziós:</p>
+  $$E\binom{\underline{\xi}}{\underline{\eta}} = \binom{\underline{\mu}_1}{\underline{\mu}_2}, \quad V\binom{\underline{\xi}}{\underline{\eta}} = \begin{pmatrix}\Sigma_{11} & \Sigma_{12}\\ \Sigma_{21} & \Sigma_{22}\end{pmatrix}, \quad \Sigma_{21}=\Sigma_{12}^T.$$
+  <p>Feltevés: $\Sigma_{22} > 0$ (PD, létezik az inverze).</p>
+
+  <h2>A tétel kimondása</h2>
+  <div class="box green">
+    <strong>a) rész — feltételes várható érték:</strong>
+    $$E(\underline{\xi}\mid\underline{\eta}) = \underline{\mu}_1 + \Sigma_{12}\Sigma_{22}^{-1}(\underline{\eta} - \underline{\mu}_2).$$
+    <br>
+    <strong>b) rész — feltételes kovarianciamátrix</strong> (ha $\Sigma>0$):
+    $$V(\underline{\xi}\mid\underline{\eta}) = \Sigma_{11} - \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}.$$
+  </div>
+
+  <h2>Kakukkfű-lista (használt eszközök)</h2>
+  <ul>
+    <li><strong>Lineáris transzformáció normalitása:</strong> Ha $\binom{\underline{\xi}}{\underline{\eta}}$ együttesen normális, akkor bármely lineáris kombinációjuk is normális (és együttesen is normálisak).</li>
+    <li><strong>Korrelálatlanság ⇔ függetlenség normális esetben:</strong> Ha $\underline{\zeta}, \underline{\eta}$ <em>együttesen</em> normálisak és $\text{cov}(\underline{\zeta},\underline{\eta})=0$, akkor függetlenek. (Sima korrelálatlanság általában nem implikál függetlenséget, de normális esetben igen.)</li>
+    <li><strong>Kovariancia tulajdonságok:</strong> $\text{cov}(\underline{\xi},\underline{\eta}) = E(\underline{\xi}\,\underline{\eta}^T)-E(\underline{\xi})E(\underline{\eta})^T$, lineáris mindkét változóban, $\text{cov}(A\underline{\xi},B\underline{\eta}) = A\,\text{cov}(\underline{\xi},\underline{\eta})\,B^T$.</li>
+    <li><strong>Variancia transzformáció:</strong> $V(A\underline{\xi}+\underline{b}) = AV(\underline{\xi})A^T$.</li>
+    <li><strong>Függetlenség és feltételes VÉ:</strong> Ha $\underline{\zeta}\perp\underline{\eta}$, akkor $E(\underline{\zeta}\mid\underline{\eta}) = E(\underline{\zeta})$ és $V(\underline{\zeta}\mid\underline{\eta}) = V(\underline{\zeta})$.</li>
+  </ul>
+</div>
+
+<div class="step">
+  <div class="step-label">A bizonyítás központi ötlete</div>
+  <p>Definiálunk egy új változót $\underline{\zeta}$-t úgy, hogy az <strong>független legyen</strong> $\underline{\eta}$-tól, ÉS úgy, hogy $\underline{\xi} = \underline{\zeta} + (\text{valami}\;\underline{\eta}\text{-tól függő rész})$. Ekkor a feltételes várható érték már egyszerűen kiszámolható.</p>
+  <div class="box accent">
+    Bevezetjük: $\underline{\zeta} := \underline{\xi} - \underline{\mu}_1 - \Sigma_{12}\Sigma_{22}^{-1}(\underline{\eta} - \underline{\mu}_2).$
+  </div>
+  <div class="why"><strong>Miért pont ez az alak?</strong> Ezt később pontosan azért kapjuk vissza, mert ez a definíció biztosítja, hogy $\underline{\zeta}\perp\underline{\eta}$. Az $A := \Sigma_{12}\Sigma_{22}^{-1}$ mátrix az ún. <em>regressziós együttható mátrix</em> $\underline{\xi}$-nek $\underline{\eta}$-ra.</div>
+</div>
+
+<div class="step">
+  <div class="step-label">1–4. lépés — Bizonyítjuk, hogy ζ ⊥ η</div>
+
+  <h2>1. lépés — $\underline{\zeta}$ és $\underline{\eta}$ együttesen normálisak</h2>
+  <p>$\underline{\zeta}$ a $(\underline{\xi},\underline{\eta})$ vektor lineáris függvénye (konstanson kívül), és $\underline{\eta}$ szintén. Mivel $\binom{\underline{\xi}}{\underline{\eta}}$ együttesen normális, ezért $\binom{\underline{\zeta}}{\underline{\eta}}$ is együttesen normális.</p>
+
+  <h2>2. lépés — Számítsuk ki $\text{cov}(\underline{\zeta},\underline{\eta})$-t</h2>
+  $$\text{cov}(\underline{\zeta},\underline{\eta}) = \text{cov}\big(\underline{\xi}-\underline{\mu}_1-\Sigma_{12}\Sigma_{22}^{-1}(\underline{\eta}-\underline{\mu}_2),\;\underline{\eta}\big).$$
+  <p>Bontjuk fel a kovariancia linearitása szerint:</p>
+  <ul>
+    <li>$\text{cov}(\underline{\xi},\underline{\eta}) = \Sigma_{12}$</li>
+    <li>$\text{cov}(\underline{\mu}_1,\underline{\eta}) = 0$ (konstans)</li>
+    <li>$\text{cov}\big(\Sigma_{12}\Sigma_{22}^{-1}(\underline{\eta}-\underline{\mu}_2),\,\underline{\eta}\big) = \Sigma_{12}\Sigma_{22}^{-1}\,\text{cov}(\underline{\eta},\underline{\eta}) = \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{22} = \Sigma_{12}$</li>
+  </ul>
+  $$\Rightarrow\quad \text{cov}(\underline{\zeta},\underline{\eta}) = \Sigma_{12} - 0 - \Sigma_{12} = 0.$$
+
+  <h2>3. lépés — Korrelálatlan + együtt normális ⇒ független</h2>
+  <p>Mivel $\binom{\underline{\zeta}}{\underline{\eta}}$ együttesen normális (1. lépés) és kovarianciájuk 0 (2. lépés), ezért:</p>
+  <div class="box accent">
+    $\underline{\zeta} \perp \underline{\eta}$ &nbsp;(függetlenek)
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-label">5. lépés — a) rész: feltételes várható érték</div>
+
+  <h2>$E(\underline{\zeta}\mid\underline{\eta})$ kiszámítása</h2>
+  <p>Mivel $\underline{\zeta}\perp\underline{\eta}$, ezért $E(\underline{\zeta}\mid\underline{\eta}) = E(\underline{\zeta})$. Számoljuk ezt az utóbbit:</p>
+  $$E(\underline{\zeta}) = E(\underline{\xi}) - \underline{\mu}_1 - \Sigma_{12}\Sigma_{22}^{-1}(E(\underline{\eta})-\underline{\mu}_2) = \underline{\mu}_1 - \underline{\mu}_1 - 0 = \underline{0}.$$
+  <p>Tehát $E(\underline{\zeta}\mid\underline{\eta})=\underline{0}$, ami a $\underline{\zeta}$ definíciójával:</p>
+  $$E\big(\underline{\xi}-\underline{\mu}_1-\Sigma_{12}\Sigma_{22}^{-1}(\underline{\eta}-\underline{\mu}_2)\,\big|\,\underline{\eta}\big) = \underline{0}.$$
+  <p>A feltételes VÉ linearitása miatt — ahol az $\underline{\eta}$-tól függő rész „mérhető" a feltételre, így kiemelhető:</p>
+  $$E(\underline{\xi}\mid\underline{\eta}) - \underline{\mu}_1 - \Sigma_{12}\Sigma_{22}^{-1}(\underline{\eta}-\underline{\mu}_2) = \underline{0}.$$
+  <div class="box green">
+    $$\Rightarrow\quad E(\underline{\xi}\mid\underline{\eta}) = \underline{\mu}_1 + \Sigma_{12}\Sigma_{22}^{-1}(\underline{\eta}-\underline{\mu}_2). \quad\checkmark$$
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-label">6. lépés — b) rész: feltételes kovarianciamátrix</div>
+
+  <h2>Kulcsmegfigyelés: $\underline{\zeta} = \underline{\xi} - E(\underline{\xi}\mid\underline{\eta})$</h2>
+  <p>Az a) rész alapján éppen ez a $\underline{\zeta}$ definíciója (átrendezve). Tehát a feltételes kovariancia definíciója szerint:</p>
+  $$V(\underline{\xi}\mid\underline{\eta}) = E\big\{(\underline{\xi}-E(\underline{\xi}\mid\underline{\eta}))(\underline{\xi}-E(\underline{\xi}\mid\underline{\eta}))^T\,\big|\,\underline{\eta}\big\} = E(\underline{\zeta}\,\underline{\zeta}^T\mid\underline{\eta}).$$
+  <p>Mivel $\underline{\zeta}\perp\underline{\eta}$, a feltétel elhagyható:</p>
+  $$V(\underline{\xi}\mid\underline{\eta}) = E(\underline{\zeta}\,\underline{\zeta}^T) = V(\underline{\zeta}) \quad (\text{mert } E\underline{\zeta}=\underline{0}).$$
+
+  <h2>$V(\underline{\zeta})$ kiszámítása</h2>
+  <p>Írjuk fel $\underline{\zeta}$-t mint $\binom{\underline{\xi}}{\underline{\eta}}$ lineáris transzformáltját. Legyen $C = (I_p,\;-\Sigma_{12}\Sigma_{22}^{-1})$, ekkor:</p>
+  $$\underline{\zeta} = C\binom{\underline{\xi}-\underline{\mu}_1}{\underline{\eta}-\underline{\mu}_2}.$$
+  <p>A $V(C\underline{X}) = CV(\underline{X})C^T$ szabály szerint:</p>
+  $$V(\underline{\zeta}) = C\begin{pmatrix}\Sigma_{11}&\Sigma_{12}\\ \Sigma_{21}&\Sigma_{22}\end{pmatrix}C^T.$$
+
+  <h2>Konkrét kiszámítás (algebrai részlet)</h2>
+  <p>Először $C\Sigma$:</p>
+  $$C\Sigma = (I,\,-\Sigma_{12}\Sigma_{22}^{-1})\begin{pmatrix}\Sigma_{11}&\Sigma_{12}\\ \Sigma_{21}&\Sigma_{22}\end{pmatrix} = \big(\Sigma_{11}-\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21},\;\;\Sigma_{12}-\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{22}\big).$$
+  <p>A második blokk: $\Sigma_{12}-\Sigma_{12}\cdot I = \mathbf{0}$. Tehát:</p>
+  $$C\Sigma = \big(\Sigma_{11}-\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21},\;\;\mathbf{0}\big).$$
+  <p>Most szorozzuk $C^T = \binom{I}{-\Sigma_{22}^{-1}\Sigma_{21}}$-vel jobbról:</p>
+  $$V(\underline{\zeta}) = \big(\Sigma_{11}-\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21},\;\mathbf{0}\big)\binom{I}{-\Sigma_{22}^{-1}\Sigma_{21}} = \Sigma_{11}-\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}.$$
+  <p>(A nulla blokk minden szorzata nulla, így csak az első tag marad.)</p>
+
+  <div class="box green">
+    $$\Rightarrow\quad V(\underline{\xi}\mid\underline{\eta}) = \Sigma_{11} - \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}. \qquad\blacksquare$$
+  </div>
+
+  <div class="why"><strong>Megfigyelés:</strong> A feltételes kovariancia <em>nem függ</em> $\underline{\eta}$ konkrét értékétől — csak a kovarianciamátrixok kombinációjától. Ez a normális eloszlás egyik nagyon szép tulajdonsága (homoszkedaszticitás). Ezért a $\Sigma_{11}-\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}$ mátrixot „<em>parciális</em>" vagy „<em>maradék</em>" kovarianciának is nevezik: az a része $\underline{\xi}$ varianciájának ami $\underline{\eta}$ ismerete <em>után is</em> megmarad.</div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item active"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="04_hipotezis_mu1_mu2.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="06_std_wishart_karfv.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

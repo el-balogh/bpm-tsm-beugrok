@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSM Beugró — Kidolgozások</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--accent2:#6e9ec8;--blue:#6e9ec8;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--points:#c86e6e;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;padding:0 0 80px 0;}
+    header{border-bottom:1px solid var(--border);padding:48px 64px 36px;position:relative;overflow:hidden;}
+    header::before{content:'';position:absolute;top:-60px;right:-60px;width:320px;height:320px;background:radial-gradient(circle,rgba(200,169,110,0.08) 0%,transparent 70%);pointer-events:none;}
+    .header-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:12px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(28px,4vw,46px);font-weight:400;line-height:1.15;color:var(--text);margin-bottom:10px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .header-sub{color:var(--muted);font-size:14px;letter-spacing:0.02em;}
+    .progress-wrap{padding:24px 64px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:20px;}
+    .progress-label{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);white-space:nowrap;}
+    .progress-bar-outer{flex:1;height:4px;background:var(--border);border-radius:2px;}
+    .progress-bar-inner{height:4px;border-radius:2px;background:linear-gradient(90deg,var(--accent),var(--done));width:67%;transition:width 0.6s ease;}
+    .progress-count{font-family:'DM Mono',monospace;font-size:12px;color:var(--accent);white-space:nowrap;}
+    .complete-banner{background:linear-gradient(135deg,rgba(110,200,122,0.08),rgba(200,169,110,0.05));border:1px solid rgba(110,200,122,0.3);border-radius:8px;margin:24px 64px 0;padding:16px 24px;display:flex;align-items:center;gap:14px;}
+    .complete-banner-icon{font-size:24px;}
+    .complete-banner-text{font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);}
+    .complete-banner-text strong{color:var(--done);font-weight:500;}
+    .section{padding:40px 64px 0;}
+    .section-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:12px;}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+    /* ── STUDY TOOLS GRID ── */
+    .study-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+    .study-card{display:block;padding:24px;background:var(--surface);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--text);transition:all 0.25s;position:relative;overflow:hidden;}
+    .study-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);opacity:0.6;transition:opacity 0.25s;}
+    .study-card:hover{border-color:var(--accent);background:#1d1c20;transform:translateY(-3px);box-shadow:0 6px 20px rgba(200,169,110,0.06);}
+    .study-card:hover::before{opacity:1;}
+    .study-card.flash::before{background:var(--blue);}
+    .study-card.flash:hover{border-color:var(--blue);}
+    .study-icon{font-size:28px;margin-bottom:14px;display:inline-block;}
+    .study-title{font-family:'DM Serif Display',serif;font-size:19px;font-weight:400;margin-bottom:6px;line-height:1.3;}
+    .study-desc{font-size:13px;color:var(--muted);line-height:1.5;}
+    .study-meta{margin-top:14px;font-family:'DM Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;}
+
+    .task-list{display:flex;flex-direction:column;gap:2px;}
+    .task-card{display:grid;grid-template-columns:40px 1fr auto auto;align-items:center;gap:16px;padding:16px 20px;background:var(--surface);border:1px solid var(--border);border-radius:6px;text-decoration:none;color:var(--text);transition:border-color 0.2s,background 0.2s,transform 0.15s;position:relative;}
+    .task-card:hover{border-color:var(--accent);background:#1d1c20;transform:translateX(3px);}
+    .task-card.done{border-color:rgba(110,200,122,0.25);}
+    .task-card.done:hover{border-color:var(--done);}
+    .task-card.todo{opacity:0.55;cursor:default;pointer-events:none;}
+    .task-num{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);text-align:right;}
+    .task-card.done .task-num{color:var(--done);}
+    .task-title{font-size:14px;font-weight:400;color:var(--text);margin-bottom:3px;line-height:1.4;}
+    .task-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
+    .task-points{font-family:'DM Mono',monospace;font-size:11px;color:var(--points);background:rgba(200,110,110,0.1);border:1px solid rgba(200,110,110,0.2);border-radius:4px;padding:3px 8px;white-space:nowrap;}
+    .task-status{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:13px;}
+    footer{margin-top:60px;padding:0 64px;border-top:1px solid var(--border);padding-top:24px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
+    @media(max-width:700px){header,.progress-wrap,.section,footer,.complete-banner{padding-left:24px;padding-right:24px;}.complete-banner{margin-left:0;margin-right:0;border-radius:0;}.task-card{grid-template-columns:30px 1fr auto;}.task-status{display:none;}}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-label">Többváltozós Statisztikai Módszerek</div>
+  <h1>Beugró <em>Kidolgozások</em></h1>
+  <div class="header-sub">MathJax rendereléshez nyisd meg a megoldásfájlokat böngészőben &nbsp;·&nbsp; Dóri-féle jegyzetek alapján</div>
+</header>
+
+<div class="progress-wrap">
+  <span class="progress-label">Haladás</span>
+  <div class="progress-bar-outer">
+    <div class="progress-bar-inner" style="width: 100%"></div>
+  </div>
+  <span class="progress-count">15 / 15 kész ✓</span>
+</div>
+
+<div class="complete-banner">
+  <span class="complete-banner-icon">🎯</span>
+  <div class="complete-banner-text">
+    <strong>Összes feladat kidolgozva.</strong> &nbsp;Sok szerencsét a vizsgához!
+  </div>
+</div>
+
+<!-- ═══════════════ TANULÁSI SEGÉDLETEK ═══════════════ -->
+<div class="section" style="margin-top: 36px;">
+  <div class="section-title">Tanul&#225;si seg&#233;dletek</div>
+  <div class="study-grid">
+
+    <a class="study-card flash" href="flashcards.html">
+      <span class="study-icon">&#x1F0CF;</span>
+      <div class="study-title">Flashcards</div>
+      <div class="study-desc">Defin&#237;ci&#243;k, k&#233;pletek, t&#233;telek. Kattints a k&#225;rty&#225;ra a megford&#237;t&#225;shoz, &#8222;Tudtam / Nem tudtam&#8221; gombokkal haladsz. Kateg&#243;ria-sz&#369;r&#337;vel.</div>
+      <div class="study-meta">~46 k&#225;rtya &middot; Memoriz&#225;l&#225;s</div>
+    </a>
+
+    <a class="study-card" href="feladatfelismeres.html">
+      <span class="study-icon">&#127919;</span>
+      <div class="study-title">Feladat-felismer&#233;s</div>
+      <div class="study-desc">&#8222;Melyik t&#233;telt haszn&#225;lom?&#8221; &#8212; feleletv&#225;laszt&#243;s kv&#237;z. Kapsz egy feladatot, kiv&#225;lasztod a megfelel&#337; m&#243;dszert. Visszajelz&#233;ssel + magyar&#225;zattal.</div>
+      <div class="study-meta">15 k&#233;rd&#233;s &middot; Vizsga-szimul&#225;ci&#243;</div>
+    </a>
+
+  </div>
+</div>
+
+<div class="section" style="margin-top: 40px;">
+  <div class="section-title">Seg&#233;danyag</div>
+  <div class="task-list">
+    <a class="task-card done" href="00_matrix_vektor_alapok.html" style="border-color:rgba(110,158,200,0.35);">
+      <div class="task-num" style="color:var(--accent2);">00</div>
+      <div class="task-info">
+        <div class="task-title">Mátrix és vektor műveletek — referenciakártya</div>
+        <div class="task-sub">Összeadás · szorzás · transzponált · Gram-mátrix · nyom · deriválás</div>
+      </div>
+      <div class="task-points" style="color:var(--accent2);background:rgba(110,158,200,0.1);border-color:rgba(110,158,200,0.2);">referencia</div>
+      <div class="task-status">★</div>
+    </a>
+  </div>
+</div>
+
+<div class="section">
+  <div class="section-title">Kész</div>
+  <div class="task-list">
+
+    <a class="task-card done" href="01_euklideszi_tavmátrix.html">
+      <div class="task-num">01</div>
+      <div class="task-info">
+        <div class="task-title">Euklideszi távolságmátrix — tétel kimondása és levezetése</div>
+        <div class="task-sub">14. Tétel · D euklideszi ⟺ B = HAH ≥ 0</div>
+      </div>
+      <div class="task-points">8 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="02_logisztikus_regresszio.html">
+      <div class="task-num">02</div>
+      <div class="task-info">
+        <div class="task-title">Logisztikus regresszió — modell és likelihood függvény</div>
+        <div class="task-sub">15. Tétel vége / ZV tétel · logit(pᵢ) = βᵀxᵢ</div>
+      </div>
+      <div class="task-points">7 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="03_wilks_lambda.html">
+      <div class="task-num">03</div>
+      <div class="task-info">
+        <div class="task-title">|A+B| / |A+B+C| eloszlása — Wilks-lambda</div>
+        <div class="task-sub">5. Tétel · A,B,C ~ W₃(Σ,5) független · Λ(3, 10, 5)</div>
+      </div>
+      <div class="task-points">3 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="04_hipotezis_mu1_mu2.html">
+      <div class="task-num">04</div>
+      <div class="task-info">
+        <div class="task-title">Hipotézisvizsgálat — H₀: μ₁ + μ₂ = 4</div>
+        <div class="task-sub">8. Tétel · Rμ = r típusú próba · ismert Σ · χ² próba</div>
+      </div>
+      <div class="task-points">4 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="05_normalis_korr_tetele.html">
+      <div class="task-num">05</div>
+      <div class="task-info">
+        <div class="task-title">Normális korreláció tétele — kimondás és levezetés</div>
+        <div class="task-sub">1. Tétel · E(ξ|η) és V(ξ|η) feltételes VÉ és kovmátrix</div>
+      </div>
+      <div class="task-points">8 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="06_std_wishart_karfv.html">
+      <div class="task-num">06</div>
+      <div class="task-info">
+        <div class="task-title">Standard Wishart eloszlás karakterisztikus függvénye</div>
+        <div class="task-sub">4. Tétel · φ_M(A) = |I − 2iA|^(−n/2)</div>
+      </div>
+      <div class="task-points">7 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="07_AXB_normalis_AM.html">
+      <div class="task-num">07</div>
+      <div class="task-info">
+        <div class="task-title">AXB normális adatmátrix-e? — konkrét példa</div>
+        <div class="task-sub">2. Tétel · A·1ₙ = α·1ₘ és AAᵀ = βIₘ feltételek ellenőrzése</div>
+      </div>
+      <div class="task-points">3–4 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="08_euklideszi_konkret.html">
+      <div class="task-num">08</div>
+      <div class="task-info">
+        <div class="task-title">Euklideszi távolságmátrix-e? — konkrét 3×3-as mátrix</div>
+        <div class="task-sub">14. Tétel · B = HAH ≥ 0 ellenőrzése számokkal</div>
+      </div>
+      <div class="task-points">4 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="09_sklar_tetel.html">
+      <div class="task-num">09</div>
+      <div class="task-info">
+        <div class="task-title">Sklar tétele — kimondás és levezetés</div>
+        <div class="task-sub">Kopulák fejezet · F(x) = C(F₁(x₁),…,Fₚ(xₚ))</div>
+      </div>
+      <div class="task-points">8 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="10_hotelling_T2.html">
+      <div class="task-num">10</div>
+      <div class="task-info">
+        <div class="task-title">Hotelling T² eloszlás és kapcsolata az F-eloszlással</div>
+        <div class="task-sub">Plusz kérdés · T²(p,m) ~ mp/(m−p+1) · F_{p,m−p+1}</div>
+      </div>
+      <div class="task-points">7 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="11_bayes_majmok.html">
+      <div class="task-num">11</div>
+      <div class="task-info">
+        <div class="task-title">Bayes-i diszkriminancia szabály — majmok feladat</div>
+        <div class="task-sub">13. Tétel · πᵢLᵢ(x) → max · prior valszínűségekkel</div>
+      </div>
+      <div class="task-points">3 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="12_monoton_regresszio.html">
+      <div class="task-num">12</div>
+      <div class="task-info">
+        <div class="task-title">Négyzetes monoton regresszió — (5,7,4,3) a (6,3,2,8)-ra</div>
+        <div class="task-sub">Monoton regresszió / Shepard–Kruskal · átlagolós algoritmus</div>
+      </div>
+      <div class="task-points">~4 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="13_1_faktormodell.html">
+      <div class="task-num">13</div>
+      <div class="task-info">
+        <div class="task-title">1-faktormodell létezése — X ~ N₂(μ, Σ) konkrét példa</div>
+        <div class="task-sub">11. Tétel · Σ = AAᵀ + Ψ megoldhatósága</div>
+      </div>
+      <div class="task-points">4 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="14_fokomponensek.html">
+      <div class="task-num">14</div>
+      <div class="task-info">
+        <div class="task-title">Főkomponensek és varianciahányadrész — konkrét Σ-val</div>
+        <div class="task-sub">10. Tétel · spektrálfelbontás · λ₁/(λ₁+λ₂)</div>
+      </div>
+      <div class="task-points">4 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+    <a class="task-card done" href="15_ML_becsles.html">
+      <div class="task-num">15</div>
+      <div class="task-info">
+        <div class="task-title">ML becslés — μ = a·(4,2)ᵀ alakú kényszernél</div>
+        <div class="task-sub">6. Tétel · k̂ = μ₀ᵀS⁻¹ξ̄ / μ₀ᵀS⁻¹μ₀ speciális eset</div>
+      </div>
+      <div class="task-points">3 pont</div>
+      <div class="task-status">✓</div>
+    </a>
+
+  </div>
+</div>
+
+<footer>
+  <span>TSM Beugró Kidolgozások &nbsp;·&nbsp; Dóri-féle jegyzetek alapján</span>
+  <span>MathJax · HTML</span>
+</footer>
+
+</body>
+</html>

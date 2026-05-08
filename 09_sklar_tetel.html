@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>09 — Sklar tétele</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .step{margin-bottom:44px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    ul,ol{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">09 · Kopulák fejezet · Sklar-tétel</div>
+  <h1>Sklar <em>tétele</em> — kimondás és levezetés</h1>
+  <div class="meta">8 pont &nbsp;·&nbsp; F(x) = C(F₁(x₁),…,Fₚ(xₚ)) &nbsp;·&nbsp; Dóri jegyzet ~70–71. oldal</div>
+</header>
+
+<main>
+
+<div class="step">
+  <div class="step-label">0. lépés — Mit mond ki, miért fontos?</div>
+
+  <h2>Szemléletes magyarázat</h2>
+  <p>A Sklar-tétel a kopulaelmélet <strong>alaptétele</strong>. Lényegében azt mondja: minden többdimenziós eloszlás <em>kettéválasztható</em> egy „<strong>marginális</strong>" részre (mit csinál minden koordináta önmagában) és egy „<strong>kopula</strong>" részre (hogyan kapcsolódnak össze a koordináták).</p>
+
+  <div class="why"><strong>Miért hasznos ez?</strong> Pl. ha egy biztosító modellezi két káreseményt, akkor külön-külön ismeri az eloszlásukat (marginális — pl. mindkettő exponenciális). De a függésük (egyikből milyen valószínűséggel következik a másik?) független ettől. A Sklar-tétel kimondja, hogy ezt a két oldalt <em>tökéletesen el lehet választani</em>, és bármely marginális + bármely kopula összerakható egy érvényes együttes eloszlássá.</div>
+
+  <h2>Setup és jelölések</h2>
+  <p><strong>Eloszlásfüggvény-konvenció:</strong> Itt $F_\xi(x) = P(\xi_1 \leq x_1,\dots,\xi_p\leq x_p)$ (kisebbegyenlő, nem szigorú).</p>
+
+  <div class="box accent">
+    <strong>Kopula:</strong> $C:[0,1]^p\to[0,1]$ olyan, hogy létezik $U_1,\dots,U_p\sim E(0,1)$ közös eloszlásfüggvénnyel $C$. Tehát $C$ <em>egy speciális p-dim. EFV</em>, melynek minden marginálisa egyenletes $[0,1]$-en.
+  </div>
+
+  <h2>A tétel kimondása</h2>
+  <div class="box green">
+    <strong>Sklar-tétel:</strong> Legyen $F$ egy $p$-dimenziós eloszlásfüggvény $F_1,\dots,F_p$ marginális (perem-) eloszlásfüggvényekkel. Ekkor:
+    <br><br>
+    <strong>(1)</strong> Létezik $C$ kopula úgy, hogy
+    $$F(\underline{x}) = C(F_1(x_1),\dots,F_p(x_p))\quad \forall\, \underline{x}\in\mathbb{R}^p.$$
+    <strong>(2)</strong> Ha az $F_i$ marginálisok <em>folytonosak</em>, akkor $C$ <strong>egyértelmű</strong>.
+    <br><br>
+    <strong>Megfordítás:</strong> Ha $C$ kopula és $F_1,\dots,F_p$ tetszőleges 1-dim. EFV-ek, akkor a fenti formulával definiált $F$ <em>tényleg</em> egy $p$-dim. EFV.
+  </div>
+
+  <h2>Kakukkfű-lista (használt eszközök)</h2>
+  <ul>
+    <li><strong>Inverz eloszlásfüggvény:</strong> Egydim. EFV $F$ inverze $F^{-1}(t) = \inf\{x\in\mathbb{R}: F(x)\geq t\}$ (általánosított inverz, akkor is működik ha $F$ nem szigorúan monoton).</li>
+    <li><strong>Inverz transzformáció lemma:</strong> Ha $U\sim E(0,1)$ egyenletes és $F$ tetszőleges EFV, akkor $F^{-1}(U)$ eloszlásfüggvénye éppen $F$. (Ez az alapja a véletlenszám-generálásnak is.)</li>
+    <li><strong>Folytonos esetben:</strong> Ha $\xi$ folytonos $F$ EFV-vel, akkor $F(\xi)\sim E(0,1)$. (Ezzel megyünk át $\xi$-ből egyenletesbe.)</li>
+    <li><strong>EFV transzformáció (általános esetre):</strong> Ha $F$ nem folytonos, $F^{tr}(x,\lambda) = F(x-) + \lambda(F(x)-F(x-))$, $\lambda\in[0,1]$. Egy „véletlen ugrás-feloldás" — diszkrét pontoknál a $V\sim E(0,1)$ független segéd-változóval kell „lapítani" hogy egyenletest kapjunk. (Ezt a részletet a végén illusztráljuk.)</li>
+    <li><strong>Logikai ekvivalencia:</strong> $F(y)\geq t \Leftrightarrow y\geq F^{-1}(t)$ — ez kapcsolja össze az inverzet az eredetivel.</li>
+  </ul>
+</div>
+
+<div class="step">
+  <div class="step-label">1. lépés — Az irányok és a stratégia</div>
+
+  <p>Két irányt kell bizonyítani:</p>
+  <ul>
+    <li><strong>(⟹) Létezés:</strong> Adott $F$ együttes EFV-hez konstruálunk egy $C$ kopulát.</li>
+    <li><strong>(⟸) Megfordítás:</strong> Adott $C$ kopulához és $F_1,\dots,F_p$ marginálisokhoz konstruálunk egy $F$ együttes EFV-t.</li>
+  </ul>
+  <p>A bizonyítást először a <strong>folytonos marginális esetben</strong> végezzük (ez tisztább), majd jelezzük az általános eset trükkjét.</p>
+</div>
+
+<div class="step">
+  <div class="step-label">2. lépés — (⟹) irány: létezik C kopula</div>
+
+  <h2>Konstrukció</h2>
+  <p>Legyen $\underline{\xi} = (\xi_1,\dots,\xi_p)^T$ olyan vektorváltozó, melynek együttes EFV-e $F$ (és így marginálisai $F_i$). <strong>Folytonos $F_i$ esetén</strong> definiáljuk:</p>
+  $$U_i := F_i(\xi_i),\quad i=1,\dots,p.$$
+  <p>Ezek a $\sigma$-algebra szerinti transzformáció miatt <strong>egyenletes eloszlásúak $[0,1]$-en</strong> (kakukkfű-lista 3. pont).</p>
+
+  <h2>$C$ definíciója</h2>
+  <p>Legyen $C$ az $(U_1,\dots,U_p)$ vektor együttes eloszlásfüggvénye:</p>
+  $$C(u_1,\dots,u_p) = P(U_1\leq u_1,\dots,U_p\leq u_p).$$
+  <p>Mivel az $U_i$-k egyenletes marginálissal rendelkeznek, $C$ tényleg <strong>kopula</strong> a definíció szerint.</p>
+
+  <h2>Az állítás bizonyítása</h2>
+  <p>Számoljuk ki $F(\underline{x})$-et $C$ segítségével:</p>
+  $$F(\underline{x}) = P(\xi_1\leq x_1,\dots,\xi_p\leq x_p).$$
+  <p>Folytonos $F_i$-knél $F_i$ monoton (nem szigorúan, de monoton), és $F_i(\xi_i) = U_i$, így majdnem biztosan:</p>
+  $$\xi_i\leq x_i \;\Leftrightarrow\; F_i(\xi_i)\leq F_i(x_i) \;\Leftrightarrow\; U_i\leq F_i(x_i).$$
+  <div class="why"><strong>Miért „majdnem biztosan"?</strong> Ha $F_i$ folytonos, akkor azon halmaz, ahol „lapos" (azaz $F_i(\xi_i)=F_i(x_i)$ DE $\xi_i \neq x_i$) nulla valószínűségű, mert ott $\xi_i$ csak nulla mértékű ponton lehet. Ez technikai részlet.</div>
+
+  <p>Tehát:</p>
+  $$F(\underline{x}) = P(U_1\leq F_1(x_1),\dots, U_p\leq F_p(x_p)) = C(F_1(x_1),\dots,F_p(x_p)).\quad\checkmark$$
+
+  <h2>Egyértelműség folytonos $F_i$ esetén</h2>
+  <p>Ha minden $F_i$ folytonos, akkor $F_i$ képtere lefedi az egész $[0,1]$ intervallumot (értékkészlete sűrű és folytonos).</p>
+  <p>Ezért minden $(u_1,\dots,u_p)\in[0,1]^p$ pontra léteznek $x_1,\dots,x_p$ úgy, hogy $u_i = F_i(x_i)$, és a definíció szerint:</p>
+  $$C(u_1,\dots,u_p) = F(x_1,\dots,x_p)$$
+  <p>egyértelműen meghatározza $C$-t a teljes egységkocka minden pontján. Ezzel $C$ <strong>egyértelmű</strong>.</p>
+  <div class="box accent">
+    <strong>Megjegyzés:</strong> Ha $F_i$ <em>nem</em> folytonos (van „ugrása"), akkor a $C$ értéke csak az $F_i$ képterén határozható meg az előbbi módon — a kimaradó pontokon ki kell <em>terjeszteni</em>, és ott a választás nem egyértelmű.
+  </div>
+</div>
+
+<div class="step">
+  <div class="step-label">3. lépés — (⟸) irány: a megfordítás</div>
+
+  <h2>Konstrukció</h2>
+  <p>Adott egy $C$ kopula és egydim. EFV-ek $F_1,\dots,F_p$. Legyen $\underline{\eta} = (\eta_1,\dots,\eta_p)^T$ vektorváltozó, melynek minden $\eta_i$ egyenletes $[0,1]$-en, és együttes EFV-ük éppen $C$.</p>
+  <div class="why"><strong>Miért lehet ilyet választani?</strong> Mert $C$ kopula = van olyan vektorváltozó, melynek $C$ az EFV-e (ez a kopula definíciója).</div>
+
+  <p>Definiáljuk:</p>
+  $$\xi_i := F_i^{-1}(\eta_i),\quad i=1,\dots,p.$$
+  <p>Az inverz transzformáció lemma szerint $\xi_i$ EFV-e éppen $F_i$ (kakukkfű-lista 2. pont).</p>
+
+  <h2>Az állítás bizonyítása</h2>
+  <p>Számoljuk $\underline{\xi}$ együttes EFV-ét:</p>
+  $$F_{\underline{\xi}}(\underline{x}) = P(\xi_1\leq x_1,\dots,\xi_p\leq x_p) = P(F_1^{-1}(\eta_1)\leq x_1,\dots,F_p^{-1}(\eta_p)\leq x_p).$$
+  <p>Az inverz EFV alaptulajdonsága (kakukkfű-lista 5. pont):</p>
+  $$F_i^{-1}(\eta_i)\leq x_i \;\Leftrightarrow\; \eta_i\leq F_i(x_i).$$
+  <p>Ezért:</p>
+  $$F_{\underline{\xi}}(\underline{x}) = P(\eta_1\leq F_1(x_1),\dots,\eta_p\leq F_p(x_p)) = C(F_1(x_1),\dots,F_p(x_p)).\quad\checkmark$$
+  <p>Tehát $F(\underline{x}) := C(F_1(x_1),\dots,F_p(x_p))$ tényleg egy $p$-dimenziós EFV (mert van $\underline{\xi}$ vektorváltozó, melynek ez az EFV-e). $\blacksquare$</p>
+</div>
+
+<div class="step">
+  <div class="step-label">4. lépés — Megjegyzés általános (nem folytonos) esetre</div>
+
+  <h2>A nehézség</h2>
+  <p>Ha $F_i$ <strong>nem folytonos</strong> (van ugrása valamelyik $a$ pontban), akkor $F_i(\xi_i)$ <em>nem</em> egyenletes eloszlású — például ha $\xi_i = a$ pozitív valószínűséggel, akkor $F_i(\xi_i) = F_i(a)$ szintén pozitív valószínűségű egyetlen érték, ami egyenletes eloszlásnál lehetetlen.</p>
+
+  <h2>A trükk: $F^{tr}$ transzformáció</h2>
+  <p>Bevezetjük az <strong>EFV-transzformációt</strong>:</p>
+  $$F^{tr}(x,\lambda) := \underbrace{F(x-)}_{\text{bal-oldali határérték}} + \lambda\,\underbrace{(F(x)-F(x-))}_{\text{ugrás nagysága}},\quad \lambda\in[0,1].$$
+  <p>Veszünk egy $\xi_i$-től <strong>független</strong> $V\sim E(0,1)$ segédváltozót, és definiáljuk:</p>
+  $$U_i := F_i^{tr}(\xi_i, V).$$
+  <p>A segédállítás (lásd Dóri-jegyzet) szerint ezzel $U_i\sim E(0,1)$ <em>akkor is</em>, ha $F_i$ nem folytonos, és $\xi_i = F_i^{-1}(U_i)$ majdnem biztosan teljesül.</p>
+  <div class="why"><strong>Mit csinál $F^{tr}$ szemléletesen?</strong> Az ugrási helyeknél „véletlen szóródást" tesz a $V$ segítségével, ami simára „lapítja" $F_i$-t — így már egyenletes eloszlást kapunk. A bizonyítás többi része ugyanaz, mint folytonos esetben, csak a „nyers" $F_i(\xi_i)$ helyett $F_i^{tr}(\xi_i,V)$ szerepel.</div>
+
+  <h2>Ami megmarad általános esetben</h2>
+  <p>A kopula <strong>létezése</strong> általánosan is igaz, viszont az <strong>egyértelműség elveszik</strong> (mert csak $F_i$ képterén határozható meg $C$, kívül szabadon kiterjeszthető).</p>
+
+  <div class="box green">
+    <strong>Összegzés:</strong> Sklar tétele azt mondja, hogy minden együttes eloszlás kettébontható marginális + kopula részekre, és bármely ilyen kettősből visszaállítható egy érvényes együttes eloszlás. Folytonos marginálisokra a kopula egyértelmű, általában csak a marginálisok képterén.
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item active"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="08_euklideszi_konkret.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="10_hotelling_T2.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

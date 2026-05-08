@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>13 — 1-faktormodell létezése</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--red:#c86e6e;--green:#6ec87a;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.75;padding:0 0 80px;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 28px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(22px,3.5vw,38px);font-weight:400;line-height:1.2;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+    main{max-width:860px;margin:0 auto;padding:48px 64px;}
+    .step{margin-bottom:44px;}
+    .step-label{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--accent);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+    .step-label::after{content:'';flex:1;height:1px;background:var(--border);}
+    h2{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:12px;color:var(--text);}
+    p{margin-bottom:14px;font-size:15px;}
+    .box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px 24px;margin:18px 0;}
+    .box.accent{border-color:rgba(200,169,110,0.4);}
+    .box.green{border-color:rgba(110,200,122,0.4);}
+    .box.red{border-color:rgba(200,110,110,0.4);}
+    .why{background:rgba(200,169,110,0.06);border-left:3px solid var(--accent);padding:12px 18px;border-radius:0 6px 6px 0;margin:14px 0;font-size:14px;color:#c8b88a;}
+    .why strong{color:var(--accent);}
+    ul,ol{padding-left:20px;margin-bottom:14px;font-size:15px;}
+    li{margin-bottom:6px;}
+    @media(max-width:700px){main,header,a.back{padding-left:24px;padding-right:24px;}}
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">13 · 11. Tétel · Faktoranalízis</div>
+  <h1>Felírható-e az <em>1-faktormodell?</em></h1>
+  <div class="meta">4 pont &nbsp;·&nbsp; X ~ N₂(μ, Σ), μ = (3,4)ᵀ, Σ = (4 1; 1 9) &nbsp;·&nbsp; Dóri jegyzet ~43–44. oldal</div>
+</header>
+
+<main>
+
+<div class="step">
+  <div class="step-label">0. lépés — Probléma és eszközök</div>
+
+  <h2>Mit kérdez a feladat?</h2>
+  <p>Adott $\underline{\xi}\sim N_2(\mu, \Sigma)$ ahol $\mu = \binom{3}{4}$, $\Sigma = \begin{pmatrix}4 & 1\\ 1 & 9\end{pmatrix}$. Felírható-e <strong>1-faktormodell</strong> erre a $\underline{\xi}$-re?</p>
+
+  <div class="why"><strong>Mi az 1-faktormodell?</strong> Egy egyszerű faktoranalízis-modell, melyben a megfigyelt változók egy <em>közös rejtett faktor</em> $F$ és <em>egyedi zajok</em> $W_i$ kombinációi: $\xi_i = a_i F + W_i + \mu_i$. A közös faktor magyarázza a koordináták közötti kapcsolatot, az egyedi zajok pedig a saját varianciát.</div>
+
+  <h2>A k-faktormodell létezésének tétele</h2>
+  <div class="box accent">
+    <strong>Tétel:</strong> Ha $\Sigma > 0$, akkor a $k$-faktormodell létezik $\Leftrightarrow$ $\Sigma$ felírható
+    $$\Sigma = AA^T + \Psi,$$
+    ahol $A$ egy $p\times k$-as mátrix és $\Psi$ egy <strong>nemnegatív, diagonális</strong> mátrix.
+  </div>
+
+  <p><strong>$k=1$ speciális eset:</strong> $A$ egy $p\times 1$-es vektor, írjuk $\underline{a} = \binom{a_1}{a_2}$ alakban. Ekkor:</p>
+  $$AA^T = \underline{a}\,\underline{a}^T = \begin{pmatrix}a_1^2 & a_1 a_2\\ a_1 a_2 & a_2^2\end{pmatrix},\quad \Psi = \begin{pmatrix}\psi_{11} & 0\\ 0 & \psi_{22}\end{pmatrix},\;\psi_{11}, \psi_{22}\geq 0.$$
+
+  <p>Tehát a feltétel komponensenként:</p>
+  <ul>
+    <li>$\sigma_{11} = a_1^2 + \psi_{11}$</li>
+    <li>$\sigma_{22} = a_2^2 + \psi_{22}$</li>
+    <li>$\sigma_{12} = a_1 a_2$ &nbsp;(diagonálison kívüli — ezt csak $AA^T$ adja, mert $\Psi$ ott $0$)</li>
+  </ul>
+
+  <h2>Eszközök (kakukkfű-lista)</h2>
+  <ul>
+    <li><strong>Kommunalitás:</strong> $h_i^2 := a_i^2$, az $i$-edik koordináta varianciájának „közös faktor által magyarázott" része.</li>
+    <li><strong>Egyedi variancia:</strong> $\psi_{ii}$, a maradék: az, amit a közös faktor nem magyaráz.</li>
+    <li><strong>Korlátok:</strong> Mivel $\psi_{ii}\geq 0$ kell, ezért $a_i^2 \leq \sigma_{ii}$ (a kommunalitás nem haladhatja meg a teljes varianciát).</li>
+  </ul>
+  <p>A $\mu$ a feladatban adott, de a faktormodell <strong>szempontjából lényegtelen</strong>: a modell $\xi_i = a_i F + W_i + \mu_i$, és $\mu$ csak az additív eltolás, nem befolyásolja a kovariancia-szerkezetet.</p>
+</div>
+
+<div class="step">
+  <div class="step-label">1. lépés — Az egyenletrendszer felírása</div>
+
+  <p>Behelyettesítjük a megadott $\Sigma$ értékeit:</p>
+  $$\sigma_{11} = 4,\quad \sigma_{22} = 9,\quad \sigma_{12} = 1.$$
+
+  <p>Ez a rendszer:</p>
+  $$\begin{cases} a_1^2 + \psi_{11} = 4 \\ a_2^2 + \psi_{22} = 9 \\ a_1 a_2 = 1 \end{cases}$$
+
+  <p>Ismeretlenek: $a_1, a_2, \psi_{11}, \psi_{22}$ — összesen <strong>4</strong>.</p>
+  <p>Egyenletek száma: <strong>3</strong>.</p>
+
+  <div class="why"><strong>Túl-paraméterezett?</strong> Igen — több ismeretlen, mint egyenlet. Ez azt jelenti, hogy ha létezik megoldás, akkor <em>több is van</em> (egész paraméter-család). A vizsgakérdés nem az egyértelműség, hanem hogy <strong>létezik-e legalább egy megoldás</strong> a $\psi_{ii}\geq 0$ feltétellel.</div>
+</div>
+
+<div class="step">
+  <div class="step-label">2. lépés — A harmadik egyenlet megoldása</div>
+
+  <p>$a_1 a_2 = 1$ azt mondja, hogy $a_1, a_2$ <strong>azonos előjelűek</strong> (mindkettő pozitív vagy mindkettő negatív, hogy a szorzat $+1$ legyen). Vegyük a pozitív választást (a negatív tükörképe ezzel ekvivalens).</p>
+
+  <p>Fejezzük ki $a_2$-t: $a_2 = 1/a_1$.</p>
+
+  <h2>$a_1$ megengedett tartománya</h2>
+  <p>A $\psi_{ii}\geq 0$ feltételekből:</p>
+  <ul>
+    <li>$\psi_{11} = 4 - a_1^2 \geq 0$ &nbsp;$\Rightarrow$&nbsp; $a_1^2 \leq 4$ &nbsp;$\Rightarrow$&nbsp; $|a_1|\leq 2$.</li>
+    <li>$\psi_{22} = 9 - a_2^2 = 9 - \dfrac{1}{a_1^2} \geq 0$ &nbsp;$\Rightarrow$&nbsp; $a_1^2 \geq \dfrac{1}{9}$ &nbsp;$\Rightarrow$&nbsp; $|a_1|\geq \dfrac{1}{3}$.</li>
+  </ul>
+
+  <p>Tehát pozitív $a_1$-re:</p>
+  $$a_1 \in \left[\tfrac{1}{3},\, 2\right].$$
+
+  <p>Bármely ilyen $a_1$ érték <strong>megfelelő megoldást</strong> ad. A faktormodell tehát létezik!</p>
+</div>
+
+<div class="step">
+  <div class="step-label">3. lépés — Konkrét megoldások bemutatása</div>
+
+  <h2>Egyszerű választás: $a_1 = a_2 = 1$</h2>
+  <ul>
+    <li>$\psi_{11} = 4 - 1 = 3$ ✓</li>
+    <li>$\psi_{22} = 9 - 1 = 8$ ✓</li>
+    <li>$a_1 a_2 = 1\cdot 1 = 1$ ✓</li>
+  </ul>
+  <p>Tehát egy lehetséges felírás: $\underline{a} = \binom{1}{1}$, $\Psi = \begin{pmatrix}3 & 0\\0 & 8\end{pmatrix}$.</p>
+
+  <h2>Ellenőrzés mátrix-szinten</h2>
+  $$\underline{a}\underline{a}^T + \Psi = \begin{pmatrix}1 & 1\\1 & 1\end{pmatrix} + \begin{pmatrix}3 & 0\\0 & 8\end{pmatrix} = \begin{pmatrix}4 & 1\\1 & 9\end{pmatrix} = \Sigma.\quad\checkmark$$
+
+  <h2>Másik megoldás: $a_1 = 2, a_2 = 1/2$</h2>
+  <ul>
+    <li>$\psi_{11} = 4 - 4 = 0$ (határeset, de még megengedett)</li>
+    <li>$\psi_{22} = 9 - 1/4 = 35/4$</li>
+    <li>$a_1 a_2 = 1$ ✓</li>
+  </ul>
+</div>
+
+<div class="step">
+  <div class="step-label">4. lépés — Konklúzió</div>
+
+  <div class="box green">
+    <strong>Igen, a $\xi\sim N_2(\mu,\Sigma)$ esetén az 1-faktormodell felírható.</strong>
+    Egy konkrét megoldás:
+    $$\underline{a} = \binom{1}{1},\quad \Psi = \begin{pmatrix}3 & 0\\ 0 & 8\end{pmatrix},$$
+    azaz $\xi_1 = F + W_1 + 3$, $\xi_2 = F + W_2 + 4$, ahol $F\sim N(0,1)$ a közös faktor és $W_1\sim N(0,3)$, $W_2\sim N(0,8)$ a független egyedi zajok.
+  </div>
+
+  <div class="why"><strong>Megjegyzés a 2-dimenziós eset specialitásáról:</strong> $p=2, k=1$ esetén az „identifiability index" $s = \tfrac{(p-k)^2 - (p+k)}{2} = \tfrac{1-3}{2} = -1 < 0$. Ez azt jelenti, hogy <em>több</em> paraméterünk van mint egyenletünk — tehát ha létezik megoldás, akkor egy <strong>egész paraméter-család</strong> van. A faktormodell létezik, de nem egyértelmű (egyértelműsítéshez plusz feltételek kellenek, pl. $A^T\Psi^{-1}A$ diagonális, ami $k=1$-nél automatikusan teljesül).</div>
+
+  <div class="why"><strong>Másik megközelítés (gyors „vizsga-trükk"):</strong> $p=2$ dimenzióban az 1-faktormodell <em>mindig létezik</em>, ha $\Sigma > 0$ és $|\sigma_{12}| \leq \sqrt{\sigma_{11}\sigma_{22}}$ (ez utóbbi a Cauchy-Schwarz-egyenlőtlenségből következik). Itt $|1| \leq \sqrt{4\cdot 9} = 6$ ✓, tehát létezik.</div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item active"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="12_monoton_regresszio.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="14_fokomponensek.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

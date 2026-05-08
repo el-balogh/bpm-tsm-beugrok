@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TSM — Feladat-felismerés</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--red:#c86e6e;}
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;line-height:1.6;padding:0 0 60px;min-height:100vh;}
+    a.back{display:inline-flex;align-items:center;gap:8px;padding:24px 64px 0;font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);text-decoration:none;letter-spacing:0.1em;}
+    a.back:hover{color:var(--accent);}
+    header{padding:32px 64px 24px;border-bottom:1px solid var(--border);}
+    .tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.18em;color:var(--accent);text-transform:uppercase;margin-bottom:10px;}
+    h1{font-family:'DM Serif Display',serif;font-size:clamp(28px,4vw,42px);font-weight:400;line-height:1.15;margin-bottom:8px;}
+    h1 em{font-style:italic;color:var(--accent);}
+    .meta{font-family:'DM Mono',monospace;font-size:12px;color:var(--muted);}
+
+    .progress-row{max-width:760px;margin:24px auto 0;padding:0 24px;display:flex;justify-content:space-between;align-items:center;font-family:'DM Mono',monospace;font-size:12px;}
+    .progress-bar{flex:1;margin:0 16px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--done));width:0%;transition:width 0.4s ease;}
+    .score{color:var(--done);}
+
+    main{max-width:760px;margin:32px auto 0;padding:0 24px;}
+
+    .question-block{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:32px;margin-bottom:20px;}
+    .q-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:0.15em;margin-bottom:10px;text-transform:uppercase;}
+    .q-text{font-size:17px;line-height:1.55;margin-bottom:8px;color:var(--text);}
+    .q-context{background:rgba(255,255,255,0.03);border-left:3px solid var(--muted);padding:14px 18px;border-radius:0 6px 6px 0;margin:18px 0;font-size:14px;color:#c0bcae;}
+
+    .options{display:flex;flex-direction:column;gap:10px;margin-top:20px;}
+    .option{padding:14px 18px;background:#1a1a1d;border:1px solid var(--border);border-radius:6px;cursor:pointer;transition:all 0.2s;font-size:15px;color:var(--text);text-align:left;display:flex;align-items:center;gap:12px;}
+    .option:hover:not(.disabled){border-color:var(--accent);background:#1f1e22;transform:translateX(3px);}
+    .option .opt-letter{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);background:rgba(255,255,255,0.06);padding:3px 8px;border-radius:3px;flex-shrink:0;}
+    .option.correct{border-color:var(--done);background:rgba(110,200,122,0.08);}
+    .option.correct .opt-letter{color:var(--done);background:rgba(110,200,122,0.15);}
+    .option.wrong{border-color:var(--red);background:rgba(200,110,110,0.08);}
+    .option.wrong .opt-letter{color:var(--red);background:rgba(200,110,110,0.15);}
+    .option.disabled{cursor:not-allowed;}
+
+    .feedback{margin-top:18px;padding:16px 20px;border-radius:8px;font-size:14px;line-height:1.65;display:none;}
+    .feedback.show{display:block;}
+    .feedback.good{background:rgba(110,200,122,0.06);border:1px solid rgba(110,200,122,0.3);color:#c2d8c4;}
+    .feedback.bad{background:rgba(200,110,110,0.06);border:1px solid rgba(200,110,110,0.3);color:#d8c2c2;}
+    .feedback strong{color:var(--accent);}
+    .feedback a{color:var(--accent);text-decoration:underline;text-decoration-color:rgba(200,169,110,0.3);}
+    .feedback a:hover{text-decoration-color:var(--accent);}
+
+    .nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:20px;}
+    .btn{padding:10px 22px;border-radius:6px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;letter-spacing:0.05em;cursor:pointer;transition:all 0.2s;text-transform:uppercase;}
+    .btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent);transform:translateY(-1px);}
+    .btn:disabled{opacity:0.35;cursor:not-allowed;}
+    .btn.primary{border-color:rgba(200,169,110,0.6);color:var(--accent);}
+
+    .complete{background:linear-gradient(135deg,rgba(110,200,122,0.08),rgba(200,169,110,0.05));border:1px solid rgba(110,200,122,0.3);border-radius:12px;padding:40px;text-align:center;display:none;}
+    .complete h2{font-family:'DM Serif Display',serif;font-size:28px;color:var(--done);margin-bottom:14px;}
+    .complete .big-score{font-family:'DM Serif Display',serif;font-size:48px;margin:20px 0;color:var(--text);}
+    .complete .big-score em{font-style:italic;color:var(--accent);}
+
+    @media(max-width:700px){header,a.back{padding-left:24px;padding-right:24px;}.question-block{padding:24px 20px;}}
+    .bottom-home-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:10px 16px;}
+    .bottom-home-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 24px;border:1px solid rgba(200,169,110,0.3);border-radius:5px;color:var(--accent);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,background 0.2s;}
+    .bottom-home-btn:hover{border-color:var(--accent);background:rgba(200,169,110,0.07);}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">TSM Beugró · Feladat-felismerés</div>
+  <h1>Melyik <em>tételt</em> használod?</h1>
+  <div class="meta">Olvasd el a feladatot, és válaszd ki a megfelelő módszert · Visszajelzéssel + magyarázattal</div>
+</header>
+
+<div class="progress-row">
+  <span>Kérdés <span id="qNum">1</span> / <span id="qTotal">15</span></span>
+  <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+  <span class="score">Pont: <span id="score">0</span></span>
+</div>
+
+<main>
+  <div class="question-block" id="qBlock">
+    <div class="q-num" id="qNumLabel">Kérdés 01</div>
+    <div class="q-text" id="qText"></div>
+    <div class="q-context" id="qContext"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="nav-row">
+      <button class="btn" id="prevBtn" onclick="prev()" disabled>← Előző</button>
+      <button class="btn primary" id="nextBtn" onclick="next()" disabled>Következő →</button>
+    </div>
+  </div>
+
+  <div class="complete" id="completeBox">
+    <h2>🎯 Vége!</h2>
+    <div class="big-score"><span id="finalScore">0</span> / <span id="finalTotal">15</span> <em>pont</em></div>
+    <p id="completeMsg"></p>
+    <button class="btn primary" onclick="resetAll()" style="margin-top:20px;">Még egyszer</button>
+  </div>
+</main>
+
+<script>
+const QUESTIONS = [
+  {
+    text: 'Adott $M\\sim W_3(\\Sigma, 5)$. Mi $|M|$ eloszlása?',
+    context: 'Egy Wishart-mátrix determinánsának eloszlását kérdezi.',
+    options: [
+      'Hotelling T²(3, 5)',
+      '$|\\Sigma|\\cdot\\prod_{i=1}^3 \\xi_i$, ahol $\\xi_i\\sim\\chi^2_{6-i}$ függetlenek',
+      'Wilks-lambda $\\Lambda(3, 5, 5)$',
+      'F-eloszlás'
+    ],
+    correct: 1,
+    explain: 'A Wishart-determináns képlete szerint $|M|\\sim |\\Sigma|\\cdot\\prod_{i=1}^p \\xi_i$, ahol $\\xi_i\\sim\\chi^2_{m+1-i}$ függetlenek. Itt $m=5, p=3$, tehát $\\chi^2_5, \\chi^2_4, \\chi^2_3$. <a href="04_hipotezis_mu1_mu2.html">→</a>'
+  },
+  {
+    text: 'Adott $A\\sim W_p(\\Sigma, m)$ és $B\\sim W_p(\\Sigma, n)$ függetlenek. Mi $\\dfrac{|A|}{|A+B|}$ eloszlása?',
+    context: 'Két független, azonos $\\Sigma$-jú Wishart-mátrix determinánsainak speciális hányadosa.',
+    options: [
+      'F-eloszlás',
+      'Hotelling T²',
+      'Wilks-lambda $\\Lambda(p, m, n)$',
+      '$\\chi^2$ eloszlás'
+    ],
+    correct: 2,
+    explain: 'Ez pont a Wilks-lambda <strong>definíciója</strong>: $\\Lambda(p, m, n)$, ahol $p$ a dimenzió, $m$ a számláló szabadságfoka, $n$ a hozzáadott Wishart szabadságfoka. <a href="03_wilks_lambda.html">→ 03 megoldás</a>'
+  },
+  {
+    text: '$\\underline{\\xi} = (\\xi_1, \\xi_2, \\xi_3)^T \\sim N_3(\\mu, \\Sigma)$. Megfigyeljük $\\xi_2, \\xi_3$-at. Mi $E(\\xi_1\\mid\\xi_2, \\xi_3)$?',
+    context: 'Feltételes várható érték egy normális eloszlású változóra.',
+    options: [
+      'Konstans, $\\mu_1$',
+      '$\\bar{\\xi}_1$ (tapasztalati átlag)',
+      '$\\xi_2 + \\xi_3$',
+      'Lineáris függvénye $\\xi_2, \\xi_3$-nak (Normális korreláció tétele)'
+    ],
+    correct: 3,
+    explain: 'Normális korreláció tétele: $E(\\underline{\\xi}_1\\mid\\underline{\\eta}) = \\mu_1 + \\Sigma_{12}\\Sigma_{22}^{-1}(\\underline{\\eta}-\\mu_2)$ — lineáris függvénye a feltételnek. <a href="05_normalis_korr_tetele.html">→ 05 megoldás</a>'
+  },
+  {
+    text: 'Adott $\\tilde{X}\\sim N_p(\\mu, \\Sigma)$ adatmátrix és konkrét $A, B$ mátrixok. El kell dönteni, hogy $A\\tilde{X}B$ normális adatmátrix-e.',
+    context: 'A 2. tétel két feltételét kell ellenőrizni.',
+    options: [
+      'Csak ha $A$ és $B$ négyzetesek',
+      '(i) $A\\mathbf{1}_n=\\alpha\\mathbf{1}_m$ vagy $B^T\\mu=\\underline{0}$, ÉS (ii) $AA^T=\\beta I_m$ vagy $B^T\\Sigma B=0$',
+      'Mindig az',
+      'Csak ha $\\Sigma=I$'
+    ],
+    correct: 1,
+    explain: 'A tétel mindkét feltételpárból legalább <strong>egy</strong> ágat megkövetel — összesen 4 lehetőség. Ha akár az egyik (i) vagy (ii) sor mindkét ága sérül, akkor nem normális AM. <a href="07_AXB_normalis_AM.html">→ 07 megoldás</a>'
+  },
+  {
+    text: 'Adott egy $D$ távolságmátrix. Hogyan döntjük el, hogy euklideszi-e?',
+    context: 'A 14. tétel kritériuma. Konstruktív teszt.',
+    options: [
+      'Háromszög-egyenlőtlenség elég',
+      'Determináns nemnegatív legyen',
+      '$B = HAH \\geq 0$ (PSD), ahol $A = -\\frac{1}{2}D^{(2)}$ és $H$ a centráló mátrix',
+      'Minden elem nemnegatív'
+    ],
+    correct: 2,
+    explain: 'A tétel szerint $D$ euklideszi $\\Leftrightarrow$ $B = HAH$ pozitív szemidefinit. A háromszög-egyenlőtlenség szükséges (3 pontra elég is), de általában nem elégséges. <a href="01_euklideszi_tavmátrix.html">→ 01 megoldás</a> és <a href="08_euklideszi_konkret.html">→ 08 számolás</a>'
+  },
+  {
+    text: '$n$-elemű $N_p(\\mu, \\Sigma)$ minta, $H_0:\\mu=\\underline{\\mu}_0$, $\\Sigma$ <strong>ismert</strong>. Mi a tesztstatisztika?',
+    context: 'Klasszikus többdimenziós VÉ-tesztelés ismert kovarianciával.',
+    options: [
+      'Hotelling T² $\\sim$ F',
+      '$-2\\log\\lambda = n(\\bar{\\underline{\\xi}}-\\underline{\\mu}_0)^T\\Sigma^{-1}(\\bar{\\underline{\\xi}}-\\underline{\\mu}_0)\\sim\\chi^2_p$',
+      'Wilks-lambda',
+      'z-próba'
+    ],
+    correct: 1,
+    explain: 'Ismert $\\Sigma$ esetén a $-2\\log\\lambda$ statisztika $\\chi^2_p$-eloszlású $H_0$ alatt. Mahalanobis-távolság $n$-szerese. <a href="04_hipotezis_mu1_mu2.html">→ 04 megoldás</a>'
+  },
+  {
+    text: '$n$-elemű $N_p(\\mu, \\Sigma)$ minta, $H_0:\\mu=\\underline{\\mu}_0$, $\\Sigma$ <strong>ismeretlen</strong>. Mit használunk?',
+    context: 'Mint az előző, csak $\\Sigma$ helyett $S$-szel kell számolni.',
+    options: [
+      'Sima $\\chi^2$',
+      'Hotelling T²: $(n-1)(\\bar{\\underline{\\xi}}-\\underline{\\mu}_0)^T S^{-1}(\\bar{\\underline{\\xi}}-\\underline{\\mu}_0) \\sim T^2(p, n-1)$',
+      'Wilks-lambda',
+      'Bayes-faktor'
+    ],
+    correct: 1,
+    explain: 'Ismeretlen $\\Sigma$ esetén $S^{-1}$ helyettesít, és Hotelling T²-t kapunk, amely átírható F-eloszlásra: $T^2(p,m)\\sim\\frac{mp}{m-p+1}F_{p,m-p+1}$. <a href="10_hotelling_T2.html">→ 10 megoldás</a>'
+  },
+  {
+    text: 'Adott $\\Sigma$ szórásmátrix. Meg kell határozni a főkomponenseket.',
+    context: 'PCA — dimenziócsökkentés, korrelálatlan új tengelyek.',
+    options: [
+      '$\\Sigma$ átlós elemei (csökkenő sorrendben)',
+      '$\\Sigma$ inverzének elemei',
+      '$\\Sigma$ sajátértékei és ortonormált sajátvektorai (csökkenő $\\lambda$-sorrendben)',
+      'LU-felbontás'
+    ],
+    correct: 2,
+    explain: 'A főkomponenseket $\\Sigma$ <strong>spektrálfelbontása</strong> adja: $\\lambda_1\\geq\\dots\\geq\\lambda_p$ sajátértékek és $\\underline{\\gamma}_{(i)}$ ortonormált sajátvektorok. $Y_i = \\underline{\\gamma}_{(i)}^T(\\underline{\\xi}-\\mu)$. <a href="14_fokomponensek.html">→ 14 megoldás</a>'
+  },
+  {
+    text: 'Adott $\\Sigma$ szórásmátrix. Felírható-e az 1-faktormodell?',
+    context: 'A faktoranalízis létezésének feltétele konkrét $\\Sigma$-ra.',
+    options: [
+      'Mindig igen, ha $\\Sigma > 0$',
+      'Csak ha $\\Sigma$ diagonális',
+      'Akkor és csak akkor, ha $\\exists \\underline{a}, \\Psi$ úgy hogy $\\Sigma = \\underline{a}\\underline{a}^T + \\Psi$, $\\Psi$ diagonális, $\\psi_{ii}\\geq 0$',
+      'Csak ha $p=1$'
+    ],
+    correct: 2,
+    explain: 'A $k$-faktormodell ($k=1$ speciális esete) létezik $\\Leftrightarrow$ $\\Sigma$ felírható ilyen alakban. $p=2$ dimenziónál mindig megoldható egy paraméter-családdal. <a href="13_1_faktormodell.html">→ 13 megoldás</a>'
+  },
+  {
+    text: 'Adott egy $y_i$ sorozat és egy $x_i$ sorozat. Keressük az $y$ négyzetes monoton regresszióját $x$-re.',
+    context: 'Optimalizálás monotonitási kényszer mellett.',
+    options: [
+      'Lineáris regresszió, majd monoton átalakítás',
+      'Sima legkisebb négyzetek',
+      'Pool Adjacent Violators (PAV) / Shepard–Kruskal: $x$ szerint rendezünk, sértő blokkokat átlagoljuk',
+      'Spline-interpoláció'
+    ],
+    correct: 2,
+    explain: 'A PAV algoritmus: rendezzük $x$ szerint, majd a monotonitást sértő szomszédos blokkokat helyettesítjük az átlagukkal. Ezt addig ismételjük, amíg minden monoton lesz. <a href="12_monoton_regresszio.html">→ 12 megoldás</a>'
+  },
+  {
+    text: 'Két csoportunk van $\\Pi_1, \\Pi_2$, ismerjük a likelihoodokat $L_1, L_2$ és az $\\pi_1, \\pi_2$ priorokat. Hova soroljuk $\\underline{x}$-et a Bayes-szabály szerint?',
+    context: 'Bayes-i diszkriminanciaszabály.',
+    options: [
+      'Ahol $L_i(\\underline{x})$ maximum (likelihood max)',
+      'Ahol $\\pi_i L_i(\\underline{x})$ maximum',
+      'Ahol $\\pi_i$ maximum',
+      'Mindig $\\Pi_1$-be ha $\\pi_1 > 1/2$'
+    ],
+    correct: 1,
+    explain: 'A Bayes-szabály a <strong>prior × likelihood</strong> szorzatot maximalizálja. ML-szabálynál csak $L_i$-t. A különbség: Bayes figyelembe veszi a csoportok arányát. <a href="11_bayes_majmok.html">→ 11 megoldás</a>'
+  },
+  {
+    text: '$A, B, C$ függetlenek és mind $\\sim W_p(\\Sigma, n)$. Mi $A+B$ eloszlása?',
+    context: 'Wishart-mátrixok összege.',
+    options: [
+      '$W_p(2\\Sigma, n)$',
+      '$W_p(\\Sigma, 2n)$',
+      '$W_p(\\Sigma, n^2)$',
+      '$W_{2p}(\\Sigma, n)$'
+    ],
+    correct: 1,
+    explain: 'Független, azonos $\\Sigma$-jú Wishart-mátrixok összege Wishart, a <strong>szabadságfokok összegével</strong>. Mert $A$ „$n$ db normális vektor négyzetösszege" és $B$ szintén $n$ db, együtt $2n$.'
+  },
+  {
+    text: '$\\tilde{X}\\sim N_p(0,\\Sigma)$ adatmátrix, $C$ szimmetrikus. Mikor lesz $\\tilde{X}^T C \\tilde{X}$ Wishart-eloszlású?',
+    context: 'Cochran tétel kritériuma.',
+    options: [
+      'Mindig',
+      'Csak ha $C$ diagonális',
+      'Akkor és csak akkor, ha $C$ idempotens ($C^2 = C$)',
+      'Csak ha $C$ invertálható'
+    ],
+    correct: 2,
+    explain: 'Cochran tétel: $\\tilde{X}^T C\\tilde{X}$ Wishart $\\Leftrightarrow$ $C$ idempotens. Ekkor a szabadságfok $r(C) = \\text{tr}(C)$. Pl. centráló $H$ ezért adja $nS \\sim W_p(\\Sigma, n-1)$-et.'
+  },
+  {
+    text: '$\\Sigma$ ismeretlen, $\\mu = a\\cdot\\underline{\\mu}_0$ kényszer ($a$ ismeretlen skalár, $\\underline{\\mu}_0$ ismert). Mi $\\hat{a}$ ML-becslése?',
+    context: 'Ismert irányú VÉ-becslés ismeretlen kovarianciával.',
+    options: [
+      '$\\hat{a} = \\bar{\\xi}_1 / \\mu_{0,1}$',
+      '$\\hat{a} = \\dfrac{\\underline{\\mu}_0^T S^{-1}\\bar{\\underline{\\xi}}}{\\underline{\\mu}_0^T S^{-1}\\underline{\\mu}_0}$',
+      '$\\hat{a} = \\underline{\\mu}_0^T \\bar{\\underline{\\xi}} / \\|\\underline{\\mu}_0\\|^2$',
+      '$\\hat{a} = 1$ mindig'
+    ],
+    correct: 1,
+    explain: 'Ismeretlen $\\Sigma$ esetén az $\\Sigma^{-1}$ helyét $S^{-1}$ veszi át. Ez egy „Mahalanobis-vetítés" $\\bar{\\underline{\\xi}}$-ből $\\underline{\\mu}_0$ irányára. <a href="15_ML_becsles.html">→ 15 megoldás</a>'
+  },
+  {
+    text: '$M\\sim W_p(\\Sigma, m)$, $\\underline{a}\\in\\mathbb{R}^p$ fix. Mi $\\dfrac{\\underline{a}^T \\Sigma^{-1}\\underline{a}}{\\underline{a}^T M^{-1}\\underline{a}}$ eloszlása?',
+    context: 'Wishart-inverz kvadratikus alakja — fontos lemma a Hotelling T² bizonyításához.',
+    options: [
+      'F-eloszlás',
+      'Wilks-lambda',
+      '$\\chi^2_{m-p+1}$',
+      '$\\chi^2_p$'
+    ],
+    correct: 2,
+    explain: 'Ez a Wishart-inverz alaplemmája: a hányados $\\chi^2_{m-p+1}$. Megjegyzendő, hogy <em>nem</em> függ $\\underline{a}$-tól. Ez a kulcs lépés a Hotelling T² $\\to$ F bizonyításában. <a href="10_hotelling_T2.html">→ 10 megoldás</a>'
+  },
+];
+
+let idx = 0, score = 0, answered = [];
+
+function init() {
+  document.getElementById('qTotal').textContent = QUESTIONS.length;
+  document.getElementById('finalTotal').textContent = QUESTIONS.length;
+  resetAll();
+}
+function resetAll() {
+  idx = 0; score = 0; answered = new Array(QUESTIONS.length).fill(null);
+  document.getElementById('completeBox').style.display = 'none';
+  document.getElementById('qBlock').style.display = '';
+  render();
+}
+function render() {
+  const q = QUESTIONS[idx];
+  document.getElementById('qNum').textContent = idx+1;
+  document.getElementById('qNumLabel').textContent = `Kérdés ${String(idx+1).padStart(2,'0')}`;
+  document.getElementById('qText').innerHTML = q.text;
+  document.getElementById('qContext').innerHTML = '<em>Kontextus:</em> ' + q.context;
+  document.getElementById('score').textContent = score;
+  document.getElementById('progress').style.width = ((idx+1)/QUESTIONS.length*100) + '%';
+
+  const optsBox = document.getElementById('options');
+  optsBox.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.options.forEach((opt, i) => {
+    const btn = document.createElement('div');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.onclick = () => answer(i);
+    if (answered[idx] !== null) {
+      btn.classList.add('disabled');
+      if (i === q.correct) btn.classList.add('correct');
+      else if (i === answered[idx]) btn.classList.add('wrong');
+    }
+    optsBox.appendChild(btn);
+  });
+
+  const fb = document.getElementById('feedback');
+  if (answered[idx] !== null) {
+    fb.classList.add('show');
+    if (answered[idx] === q.correct) {
+      fb.className = 'feedback show good';
+      fb.innerHTML = `<strong>✓ Helyes!</strong> ${q.explain}`;
+    } else {
+      fb.className = 'feedback show bad';
+      fb.innerHTML = `<strong>✗ Nem.</strong> A helyes válasz: <strong>${letters[q.correct]}</strong>. ${q.explain}`;
+    }
+  } else {
+    fb.classList.remove('show');
+    fb.innerHTML = '';
+  }
+
+  document.getElementById('prevBtn').disabled = idx === 0;
+  document.getElementById('nextBtn').disabled = answered[idx] === null;
+  document.getElementById('nextBtn').textContent = idx === QUESTIONS.length-1 ? 'Befejezés →' : 'Következő →';
+
+  if (window.MathJax) MathJax.typesetPromise([document.getElementById('qBlock')]);
+}
+function answer(i) {
+  if (answered[idx] !== null) return; // már válaszoltunk
+  answered[idx] = i;
+  if (i === QUESTIONS[idx].correct) score++;
+  render();
+}
+function next() {
+  if (idx < QUESTIONS.length - 1) {
+    idx++; render();
+  } else {
+    showComplete();
+  }
+}
+function prev() {
+  if (idx > 0) { idx--; render(); }
+}
+function showComplete() {
+  document.getElementById('qBlock').style.display = 'none';
+  document.getElementById('completeBox').style.display = '';
+  document.getElementById('finalScore').textContent = score;
+  const pct = score/QUESTIONS.length*100;
+  let msg = '';
+  if (pct === 100) msg = 'Tökéletes! Felkészültnek tűnsz a beugróra. 🚀';
+  else if (pct >= 80) msg = 'Nagyon jó! A feladat-felismerésed erős.';
+  else if (pct >= 60) msg = 'Jó alap, de érdemes átismételni a hibás kérdések tételeit.';
+  else msg = 'Még nézd át a 01–15 megoldásokat és próbáld újra. Te tudod ezt!';
+  document.getElementById('completeMsg').textContent = msg;
+}
+init();
+</script>
+
+<nav class="bottom-home-nav"><a href="index.html" class="bottom-home-btn">&#8962; Vissza a f&#337;oldalra</a></nav>
+</body>
+</html>

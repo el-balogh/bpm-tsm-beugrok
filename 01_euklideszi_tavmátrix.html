@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>01 — Euklideszi távolságmátrix</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+  </style>
+<style>
+/* ---- page navigation ---- */
+.nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+.nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+.nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+.nav-overlay.show{display:block;}
+.nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:260px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+.nav-sidebar.open{transform:translateX(0);}
+.nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+.nav-sb-close:hover{color:var(--text);}
+.nav-sb-list{padding:8px 0;flex:1;}
+.nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+.nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+.nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+.nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:22px;flex-shrink:0;text-align:right;}
+.nav-sb-item.active .nav-sb-num{color:var(--accent);}
+.page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+.pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+.pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+.pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+.pbn-home:hover{background:rgba(200,169,110,0.1);}
+.pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+</style></head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">01 · 14. Tétel · Többdimenziós skálázás</div>
+  <h1>Pontosan mikor euklideszi egy <em>távolságmátrix?</em></h1>
+  <div class="meta">8 pont &nbsp;·&nbsp; Tétel kimondása + levezetés &nbsp;·&nbsp; Dóri jegyzet ~49–51. oldal</div>
+</header>
+
+<main>
+
+<!-- 0. lépés -->
+<div class="step">
+  <div class="step-label">0. lépés — Probléma és eszközök</div>
+  <h2>Mit kérdez a feladat?</h2>
+  <p>Adott $n$ darab objektum, páronként ismerjük a távolságukat. Ezeket egy $n\times n$-es <strong>távolságmátrixba</strong> rendezzük: $D = (d_{r,s})$, ahol $d_{r,s}$ az $r$-edik és $s$-edik objektum távolsága.</p>
+  <p><strong>A kérdés:</strong> Leültethetők-e ezek az objektumok egy $\mathbb{R}^p$ euklideszi térbe úgy, hogy a megadott távolságok pontosan az ottani euklideszi távolságok legyenek?</p>
+
+  <div class="box accent">
+    <strong>Definíció — Távolságmátrix:</strong> $D$ szimmetrikus ($d_{r,s}=d_{s,r}$), $d_{r,r}=0$, $d_{r,s}\geq 0$.
+    <br><br>
+    <strong>Definíció — Euklideszi távolságmátrix:</strong> $D$ euklideszi, ha $\exists\, p\geq 1$ és $\underline{x}_1,\dots,\underline{x}_n\in\mathbb{R}^p$, melyekre
+    $$d_{r,s}^2 = (\underline{x}_r - \underline{x}_s)^T(\underline{x}_r - \underline{x}_s) = \|\underline{x}_r - \underline{x}_s\|^2.$$
+  </div>
+
+  <h2>A tétel kimondása</h2>
+  <p>Vezessük be a következő jelöléseket:</p>
+  <ul>
+    <li>$a_{r,s} = -\tfrac{1}{2}d_{r,s}^2$, legyen $A = (a_{r,s})$</li>
+    <li>$H = I_n - \tfrac{1}{n}\mathbf{1}_n\mathbf{1}_n^T$ &nbsp;(centráló mátrix)</li>
+    <li>$B = HAH$ &nbsp;(kétoldalt megcentráljuk $A$-t)</li>
+  </ul>
+  <div class="box green">
+    <strong>Tétel:</strong> $D$ pontosan akkor euklideszi távolságmátrix, ha $B = HAH$ <strong>pozitív szemidefinit</strong> ($B \geq 0$).
+  </div>
+
+  <h2>Kakukkfű-lista (használt eszközök)</h2>
+  <ul>
+    <li><strong>Centráló mátrix</strong> $H$: szimmetrikus, idempotens ($H^2=H$), $H\mathbf{1}_n = \mathbf{0}$. Egy $z$ vektorra $Hz = z -$ (átlaga).</li>
+    <li><strong>PSD mátrix:</strong> $M\geq 0$ $\Leftrightarrow$ minden $\underline{y}$-ra $\underline{y}^TM\underline{y}\geq 0$ $\Leftrightarrow$ $M=LL^T$ valamilyen $L$-re.</li>
+    <li><strong>Gram-mátrix:</strong> Ha $X$ egy mátrix, $G = XX^T$ mindig PSD.</li>
+    <li><strong>Spektrálfelbontás:</strong> Szimmetrikus PSD mátrixnak nemnegatív sajátértékei vannak.</li>
+  </ul>
+</div>
+
+<!-- ⟹ irány -->
+<div class="step">
+  <div class="step-label">1–6. lépés — Ha D euklideszi, akkor B ≥ 0</div>
+
+  <h2>1. lépés — $a_{r,s}$ felírása a pontok segítségével</h2>
+  <p>Mivel $D$ euklideszi, léteznek $\underline{x}_1,\dots,\underline{x}_n\in\mathbb{R}^p$ pontok:</p>
+  $$d_{r,s}^2 = \underline{x}_r^T\underline{x}_r - 2\underline{x}_r^T\underline{x}_s + \underline{x}_s^T\underline{x}_s,$$
+  <p>ezért:</p>
+  $$a_{r,s} = -\tfrac{1}{2}d_{r,s}^2 = -\tfrac{1}{2}\underline{x}_r^T\underline{x}_r + \underline{x}_r^T\underline{x}_s - \tfrac{1}{2}\underline{x}_s^T\underline{x}_s.$$
+  <div class="why"><strong>Miért fontos?</strong> A centráló mátrix alkalmazása után a „csúnya" $\underline{x}_r^T\underline{x}_r$ tagok ki fognak esni, és csak a Gram-szerű $\underline{x}_r^T\underline{x}_s$ tagok maradnak.</div>
+
+  <h2>2. lépés — Jelölések az átlagokra</h2>
+  <p>Vezessük be a következő átlagjelöléseket:</p>
+  <ul>
+    <li>$\bar{a}_{r\cdot} = \tfrac{1}{n}\sum_{s=1}^n a_{r,s}$ &nbsp;(sorátlag)</li>
+    <li>$\bar{a}_{\cdot s} = \tfrac{1}{n}\sum_{r=1}^n a_{r,s}$ &nbsp;(oszlopátlag)</li>
+    <li>$\bar{a}_{\cdot\cdot} = \tfrac{1}{n^2}\sum_{r,s} a_{r,s}$ &nbsp;(teljes átlag)</li>
+    <li>$\bar{\underline{x}} = \tfrac{1}{n}\sum_i \underline{x}_i$ &nbsp;(pontok súlypontja)</li>
+  </ul>
+
+  <h2>3. lépés — Mit csinál a centrálás?</h2>
+  <p><strong>Állítás:</strong> $B_{r,s} = a_{r,s} - \bar{a}_{r\cdot} - \bar{a}_{\cdot s} + \bar{a}_{\cdot\cdot}$.</p>
+  <div class="why"><strong>Miért?</strong> Fejtsük ki $HAH$-t, ahol $J=\mathbf{1}\mathbf{1}^T$:
+    $$HAH = (I - \tfrac{1}{n}J)\,A\,(I - \tfrac{1}{n}J) = A - \tfrac{1}{n}AJ - \tfrac{1}{n}JA + \tfrac{1}{n^2}JAJ.$$
+    <ul style="margin-top:8px;">
+      <li>$\tfrac{1}{n}AJ$: $J$-vel jobbról szorozva minden sor összege kerül be, osztva $n$-nel → <strong>sorátlag</strong>.</li>
+      <li>$\tfrac{1}{n}JA$: $J$-vel balról → <strong>oszlopátlag</strong>.</li>
+      <li>$\tfrac{1}{n^2}JAJ$: mindkét irányból → <strong>teljes átlag</strong>.</li>
+    </ul>
+    Elemenként tehát: $B_{r,s} = a_{r,s} - \bar{a}_{r\cdot} - \bar{a}_{\cdot s} + \bar{a}_{\cdot\cdot}$. ✓
+  </div>
+
+  <h2>4. lépés — Az átlagok kiszámítása</h2>
+  <p>Behelyettesítve az 1. lépés alakját ($a_{r,s} = -\tfrac{1}{2}\underline{x}_r^T\underline{x}_r + \underline{x}_r^T\underline{x}_s - \tfrac{1}{2}\underline{x}_s^T\underline{x}_s$) az egyes átlagokba:</p>
+  <p><strong>Sorátlag</strong> ($s$ szerint átlagolva):</p>
+  $$\bar{a}_{r\cdot} = -\tfrac{1}{2}\underline{x}_r^T\underline{x}_r + \underline{x}_r^T\bar{\underline{x}} - \tfrac{1}{2n}\sum_s\underline{x}_s^T\underline{x}_s.$$
+  <p><strong>Oszlopátlag</strong> ($r$ szerint átlagolva, szimmetrikusan):</p>
+  $$\bar{a}_{\cdot s} = -\tfrac{1}{2n}\sum_r\underline{x}_r^T\underline{x}_r + \bar{\underline{x}}^T\underline{x}_s - \tfrac{1}{2}\underline{x}_s^T\underline{x}_s.$$
+  <p><strong>Teljes átlag</strong> (a középső tag $\tfrac{1}{n^2}\sum_{r,s}\underline{x}_r^T\underline{x}_s = \bar{\underline{x}}^T\bar{\underline{x}}$, a két szélső szimmetrikusan összead):</p>
+  $$\bar{a}_{\cdot\cdot} = -\tfrac{1}{n}\sum_r\underline{x}_r^T\underline{x}_r + \bar{\underline{x}}^T\bar{\underline{x}}.$$
+
+  <h2>5. lépés — A „csúnya" tagok kiesnek</h2>
+  <p>Legyen $c = \tfrac{1}{2n}\sum_i\underline{x}_i^T\underline{x}_i$. Behelyettesítve $B_{r,s} = a_{r,s} - \bar{a}_{r\cdot} - \bar{a}_{\cdot s} + \bar{a}_{\cdot\cdot}$-be, tagonként:</p>
+  <div class="box accent">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <tr><th style="text-align:left;padding:4px 8px;color:var(--muted);">tag</th><th style="text-align:right;padding:4px 8px;color:var(--muted);">együttható</th><th style="text-align:right;padding:4px 8px;color:var(--muted);">eredmény</th></tr>
+      <tr><td style="padding:4px 8px;">$\underline{x}_r^T\underline{x}_r$</td><td style="text-align:right;padding:4px 8px;">$-\tfrac{1}{2}+\tfrac{1}{2}$</td><td style="text-align:right;padding:4px 8px;color:var(--done);">kiesik</td></tr>
+      <tr><td style="padding:4px 8px;">$\underline{x}_s^T\underline{x}_s$</td><td style="text-align:right;padding:4px 8px;">$-\tfrac{1}{2}+\tfrac{1}{2}$</td><td style="text-align:right;padding:4px 8px;color:var(--done);">kiesik</td></tr>
+      <tr><td style="padding:4px 8px;">$c$ típusú tagok</td><td style="text-align:right;padding:4px 8px;">$+1+1-2$</td><td style="text-align:right;padding:4px 8px;color:var(--done);">kiesik</td></tr>
+    </table>
+  </div>
+  <p>Ami marad:</p>
+  $$B_{r,s} = \underline{x}_r^T\underline{x}_s - \underline{x}_r^T\bar{\underline{x}} - \bar{\underline{x}}^T\underline{x}_s + \bar{\underline{x}}^T\bar{\underline{x}}.$$
+  <div class="box accent">
+    $$B_{r,s} = (\underline{x}_r - \bar{\underline{x}})^T(\underline{x}_s - \bar{\underline{x}}).$$
+  </div>
+  <div class="why"><strong>Miért pont ez?</strong> Ez az $(a-b)^T(c-b)$ alak: mindkét vektorból kivonjuk a súlypontot $\bar{\underline{x}}$-t, és e két centrált vektor skaláris szorzatát kapjuk. (Papíron érdemes lassan végigkövetni az egyszerűsítéseket.)</div>
+
+  <h2>6. lépés — $B$ egy Gram-mátrix tehát PSD</h2>
+  <p>Legyen $Z$ az $n\times p$-s mátrix, amelynek $r$-edik sora $\underline{x}_r^T$. Ekkor a centrált mátrix $HZ$, és:</p>
+  $$B = (HZ)(HZ)^T.$$
+  <p>Ez „valami szorozva a transzponáltjával" alak $\Rightarrow$ <strong>PSD</strong>, mert $\underline{y}^TB\underline{y} = \|(HZ)^T\underline{y}\|^2 \geq 0$. $\checkmark$</p>
+</div>
+
+<!-- ⟸ irány -->
+<div class="step">
+  <div class="step-label">6–8. lépés — Ha B ≥ 0, akkor D euklideszi</div>
+
+  <h2>6. lépés — Spektrálfelbontás és a pontok megkonstruálása</h2>
+  <p>$B$ szimmetrikus és PSD, ezért spektrálfelbontható: $B = Q\Lambda Q^T$, ahol $Q$ ortogonális (oszlopai az egységnyi sajátvektorok $\underline{v}_1,\dots,\underline{v}_p$), $\Lambda = \text{diag}(\lambda_1,\dots,\lambda_p)$, $\lambda_i\geq 0$. Azaz:</p>
+  $$B = \sum_{i=1}^p \lambda_i\,\underline{v}_i\underline{v}_i^T.$$
+  <p>Definiáljuk a <em>gyökhosszú</em> sajátvektorokat: $\underline{u}_i = \sqrt{\lambda_i}\,\underline{v}_i$, melyekre $\underline{u}_i^T\underline{u}_i = \lambda_i$. Ekkor:</p>
+  $$B = \sum_{i=1}^p \underline{u}_i\underline{u}_i^T.$$
+  <div class="why"><strong>Miért gyökhosszú?</strong> Ha $\|\underline{v}_i\|=1$ (egységnyi), akkor $\lambda_i\underline{v}_i\underline{v}_i^T$ helyett $\underline{u}_i\underline{u}_i^T$ alakot kapunk — vagyis nincs $\lambda_i$ szorzó előtte. Ez teszi lehetővé, hogy $B_{r,s}$ közvetlenül egy skaláris szorzat legyen.</div>
+
+  <h2>7. lépés — $B_{r,s}$ mint skaláris szorzat</h2>
+  <p>Legyen $Z$ az $n\times p$-s mátrix, amelynek $i$-edik oszlopa $\underline{u}_i$. Az $r$-edik pont legyen $\underline{z}_r = Z$ $r$-edik sora (mint oszlopvektor). Ekkor:</p>
+  $$B_{r,s} = \sum_{i=1}^p (u_i)_r\,(u_i)_s = \underline{z}_r^T\underline{z}_s.$$
+  <div class="why"><strong>Miért?</strong> $B = \sum_i \underline{u}_i\underline{u}_i^T$, tehát $B_{r,s} = \sum_i (\underline{u}_i)_r(\underline{u}_i)_s$. Ez pontosan a $Z$ mátrix $r$-edik és $s$-edik sorának skaláris szorzata: $B = ZZ^T$, elemenként $B_{r,s} = \underline{z}_r^T\underline{z}_s$.</div>
+
+  <h2>8. lépés — Igazoljuk, hogy $\|\underline{z}_r - \underline{z}_s\|^2 = d_{r,s}^2$</h2>
+  <p>Kifejtjük a távolságnégyzetet a 7. lépés alapján:</p>
+  $$\|\underline{z}_r - \underline{z}_s\|^2 = \underline{z}_r^T\underline{z}_r - 2\underline{z}_r^T\underline{z}_s + \underline{z}_s^T\underline{z}_s = B_{r,r} - 2B_{r,s} + B_{s,s}.$$
+  <p>Behelyettesítjük $B_{r,s} = a_{r,s} - \bar{a}_{r\cdot} - \bar{a}_{\cdot s} + \bar{a}_{\cdot\cdot}$-t mind a három tagba. Mivel $A$ szimmetrikus, $\bar{a}_{r\cdot} = \bar{a}_{\cdot r}$. Az átlagtagok együtthatóit összeszámolva:</p>
+  <div class="box accent">
+    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <tr><th style="text-align:left;padding:4px 8px;color:var(--muted);">tag</th><th style="text-align:center;padding:4px 8px;color:var(--muted);">$B_{r,r}$-ből</th><th style="text-align:center;padding:4px 8px;color:var(--muted);">$-2B_{r,s}$-ből</th><th style="text-align:center;padding:4px 8px;color:var(--muted);">$B_{s,s}$-ből</th><th style="text-align:right;padding:4px 8px;color:var(--muted);">összesen</th></tr>
+      <tr><td style="padding:4px 8px;">$\bar{a}_{r\cdot}$</td><td style="text-align:center;padding:4px 8px;">$-2$</td><td style="text-align:center;padding:4px 8px;">$+2$</td><td style="text-align:center;padding:4px 8px;">$0$</td><td style="text-align:right;padding:4px 8px;color:var(--done);">0, kiesik</td></tr>
+      <tr><td style="padding:4px 8px;">$\bar{a}_{\cdot s}$</td><td style="text-align:center;padding:4px 8px;">$0$</td><td style="text-align:center;padding:4px 8px;">$+2$</td><td style="text-align:center;padding:4px 8px;">$-2$</td><td style="text-align:right;padding:4px 8px;color:var(--done);">0, kiesik</td></tr>
+      <tr><td style="padding:4px 8px;">$\bar{a}_{\cdot\cdot}$</td><td style="text-align:center;padding:4px 8px;">$+1$</td><td style="text-align:center;padding:4px 8px;">$-2$</td><td style="text-align:center;padding:4px 8px;">$+1$</td><td style="text-align:right;padding:4px 8px;color:var(--done);">0, kiesik</td></tr>
+    </table>
+  </div>
+  <div class="why"><strong>Miért $-2$ a $\bar{a}_{r\cdot}$ együtthatója $B_{r,r}$-ben?</strong> Mert $B_{r,r}$-be $-\bar{a}_{r\cdot} - \bar{a}_{\cdot r}$ kerül, és szimmetria miatt $\bar{a}_{r\cdot}=\bar{a}_{\cdot r}$, tehát $-2\bar{a}_{r\cdot}$.</div>
+  <p>Ami marad, csak az $a_{r,s}$ tagok:</p>
+  $$a_{r,r} - 2a_{r,s} + a_{s,s}.$$
+  <p>Behelyettesítve $a_{r,r} = -\tfrac{1}{2}d_{r,r}^2 = 0$ és $a_{r,s} = -\tfrac{1}{2}d_{r,s}^2$:</p>
+  $$0 - 2\cdot\!\left(-\tfrac{1}{2}d_{r,s}^2\right) + 0 = d_{r,s}^2.$$
+  <div class="box green">
+    $$\Rightarrow \|\underline{z}_r - \underline{z}_s\|^2 = d_{r,s}^2. \qquad \blacksquare$$
+  </div>
+  <p>Tehát a $\underline{z}_1,\dots,\underline{z}_n\in\mathbb{R}^p$ pontok pontosan reprodukálják az eredeti $D$ távolságmátrixot — $D$ euklideszi. $\checkmark$</p>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <a href="00_matrix_vektor_alapok.html" class="nav-sb-item"><span class="nav-sb-num">00</span><span>M&#225;trix &amp; vektor</span></a>
+    <a href="01_euklideszi_tavmátrix.html" class="nav-sb-item active"><span class="nav-sb-num">01</span><span>Euklideszi t&#225;vols&#225;gm&#225;trix</span></a>
+    <a href="02_logisztikus_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">02</span><span>Logisztikus regresszi&#243;</span></a>
+    <a href="03_wilks_lambda.html" class="nav-sb-item"><span class="nav-sb-num">03</span><span>Wilks-lambda</span></a>
+    <a href="04_hipotezis_mu1_mu2.html" class="nav-sb-item"><span class="nav-sb-num">04</span><span>Hipot&#233;zis &#956;&#8321;+&#956;&#8322;=4</span></a>
+    <a href="05_normalis_korr_tetele.html" class="nav-sb-item"><span class="nav-sb-num">05</span><span>Norm&#225;lis korrel&#225;ci&#243;</span></a>
+    <a href="06_std_wishart_karfv.html" class="nav-sb-item"><span class="nav-sb-num">06</span><span>Wishart karf.</span></a>
+    <a href="07_AXB_normalis_AM.html" class="nav-sb-item"><span class="nav-sb-num">07</span><span>AXB norm&#225;lis AM?</span></a>
+    <a href="08_euklideszi_konkret.html" class="nav-sb-item"><span class="nav-sb-num">08</span><span>Euklideszi konkr&#233;t 3&#215;3</span></a>
+    <a href="09_sklar_tetel.html" class="nav-sb-item"><span class="nav-sb-num">09</span><span>Sklar t&#233;tele</span></a>
+    <a href="10_hotelling_T2.html" class="nav-sb-item"><span class="nav-sb-num">10</span><span>Hotelling T&#178;</span></a>
+    <a href="11_bayes_majmok.html" class="nav-sb-item"><span class="nav-sb-num">11</span><span>Bayes-i diszkrimin&#225;ci&#243;</span></a>
+    <a href="12_monoton_regresszio.html" class="nav-sb-item"><span class="nav-sb-num">12</span><span>Monoton regresszi&#243;</span></a>
+    <a href="13_1_faktormodell.html" class="nav-sb-item"><span class="nav-sb-num">13</span><span>1-faktormodell</span></a>
+    <a href="14_fokomponensek.html" class="nav-sb-item"><span class="nav-sb-num">14</span><span>F&#337;komponensek</span></a>
+    <a href="15_ML_becsles.html" class="nav-sb-item"><span class="nav-sb-num">15</span><span>ML becsl&#233;s</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="00_matrix_vektor_alapok.html" class="pbn-btn">&#8592; El&#337;z&#337;</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezd&#337;lap</a>
+  <a href="02_logisztikus_regresszio.html" class="pbn-btn">K&#246;vetkez&#337; &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>
