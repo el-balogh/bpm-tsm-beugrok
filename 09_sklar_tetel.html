@@ -101,7 +101,7 @@
     <strong>Megfordítás:</strong> Ha $C$ kopula és $F_1,\dots,F_p$ tetszőleges 1-dim. EFV-ek, akkor a fenti formulával definiált $F$ <em>tényleg</em> egy $p$-dim. EFV.
   </div>
 
-  <h2>Kakukkfű-lista (használt eszközök)</h2>
+  <h2>Emlékeztető — használt eszközök</h2>
   <ul>
     <li><strong>Inverz eloszlásfüggvény:</strong> Egydim. EFV $F$ inverze $F^{-1}(t) = \inf\{x\in\mathbb{R}: F(x)\geq t\}$ (általánosított inverz, akkor is működik ha $F$ nem szigorúan monoton).</li>
     <li><strong>Inverz transzformáció lemma:</strong> Ha $U\sim E(0,1)$ egyenletes és $F$ tetszőleges EFV, akkor $F^{-1}(U)$ eloszlásfüggvénye éppen $F$. (Ez az alapja a véletlenszám-generálásnak is.)</li>
@@ -128,7 +128,7 @@
   <h2>Konstrukció</h2>
   <p>Legyen $\underline{\xi} = (\xi_1,\dots,\xi_p)^T$ olyan vektorváltozó, melynek együttes EFV-e $F$ (és így marginálisai $F_i$). <strong>Folytonos $F_i$ esetén</strong> definiáljuk:</p>
   $$U_i := F_i(\xi_i),\quad i=1,\dots,p.$$
-  <p>Ezek a $\sigma$-algebra szerinti transzformáció miatt <strong>egyenletes eloszlásúak $[0,1]$-en</strong> (kakukkfű-lista 3. pont).</p>
+  <p>Ezek a $\sigma$-algebra szerinti transzformáció miatt <strong>egyenletes eloszlásúak $[0,1]$-en</strong> (emlékeztető 3. pont).</p>
 
   <h2>$C$ definíciója</h2>
   <p>Legyen $C$ az $(U_1,\dots,U_p)$ vektor együttes eloszlásfüggvénye:</p>
@@ -164,12 +164,12 @@
 
   <p>Definiáljuk:</p>
   $$\xi_i := F_i^{-1}(\eta_i),\quad i=1,\dots,p.$$
-  <p>Az inverz transzformáció lemma szerint $\xi_i$ EFV-e éppen $F_i$ (kakukkfű-lista 2. pont).</p>
+  <p>Az inverz transzformáció lemma szerint $\xi_i$ EFV-e éppen $F_i$ (emlékeztető 2. pont).</p>
 
   <h2>Az állítás bizonyítása</h2>
   <p>Számoljuk $\underline{\xi}$ együttes EFV-ét:</p>
   $$F_{\underline{\xi}}(\underline{x}) = P(\xi_1\leq x_1,\dots,\xi_p\leq x_p) = P(F_1^{-1}(\eta_1)\leq x_1,\dots,F_p^{-1}(\eta_p)\leq x_p).$$
-  <p>Az inverz EFV alaptulajdonsága (kakukkfű-lista 5. pont):</p>
+  <p>Az inverz EFV alaptulajdonsága (emlékeztető 5. pont):</p>
   $$F_i^{-1}(\eta_i)\leq x_i \;\Leftrightarrow\; \eta_i\leq F_i(x_i).$$
   <p>Ezért:</p>
   $$F_{\underline{\xi}}(\underline{x}) = P(\eta_1\leq F_1(x_1),\dots,\eta_p\leq F_p(x_p)) = C(F_1(x_1),\dots,F_p(x_p)).\quad\checkmark$$
