@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 03 — Wishart-eloszlás 1.: Cochran és Craig</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 03 · Wishart-eloszlás (1.) — definíció, Cochran, Craig</div>
+  <h1>Wishart-eloszlás, $\tilde{X}^TC\tilde{X}$ szerkezete, <em>Cochran és Craig tételek</em></h1>
+  <div class="meta">Dóri jegyzet 9–10. oldal &nbsp;·&nbsp; vizsgára: definíció + Cochran + Craig kimondása</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> A Wishart-eloszlás a $\chi^2$ <em>többdimenziós megfelelője</em>: $n$ db független $N_p(0,\Sigma)$ vektor külső szorzatainak összege. Egy normális adatmátrixhoz tehát természetes módon kötődik (pl. a tapasztalati szórásmátrix Wishart-eloszlású). A két ★-os főtétel: <strong>Cochran</strong> (mikor lesz $\tilde{X}^TC\tilde{X}$ Wishart-eloszlású — pontosan akkor, ha $C$ idempotens), és <strong>Craig</strong> (mikor függetlenek $\tilde{X}^TC_1\tilde{X}$ és $\tilde{X}^TC_2\tilde{X}$ — pontosan akkor, ha $C_1C_2=0$).
+  </div>
+</div>
+
+<!-- Definíció -->
+<div class="step">
+  <div class="step-label">1. Wishart-eloszlás definíciója</div>
+
+  <div class="box accent">
+    <strong>Definíció:</strong> Legyenek $\underline{\xi}_1,\dots,\underline{\xi}_n$ FAE $N_p(\underline{0},\Sigma)$ vektorok. Ekkor a
+    $$W = \sum_{i=1}^n \underline{\xi}_i\underline{\xi}_i^T \quad (p\times p)$$
+    mátrix <strong>Wishart-eloszlású</strong>, jelölés: $W \sim W_p(\Sigma, n)$.
+  </div>
+
+  <p>A paraméterek:</p>
+  <ul>
+    <li>$\Sigma$ a „skalármátrix" (a normálisak közös kovmátrixa),</li>
+    <li>$n$ a <strong>szabadságfok</strong> (hány vektor van összegezve).</li>
+  </ul>
+
+  <div class="why"><strong>Miért $\chi^2$ általánosítása?</strong> Ha $p=1$ és $\Sigma=1$, akkor $W = \sum_{i=1}^n \xi_i^2 \sim \chi^2_n$. A többdim verzióban a négyzet helyett külső szorzat áll, így a főátlóban négyzetes tagok ülnek, a többi helyen kovariancia-szerű tagok.</p></div>
+
+  <div class="box">
+    <strong>Alternatív felírás (adatmátrixszal):</strong> ha $\tilde{X}\sim N_p(\underline{0},\Sigma)$ adatmátrix ($n\times p$), akkor
+    $$W = \tilde{X}^T\tilde{X} \sim W_p(\Sigma, n).$$
+  </div>
+</div>
+
+<!-- Elemi tulajdonságok -->
+<div class="step">
+  <div class="step-label">2. Elemi tulajdonságok</div>
+
+  <div class="box green">
+    <strong>Lineáris transzformáció:</strong> $M\sim W_p(\Sigma, n)$, $B:p\times q$ esetén
+    $$B^T M B \sim W_q(B^T\Sigma B,\, n).$$
+  </div>
+
+  <div class="box accent">
+    <strong>Standardizálás:</strong> ha $\Sigma > 0$, akkor
+    $$\Sigma^{-1/2} M\, \Sigma^{-1/2} \sim W_p(I_p, n) \quad \text{(standard Wishart).}$$
+  </div>
+
+  <div class="box green">
+    <strong>Wishartok összege (azonos $\Sigma$):</strong> ha $M_1\sim W_p(\Sigma, n_1)$, $M_2\sim W_p(\Sigma, n_2)$ függetlenek, akkor
+    $$M_1+M_2 \sim W_p(\Sigma,\, n_1+n_2).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">A szabadságfokok összeadódnak (a $\chi^2$-tulajdonság hozzá analóg).</p>
+  </div>
+
+  <div class="box blue">
+    <strong>Hasznos megjegyzés:</strong> minden $\underline{a}\in\mathbb{R}^p$ ($\underline{a}^T\Sigma\underline{a}\neq 0$) esetén
+    $$\frac{\underline{a}^T M \underline{a}}{\underline{a}^T \Sigma \underline{a}} \sim \chi^2_n.$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Tetszőleges irányban egydimenzióvá lehet redukálni $\chi^2$-té.</p>
+  </div>
+</div>
+
+<!-- Cochran tétel -->
+<div class="step">
+  <div class="step-label">3. <span class="star">★</span> Cochran-tétel</div>
+
+  <p>Legyen $\tilde{X} \sim N_p(\underline{0},\Sigma)$ $n\times p$-s adatmátrix és $C$ egy $n\times n$-es szimmetrikus mátrix. Tekintsük a kvadratikus formát</p>
+  $$\tilde{X}^T C\tilde{X} \quad (p\times p).$$
+
+  <div class="box green">
+    <strong>Cochran-tétel:</strong>
+    <p style="margin-top:10px;"><strong>(a) Spektrális felbontás:</strong> Ha $C = \sum_{i=1}^n \lambda_i \underline{\gamma}_i\underline{\gamma}_i^T$ a spektrálfelbontás, akkor
+    $$\tilde{X}^T C \tilde{X} = \sum_{i=1}^n \lambda_i W_i, \quad \text{ahol } W_i \sim W_p(\Sigma, 1) \text{ függetlenek.}$$
+    </p>
+    <p><strong>(b) Wishart-feltétel:</strong>
+    $$\tilde{X}^T C\tilde{X} \sim W_p(\Sigma, r) \;\Longleftrightarrow\; C \text{ idempotens } (C^2=C),$$
+    és ekkor $r = \mathrm{tr}(C) = \mathrm{rang}(C).$
+    </p>
+    <p style="margin-bottom:0;"><strong>(c) Tap. szórásmátrix következménye:</strong>
+    $$nS = \tilde{X}^T H \tilde{X} \sim W_p(\Sigma,\, n-1),$$
+    mert $H = I_n - \tfrac{1}{n}\mathbf{1}_n\mathbf{1}_n^T$ idempotens, $\mathrm{tr}(H)=n-1$.
+    </p>
+  </div>
+
+  <div class="why"><strong>Mi az intuíció?</strong> Egy idempotens mátrix sajátértékei $0$ vagy $1$, és $\mathrm{rang}(C)$ darab $1$-es van köztük. Az (a)-ban szereplő $\sum \lambda_i W_i$ így $\sum_{i=1}^r W_i$-vé esik össze, amit $r$ db $W_p(\Sigma,1)$ összegeként tudunk kezelni $\Rightarrow$ $W_p(\Sigma, r)$.</div>
+
+  <div class="box accent">
+    <strong>Példa-alkalmazások:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$nS \sim W_p(\Sigma, n-1)$ — <em>tap. szórásmátrix Wishart</em>.</li>
+      <li>MANOVA-nál a csoporton belüli és csoportok közötti négyzetösszegek $W$-eloszlásúak.</li>
+      <li>Lineáris regressziónál $n\hat\Sigma \sim W_p(\Sigma, n-q)$.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Craig tétel -->
+<div class="step">
+  <div class="step-label">4. <span class="star">★</span> Craig-tétel</div>
+
+  <div class="box green">
+    <strong>Craig-tétel:</strong> Legyen $\tilde{X} \sim N_p(\underline{0},\Sigma)$ adatmátrix, és $C_1,\dots,C_k$ szimmetrikus $n\times n$-es mátrixok, melyekre
+    $$C_i C_j = 0 \quad \text{minden } i\neq j\text{-re.}$$
+    Ekkor a $\tilde{X}^TC_1\tilde{X},\, \tilde{X}^TC_2\tilde{X},\,\dots,\, \tilde{X}^TC_k\tilde{X}$ kvadratikus formák <strong>együttesen függetlenek</strong>.
+  </div>
+
+  <div class="why"><strong>Hogyan használjuk?</strong> Ha valamilyen kvadratikus felbontásra ($\tilde{X}^TC_1\tilde{X} + \tilde{X}^TC_2\tilde{X}$) szeretnénk a két részt függetlennek látni, elég ellenőrizni, hogy a két mátrix szorzata $0$. Ez akkor tipikus, ha mindkettő egy másik <em>komplementer</em> alterére vetít.</div>
+
+  <div class="box accent">
+    <strong>Tipikus alkalmazás:</strong> $H$ centráló és $\tfrac{1}{n}\mathbf{1}_n\mathbf{1}_n^T$ szorzata $0$. Ezért az átlagból és a centrálásból származó kifejezések függetlenek lesznek $\Rightarrow$ $\bar{\underline{\xi}}$ és $S$ függetlenek (Tétel 02 függetlenségi állítás).
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Megjegyzés: a tétel kiterjed arra is, hogy tetszőleges $k$-ra fennmarad a függetlenség (nem csak párokra), normálisak esetén az együttes függetlenség is ekvivalens a páronkénti korrelálatlansággal.</p>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Definíciók fejből:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$W_p(\Sigma,n) = \sum_{i=1}^n \underline{\xi}_i\underline{\xi}_i^T$, ahol $\underline{\xi}_i \sim N_p(\underline{0},\Sigma)$ FAE.</li>
+      <li>Alternatív alak: $W = \tilde{X}^T\tilde{X}$ ahol $\tilde{X}$ normális adatmátrix.</li>
+    </ul>
+    <strong>Tételek kimondása:</strong>
+    <ul style="margin-bottom:8px;">
+      <li><strong>Wishartok összege:</strong> azonos $\Sigma$-jú független $W$-k összege $W$, df-ek összeadódnak.</li>
+      <li><strong>Lineáris transzformáció:</strong> $B^TMB \sim W_q(B^T\Sigma B, n)$.</li>
+      <li><strong>Cochran (★):</strong> $\tilde{X}^TC\tilde{X}$ akkor és csak akkor Wishart, ha $C$ idempotens, és ekkor df $= \mathrm{tr}(C) = \mathrm{rang}(C)$.</li>
+      <li><strong>Craig (★):</strong> ha $C_iC_j=0$, akkor $\tilde{X}^TC_i\tilde{X}$ formák együttesen függetlenek.</li>
+      <li>$nS \sim W_p(\Sigma, n-1)$ — egyik legfontosabb következmény.</li>
+    </ul>
+    <strong>Trükk:</strong> minden $\chi^2$-szerű állítás Wishart-mátrixra a $\underline{a}^T\!\cdot\!\cdot\,\underline{a}$ irányba egydimenzionálva $\chi^2_n$-né válik.
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item active"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_02.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_04.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

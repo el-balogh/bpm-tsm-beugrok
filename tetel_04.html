@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 04 — Wishart-eloszlás 2.: inverz, karfv, SFV, Hotelling T²</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 04 · Wishart-eloszlás (2.) — inverz, karfv, SFV, Hotelling T²</div>
+  <h1>Wishart inverze, karfv-e, SFV-e, <em>Hotelling T²</em></h1>
+  <div class="meta">Dóri jegyzet 11–15. oldal &nbsp;·&nbsp; vizsgára: karfv kimondása, T² kapcsolata az F-fel</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> A Wishart finomabb tulajdonságait gyűjti össze: mikor invertálható (1 valséggel ha $m\geq p$), mi a karakterisztikus függvénye ($|I-2iA\Sigma|^{-n/2}$) és sűrűségfüggvénye. Ezekből rendre kijönnek a vizsga-kedvenc állítások: a $\underline{a}^T\Sigma^{-1}\underline{a}\,/\,\underline{a}^TM^{-1}\underline{a} \sim \chi^2_{m-p+1}$ formula, a Wishart determinánsa mint $\chi^2$-ek szorzata, és a <strong>Hotelling-féle $T^2$ eloszlás</strong>, ami a $t^2$-eloszlás többdim megfelelője és pontosan átvált F-eloszlássá.
+  </div>
+</div>
+
+<!-- Inverz létezése -->
+<div class="step">
+  <div class="step-label">1. A Wishart-mátrix inverze — mikor létezik?</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> $M\sim W_p(\Sigma, m)$, $m\geq p$, $\Sigma>0$ esetén
+    $$M^{-1} \text{ 1 valószínűséggel létezik.}$$
+  </div>
+
+  <div class="why"><strong>Miért?</strong> $M = \tilde{X}^T\tilde{X}$, ahol $\tilde{X}\sim N_p(\underline{0},\Sigma)$ adatmátrix ($m$ sor). Független normális vektorok 1 valséggel teljes rangúak (nem eshetnek egybe), ezért $\mathrm{rang}(\tilde{X})=p$, és így $M$ is $p$ rangú $\Rightarrow$ invertálható.</div>
+</div>
+
+<!-- a^T Σ^-1 a / a^T M^-1 a -->
+<div class="step">
+  <div class="step-label">2. <span class="star">★</span> Lineárkombinációk inverzei (beugró)</div>
+
+  <p>Legyen $M\sim W_p(\Sigma, m)$, $m>p$, $\Sigma>0$.</p>
+
+  <div class="box green">
+    <strong>Tétel (a):</strong> Tetszőleges $\underline{a}\in\mathbb{R}^p$, $\underline{a}\neq\underline{0}$ esetén
+    $$\frac{\underline{a}^T\Sigma^{-1}\underline{a}}{\underline{a}^T M^{-1}\underline{a}} \sim \chi^2_{m-p+1}.$$
+  </div>
+
+  <div class="why"><strong>Hasonlítsd össze:</strong> a sima (nem-inverz) változat $\dfrac{\underline{a}^TM\underline{a}}{\underline{a}^T\Sigma\underline{a}}\sim\chi^2_m$. Az inverznél a számláló és nevező megfordul, és a szabadsági fok $m-p+1$-re csökken — minden „kihagyott dimenzió" levesz egy fokot.</div>
+
+  <div class="box accent">
+    <strong>Tétel (b):</strong> $m^{ii}$ ($M^{-1}$ $i$-edik diagonális eleme) független $M$ minden elemétől <em>kivéve</em> $M_{ii}$-t.
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Ez a tétel jellemző beugrós feladat formájában jelentkezik (pl. „mi az eloszlása $(3,1)M^{-1}\binom{3}{1}$-nak?" típusú kérdések).</p>
+</div>
+
+<!-- Determináns -->
+<div class="step">
+  <div class="step-label">3. <span class="star">★</span> Wishart determinánsának eloszlása (beugró)</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> $m\geq p$, $\Sigma>0$, $M\sim W_p(\Sigma, m)$ esetén
+    $$|M| \sim |\Sigma| \cdot \prod_{i=1}^p \xi_i, \quad \text{ahol } \xi_i \sim \chi^2_{m+1-i} \text{ függetlenek.}$$
+  </div>
+
+  <div class="why"><strong>Hogyan értsük?</strong> A determináns mint <em>független $\chi^2$-ek szorzata</em>: az első $\chi^2_m$, a második $\chi^2_{m-1}$, …, a $p$-edik $\chi^2_{m-p+1}$. A teleszkopikus szerkezet a Wishart almátrix-rekurzióból ered (Schur-komplement: $|M|=|M_{11}|\cdot|M_{22\cdot 1}|$).</div>
+
+  <div class="box accent">
+    <strong>Beugró-feladat példa:</strong> ez a tétel jön elő a Wilks-lambda eloszlás levezetésénél (lásd 03-as beugró), ahol $|A|/|A+B|$ alakú hányadosok eloszlását kell meghatározni.
+  </div>
+</div>
+
+<!-- Hotelling T² -->
+<div class="step">
+  <div class="step-label">4. <span class="star">★</span> Hotelling-féle $T^2$-eloszlás (beugró)</div>
+
+  <div class="box green">
+    <strong>Definíció:</strong> Legyen $\underline{d}\sim N_p(\underline{0}, I_p)$ és $M\sim W_p(\Sigma, m)$ függetlenek, $m\geq p$. Ekkor
+    $$m\,\underline{d}^T M^{-1}\underline{d} \;\sim\; T^2(p, m).$$
+  </div>
+
+  <div class="box accent">
+    <strong>Eltolt (μ-vel) változat:</strong> ha $\underline{\xi}\sim N_p(\underline{\mu},\Sigma)$, $M\sim W_p(\Sigma, m)$, függetlenek, $\Sigma>0$, $m\geq p$, akkor
+    $$m(\underline{\xi}-\underline{\mu})^T M^{-1}(\underline{\xi}-\underline{\mu}) \sim T^2(p,m).$$
+  </div>
+
+  <div class="box blue">
+    <strong>Mintaátlagra alkalmazva:</strong> ha $\underline{\xi}_1,\dots,\underline{\xi}_n \sim N_p(\underline{\mu},\Sigma)$, akkor
+    $$T^2 = (n-1)(\bar{\underline{\xi}}-\underline{\mu})^T S^{-1}(\bar{\underline{\xi}}-\underline{\mu}) \sim T^2(p, n-1).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Ez a Hotelling $T^2$-statisztika, az <em>egydim Student $t$-eloszlás többdim megfelelője</em>. Vizsgálandó hipotézis: $\underline{\mu} = \underline{\mu}_0$.</p>
+  </div>
+
+  <div class="why"><strong>Speciális eset:</strong> $T^2(1,m) \sim t_m^2$ — vagyis 1 dimenzióban pont a Student-féle $t$-eloszlás négyzete.</div>
+</div>
+
+<!-- F és T² -->
+<div class="step">
+  <div class="step-label">5. <span class="star">★</span> $T^2$ és $F$ kapcsolata (beugró)</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong>
+    $$T^2(p, m) \sim \frac{m\,p}{m - p + 1} \cdot F_{p,\, m-p+1}.$$
+  </div>
+
+  <p>Vagyis a $T^2$ eloszlás <strong>egy konstanssal megszorzott $F$-eloszlás</strong>. Ez azért fontos, mert így a hipotézisvizsgálatban közvetlenül $F$-táblákból tudunk kritikus értéket olvasni.</p>
+
+  <div class="box accent">
+    <strong>Mintaátlagra:</strong>
+    $$\frac{n-p}{p}(\bar{\underline{\xi}}-\underline{\mu})^T S^{-1}(\bar{\underline{\xi}}-\underline{\mu}) \sim F_{p,\, n-p}.$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Lásd 04-es beugró: $\underline{\mu}_0$ tesztelése $\Sigma$ ismeretlen esetén. A próbastatisztika erre a Hotelling-T² (vagy F-átírattal).</p>
+  </div>
+</div>
+
+<!-- Karakterisztikus függvény -->
+<div class="step">
+  <div class="step-label">6. <span class="star">★</span> Wishart karakterisztikus függvénye</div>
+
+  <div class="box accent">
+    <strong>Definíció (szimm. véletlen mátrix karfv-e):</strong> ha $M$ szimmetrikus véletlen mátrix, $A:p\times p$ szimmetrikus, akkor
+    $$\varphi_M(A) = \mathbb{E}\!\left(e^{\,i\,\mathrm{tr}(AM)}\right).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Mátrix esetében a $\mathrm{tr}(AM)$ szerepe az, ami a vektor esetében $\underline{t}^T\underline{\xi}$. Ez $A$ és $M$ minden lineáris kombinációját lefogja.</p>
+  </div>
+
+  <div class="box green">
+    <strong>Standard Wishart karfv-e:</strong> ha $M\sim W_p(I_p, n)$ és $A:p\times p$ szimmetrikus, akkor
+    $$\varphi_M(A) = |I_p - 2iA|^{-n/2}.$$
+  </div>
+
+  <div class="box green">
+    <strong>Általános Wishart karfv-e:</strong> ha $M\sim W_p(\Sigma, n)$, $\Sigma>0$, akkor
+    $$\varphi_M(A) = |I_p - 2iA\Sigma|^{-n/2}.$$
+  </div>
+
+  <div class="why"><strong>Miért így néz ki?</strong> Ez a $\chi^2$ karfv $(1-2it)^{-n/2}$ képletének többdimenziós megfelelője. A $|I-2iA\Sigma|$ determináns lényegében $\chi^2$-faktorok szorzatát adja a sajátértékek mentén.</div>
+
+  <div class="box blue">
+    <strong>Momentumgeneráló alak (gyakran használt):</strong>
+    $$\mathbb{E}\!\left(e^{\,\mathrm{tr}(AM)}\right) = |I_p - 2A\Sigma|^{-n/2}.$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Mivel $\chi^2$ esetén az MGF létezik, Wishartnál is — sok bizonyításban ezzel kényelmesebb dolgozni, mint a karfv-vel.</p>
+  </div>
+</div>
+
+<!-- SFV -->
+<div class="step">
+  <div class="step-label">7. Standard Wishart sűrűségfüggvénye</div>
+
+  <div class="box accent">
+    <strong>Tétel:</strong> $W \sim W_p(I_p, m)$, $m\geq p+1$ esetén $W$ SFV-e:
+    $$f_W(w) = \kappa_{p,m} \cdot |w|^{(m-p-1)/2} \cdot \exp\!\left(-\tfrac{1}{2}\,\mathrm{tr}(w)\right),$$
+    ahol $\kappa_{p,m}$ egy normáló konstans, és $w$ a $W$ értéke (a felső háromszög szabad változókkal).
+  </div>
+
+  <div class="why"><strong>Strukturális megjegyzés:</strong> a $|w|^{(m-p-1)/2}$ tag a többdim megfelelője a $\chi^2$ SFV $x^{n/2-1}$ tagjának. A $\mathrm{tr}(w)$ a "négyzetösszeg" többdim megfelelője, az $\exp(-\tfrac{1}{2}\mathrm{tr}(w))$ pedig az $\exp(-x/2)$ analógja.</div>
+
+  <p style="font-size:14px;color:var(--muted);">A levezetés rekurzív (Wishart almátrix-felbontással), de a vizsgára a forma ismerete elég.</p>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Definíciókat fejből:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>Szimmetrikus mátrix karfv-e: $\varphi_M(A) = \mathbb{E}(e^{i\,\mathrm{tr}(AM)})$.</li>
+      <li>Hotelling $T^2$: $m\,\underline{d}^T M^{-1}\underline{d}$ szerkezet, ahol $\underline{d}\sim N(\underline{0},I)$, $M\sim W_p(\Sigma,m)$ függetlenek.</li>
+    </ul>
+    <strong>Tételek kimondása:</strong>
+    <ul style="margin-bottom:8px;">
+      <li><strong>Inverz létezése:</strong> $M\sim W_p(\Sigma,m)$, $m\geq p$, $\Sigma>0$ $\Rightarrow$ 1 valszínűséggel $\exists M^{-1}$.</li>
+      <li><strong>Karfv (★):</strong> $\varphi_M(A) = |I_p - 2iA\Sigma|^{-n/2}$ ($\Sigma=I$-re egyszerűsödik).</li>
+      <li><strong>$T^2$-$F$ kapcsolat (★):</strong> $T^2(p,m) \sim \tfrac{mp}{m-p+1}\cdot F_{p,m-p+1}$.</li>
+      <li><strong>$\underline{a}$-irányú redukció (★):</strong> $\dfrac{\underline{a}^T\Sigma^{-1}\underline{a}}{\underline{a}^TM^{-1}\underline{a}}\sim\chi^2_{m-p+1}$.</li>
+      <li><strong>Determináns (★):</strong> $|M|\sim|\Sigma|\prod\xi_i$, $\xi_i\sim\chi^2_{m+1-i}$ függetlenek.</li>
+    </ul>
+    <strong>Formulákat fejből (vizsga-feladatra):</strong>
+    <ul style="margin-bottom:0;">
+      <li>$T^2 = (n-1)(\bar{\underline{\xi}}-\underline{\mu})^T S^{-1}(\bar{\underline{\xi}}-\underline{\mu})\sim T^2(p,n-1)$</li>
+      <li>$\dfrac{n-p}{p}(\bar{\underline{\xi}}-\underline{\mu})^TS^{-1}(\bar{\underline{\xi}}-\underline{\mu})\sim F_{p,n-p}$</li>
+    </ul>
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item active"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_03.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="index.html" class="pbn-btn pbn-disabled">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>
