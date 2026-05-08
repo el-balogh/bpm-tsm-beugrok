@@ -6,7 +6,7 @@
   <title>TSM Beugró — Kidolgozások</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
-    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--accent2:#6e9ec8;--blue:#6e9ec8;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--points:#c86e6e;}
+    :root{--bg:#0f0f11;--surface:#17171a;--border:#2a2a30;--accent:#c8a96e;--accent2:#6e9ec8;--blue:#6e9ec8;--done:#6ec87a;--text:#e8e6e0;--muted:#7a7870;--points:#c86e6e;--purple:#a07ec8;}
     *{box-sizing:border-box;margin:0;padding:0;}
     body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-weight:300;min-height:100vh;padding:0 0 80px 0;}
     header{border-bottom:1px solid var(--border);padding:48px 64px 36px;position:relative;overflow:hidden;}
@@ -47,11 +47,15 @@
     .task-card.done{border-color:rgba(110,200,122,0.25);}
     .task-card.done:hover{border-color:var(--done);}
     .task-card.todo{opacity:0.55;cursor:default;pointer-events:none;}
+    .task-card.tetel{border-color:rgba(160,126,200,0.25);}
+    .task-card.tetel:hover{border-color:var(--purple);}
     .task-num{font-family:'DM Mono',monospace;font-size:13px;color:var(--muted);text-align:right;}
     .task-card.done .task-num{color:var(--done);}
+    .task-card.tetel .task-num{color:var(--purple);}
     .task-title{font-size:14px;font-weight:400;color:var(--text);margin-bottom:3px;line-height:1.4;}
     .task-sub{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);}
     .task-points{font-family:'DM Mono',monospace;font-size:11px;color:var(--points);background:rgba(200,110,110,0.1);border:1px solid rgba(200,110,110,0.2);border-radius:4px;padding:3px 8px;white-space:nowrap;}
+    .task-card.tetel .task-points{color:var(--purple);background:rgba(160,126,200,0.1);border-color:rgba(160,126,200,0.2);}
     .task-status{width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:13px;}
     footer{margin-top:60px;padding:0 64px;border-top:1px solid var(--border);padding-top:24px;font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;}
     @media(max-width:700px){header,.progress-wrap,.section,footer,.complete-banner{padding-left:24px;padding-right:24px;}.complete-banner{margin-left:0;margin-right:0;border-radius:0;}.task-card{grid-template-columns:30px 1fr auto;}.task-status{display:none;}}
@@ -61,22 +65,30 @@
 
 <header>
   <div class="header-label">Többváltozós Statisztikai Módszerek</div>
-  <h1>Beugró <em>Kidolgozások</em></h1>
+  <h1>Beugró + <em>Tétel-jegyzet</em></h1>
   <div class="header-sub">MathJax rendereléshez nyisd meg a megoldásfájlokat böngészőben &nbsp;·&nbsp; Dóri-féle jegyzetek alapján</div>
 </header>
 
 <div class="progress-wrap">
-  <span class="progress-label">Haladás</span>
+  <span class="progress-label">Beugrók</span>
   <div class="progress-bar-outer">
     <div class="progress-bar-inner" style="width: 100%"></div>
   </div>
   <span class="progress-count">15 / 15 kész ✓</span>
 </div>
 
+<div class="progress-wrap" style="border-bottom:1px solid var(--border);">
+  <span class="progress-label">Tételek</span>
+  <div class="progress-bar-outer">
+    <div class="progress-bar-inner" style="width: 12.5%; background: linear-gradient(90deg, var(--purple), var(--accent));"></div>
+  </div>
+  <span class="progress-count" style="color: var(--purple);">2 / 16 kész</span>
+</div>
+
 <div class="complete-banner">
   <span class="complete-banner-icon">🎯</span>
   <div class="complete-banner-text">
-    <strong>Összes feladat kidolgozva.</strong> &nbsp;Sok szerencsét a vizsgához!
+    <strong>Összes beugró kidolgozva.</strong> &nbsp;Most jönnek a tételek a 3-ashoz!
   </div>
 </div>
 
@@ -102,6 +114,35 @@
   </div>
 </div>
 
+<!-- ═══════════════ TÉTELEK ═══════════════ -->
+<div class="section" style="margin-top: 40px;">
+  <div class="section-title">T&#233;tel-jegyzet (a 3-ashoz)</div>
+  <div class="task-list">
+
+    <a class="task-card tetel" href="tetel_01.html">
+      <div class="task-num">T01</div>
+      <div class="task-info">
+        <div class="task-title">Elemi tulajdonságok, karfv, normális korreláció tétele</div>
+        <div class="task-sub">Vektor vv-k · Cramér–Wold · többdim normális · normális korr. tétele</div>
+      </div>
+      <div class="task-points">tétel</div>
+      <div class="task-status">★</div>
+    </a>
+
+    <a class="task-card tetel" href="tetel_02.html">
+      <div class="task-num">T02</div>
+      <div class="task-info">
+        <div class="task-title">Normális adatmátrix, Kronecker-szorzat, A𝑋B AM és függetlenség</div>
+        <div class="task-sub">Adatmátrix · Kronecker · vektorizálás · ξ̄ és S függetlensége</div>
+      </div>
+      <div class="task-points">tétel</div>
+      <div class="task-status">★</div>
+    </a>
+
+  </div>
+</div>
+
+<!-- ═══════════════ SEGÉDANYAG ═══════════════ -->
 <div class="section" style="margin-top: 40px;">
   <div class="section-title">Seg&#233;danyag</div>
   <div class="task-list">
@@ -118,7 +159,7 @@
 </div>
 
 <div class="section">
-  <div class="section-title">Kész</div>
+  <div class="section-title">Beugr&#243;k</div>
   <div class="task-list">
 
     <a class="task-card done" href="01_euklideszi_tavmátrix.html">
@@ -275,7 +316,7 @@
 </div>
 
 <footer>
-  <span>TSM Beugró Kidolgozások &nbsp;·&nbsp; Dóri-féle jegyzetek alapján</span>
+  <span>TSM Beugró + Tételek &nbsp;·&nbsp; Dóri-féle jegyzetek alapján</span>
   <span>MathJax · HTML</span>
 </footer>
 

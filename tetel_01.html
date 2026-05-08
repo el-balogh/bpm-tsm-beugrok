@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 01 — Karfv, többdim normális, normális korreláció</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    /* ---- page navigation ---- */
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 01 · Elemi tulajdonságok, karfv, normális korreláció</div>
+  <h1>Karakterisztikus függvény, többdimenziós normális, <em>normális korreláció tétele</em></h1>
+  <div class="meta">Dóri jegyzet 1–5. oldal &nbsp;·&nbsp; vizsgára: kimondások és formulák</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> Bevezetjük a $p$-dimenziós valószínűségi vektorváltozók nyelvét: várhatóérték-vektor, kovarianciamátrix, karakterisztikus függvény. A többdimenziós normális eloszlás $\mathrm{N}_p(\underline{\mu},\Sigma)$ <em>karakterisztikus függvénnyel</em> definiálható. A karfv egyrészt elegendő ahhoz, hogy eldöntsük függetlenek-e két vv., másrészt a normalitás karakterizálható vele. A tétel csúcsa a <strong>normális korreláció tétele</strong>: ha $(\underline{\xi},\underline{\eta})$ együttesen normális, akkor a feltételes várhatóérték a feltételnek <em>lineáris</em> függvénye, és a feltételes szórásmátrix <em>nem függ a feltételtől</em>.
+  </div>
+</div>
+
+<!-- Jelölések -->
+<div class="step">
+  <div class="step-label">1. Alapjelölések — vektor vv-k</div>
+
+  <p>$\underline{\xi}: \Omega \to \mathbb{R}^p$ <strong>$p$-dimenziós valószínűségi vektorváltozó</strong>, ha minden koordinátája valváltozó:</p>
+  $$\underline{\xi} = \begin{pmatrix} \xi_1 \\ \vdots \\ \xi_p \end{pmatrix}.$$
+
+  <div class="box">
+    <ul style="margin-bottom:0;">
+      <li><strong>Eloszlásfüggvény:</strong> $F_{\underline{\xi}}(\underline{x}) = \mathbb{P}(\xi_1 < x_1, \dots, \xi_p < x_p)$.</li>
+      <li><strong>Eloszlás:</strong> $Q_{\underline{\xi}}(B) = \mathbb{P}(\underline{\xi}\in B)$ a Borel-halmazokon.</li>
+      <li><strong>SFV:</strong> abszolút folytonos esetben $f_{\underline{\xi}} = \dfrac{dQ_{\underline{\xi}}}{d\mu}$.</li>
+      <li><strong>Karakterisztikus függvény:</strong> $\varphi_{\underline{\xi}}(\underline{t}) = \mathbb{E}\!\left(e^{i\underline{t}^T\underline{\xi}}\right)$, $\underline{t}\in\mathbb{R}^p$.</li>
+    </ul>
+  </div>
+
+  <p>Az ún. <strong>egyértelműségi tétel</strong> miatt $\varphi_{\underline{\xi}}$ <em>egyértelműen</em> meghatározza $\underline{\xi}$ eloszlását.</p>
+</div>
+
+<!-- VÉ és kovmátrix -->
+<div class="step">
+  <div class="step-label">2. Várható érték és kovarianciamátrix</div>
+
+  <div class="box accent">
+    <p style="margin-bottom:8px;"><strong>Várhatóérték-vektor:</strong> $\mathbb{E}(\underline{\xi}) = (\mathbb{E}(\xi_1),\dots,\mathbb{E}(\xi_p))^T$.</p>
+    <p style="margin-bottom:8px;"><strong>Kovarianciamátrix (szórásmátrix):</strong></p>
+    $$\Sigma = V(\underline{\xi}) = \mathbb{E}\!\left[(\underline{\xi}-\mathbb{E}\underline{\xi})(\underline{\xi}-\mathbb{E}\underline{\xi})^T\right], \qquad \Sigma_{k,l} = \mathrm{cov}(\xi_k, \xi_l).$$
+    <p style="margin-bottom:0;font-size:14px;color:var(--muted);">$\Sigma$ szimmetrikus és pozitív szemidefinit (PSD).</p>
+  </div>
+
+  <p><strong>Két vektor kovarianciája</strong> ($\underline{\xi}$ $p$-dim, $\underline{\eta}$ $q$-dim):</p>
+  $$\mathrm{cov}(\underline{\xi},\underline{\eta}) = \mathbb{E}\!\left[(\underline{\xi}-\mathbb{E}\underline{\xi})(\underline{\eta}-\mathbb{E}\underline{\eta})^T\right], \qquad p\times q\text{-s mátrix}.$$
+
+  <div class="box">
+    <strong>Hasznos azonosságok:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$D^2(\underline{a}^T\underline{\xi}) = \underline{a}^T\Sigma\underline{a}$</li>
+      <li>$V(A\underline{\xi} + \underline{b}) = A\,V(\underline{\xi})\,A^T$ &nbsp;(a $\underline{b}$ konstans kiesik)</li>
+      <li>$\mathrm{cov}(A\underline{\xi}, B\underline{\eta}) = A\,\mathrm{cov}(\underline{\xi},\underline{\eta})\,B^T$</li>
+      <li>$V(\underline{\xi}+\underline{\eta}) = V(\underline{\xi}) + \mathrm{cov}(\underline{\xi},\underline{\eta}) + \mathrm{cov}(\underline{\eta},\underline{\xi}) + V(\underline{\eta})$</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Konvergencia és Cramér-Wold -->
+<div class="step">
+  <div class="step-label">3. Konvergencia és Cramér–Wold</div>
+
+  <p><strong>Eloszlásbeli konvergencia ekvivalens definíciói:</strong></p>
+  <div class="box">
+    $$\underline{\xi}_n \overset{d}{\longrightarrow} \underline{\xi} \;\Longleftrightarrow\; \mathbb{E}\,h(\underline{\xi}_n)\to\mathbb{E}\,h(\underline{\xi})\;\;\forall\, h\text{ folyt. korl.} \;\Longleftrightarrow\; F_{\underline{\xi}_n}(\underline{x})\to F_{\underline{\xi}}(\underline{x})\;\;\forall\,\underline{x}\text{ folyt. pont}.$$
+  </div>
+
+  <div class="box accent">
+    <strong>Folytonossági tétel:</strong> ha $\varphi_{\underline{\xi}_n}(\underline{t})\to \varphi(\underline{t})$ pontonként minden $\underline{t}$-re, és $\varphi$ <em>folytonos a $0$-ban</em>, akkor $\varphi$ karfv, $\varphi = \varphi_{\underline{\xi}}$ valami $\underline{\xi}$-re és $\underline{\xi}_n\overset{d}{\to}\underline{\xi}$.
+  </div>
+
+  <div class="box accent">
+    <strong>Cramér–Wold tétel:</strong> a többdimenziós eloszlásbeli egyezés / konvergencia az egydimenziósra vezethető vissza:
+    <ol style="margin-top:8px;margin-bottom:0;">
+      <li>$\underline{\xi}\overset{d}{=}\underline{\eta} \;\Longleftrightarrow\; \underline{a}^T\underline{\xi}\overset{d}{=}\underline{a}^T\underline{\eta}\;\;\forall\,\underline{a}\in\mathbb{R}^p$</li>
+      <li>$\underline{\xi}_n\overset{d}{\to}\underline{\xi} \;\Longleftrightarrow\; \underline{a}^T\underline{\xi}_n\overset{d}{\to}\underline{a}^T\underline{\xi}\;\;\forall\,\underline{a}\in\mathbb{R}^p$</li>
+    </ol>
+  </div>
+
+  <div class="why"><strong>Mit használunk belőle?</strong> Sokszor egy állítást elég 1-dimenziós lineáris kombinációkra belátni — Cramér–Wold visszaad mindent.</div>
+</div>
+
+<!-- Függetlenség karfv-vel -->
+<div class="step">
+  <div class="step-label">4. Függetlenség karfv-vel</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> Legyen $\underline{\xi}$ $p$-dim, $\underline{\eta}$ $q$-dim. Ekkor
+    $$\underline{\xi},\underline{\eta} \text{ függetlenek} \;\Longleftrightarrow\; \varphi_{(\underline{\xi},\underline{\eta})}(\underline{t}_1,\underline{t}_2) = \varphi_{\underline{\xi}}(\underline{t}_1)\cdot \varphi_{\underline{\eta}}(\underline{t}_2) \;\;\forall\,\underline{t}_1,\underline{t}_2.$$
+  </div>
+  <p style="font-size:14px;color:var(--muted);">Vagyis a függetlenség pontosan akkor teljesül, ha az együttes karfv az egyes karfv-ek szorzatára esik szét.</p>
+</div>
+
+<!-- Többdim normális -->
+<div class="step">
+  <div class="step-label">5. Többdimenziós normális eloszlás</div>
+
+  <div class="box accent">
+    <strong>Definíció:</strong> $\underline{\xi}$ $p$-dimenziós <em>normális eloszlású</em>, ha minden $\underline{a}\in\mathbb{R}^p$-re
+    $$\underline{a}^T\underline{\xi} = \sum_{k=1}^p a_k\xi_k$$
+    egydimenziós normális (a Cramér–Wold gondolatmenet közvetlen alkalmazása).
+  </div>
+
+  <div class="box green">
+    <strong>Karakterizáció karfv-vel:</strong>
+    $$\underline{\xi}\sim N_p(\underline{\mu},\Sigma) \;\Longleftrightarrow\; \varphi_{\underline{\xi}}(\underline{t}) = \exp\!\left(i\underline{t}^T\underline{\mu} - \tfrac{1}{2}\underline{t}^T\Sigma\,\underline{t}\right),$$
+    ahol $\underline{\mu}=\mathbb{E}(\underline{\xi})$, $\Sigma=V(\underline{\xi})\geq 0$ (PSD).
+  </div>
+
+  <div class="why"><strong>Fő tanulság:</strong> egy normális eloszlást a $(\underline{\mu},\Sigma)$ pár <em>egyértelműen</em> meghatároz. Ezért a normalitást VÉ-vel és kovmátrixszal jellemezzük.</div>
+
+  <div class="box">
+    <strong>Reprezentáció (HF-állítás):</strong>
+    $$\underline{\xi}\sim N_p(\underline{\mu},\Sigma) \;\Longleftrightarrow\; \exists\, k\leq p,\; A:p\times k,\; AA^T=\Sigma,\; \underline{\eta}\sim N_k(\underline{0},I_k):\; \underline{\xi} = \underline{\mu} + A\underline{\eta}.$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Tehát minden többdim normális egy std. normális lineáris transzformáltja.</p>
+  </div>
+
+  <div class="box">
+    <strong>Lineáris transzformáltja is normális:</strong> ha $\underline{\xi}\sim N_p(\underline{\mu},\Sigma)$, $A:q\times p$, $\underline{\nu}\in\mathbb{R}^q$, akkor
+    $$\underline{\nu} + A\underline{\xi}\sim N_q(\underline{\nu}+A\underline{\mu},\, A\Sigma A^T).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Speciálisan: minden részvektor is normális.</p>
+  </div>
+</div>
+
+<!-- SFV -->
+<div class="step">
+  <div class="step-label">6. SFV (csak ha $\Sigma > 0$)</div>
+
+  <div class="box accent">
+    Ha $\Sigma > 0$ (pozitív definit), akkor $\underline{\xi}\sim N_p(\underline{\mu},\Sigma)$ SFV-e:
+    $$f_{\underline{\xi}}(\underline{x}) = |2\pi\Sigma|^{-1/2}\,\exp\!\left(-\tfrac{1}{2}(\underline{x}-\underline{\mu})^T\Sigma^{-1}(\underline{x}-\underline{\mu})\right).$$
+  </div>
+
+  <div class="why"><strong>Buktató!</strong> Ha $\Sigma$ csak PSD (pl. szinguláris), akkor a normalitás ettől még érvényes — csak nincs $\mathbb{R}^p$-en SFV (alacsonyabb dimenziós altérre koncentrálódik az eloszlás). A definíció karfv-vel megy, nem SFV-vel.</div>
+</div>
+
+<!-- Függetlenség normálisaknál -->
+<div class="step">
+  <div class="step-label">7. Függetlenség normális esetben</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> Ha $(\underline{\xi},\underline{\eta})$ <em>együttesen normális</em>, akkor
+    $$\underline{\xi},\underline{\eta} \text{ függetlenek} \;\Longleftrightarrow\; \mathrm{cov}(\underline{\xi},\underline{\eta}) = 0 \;\;(\text{azaz korrelálatlanok}).$$
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Általában a függetlenségből csak a korrelálatlanság következik, nem fordítva — de együttes normalitás esetén a kettő ekvivalens.</p>
+</div>
+
+<!-- Normális korreláció tétele -->
+<div class="step">
+  <div class="step-label">8. <span class="star">★</span> Normális korreláció tétele</div>
+
+  <p>Legyen $\begin{pmatrix}\underline{\xi}\\\underline{\eta}\end{pmatrix}$ együttesen normális, kovarianciamátrixa</p>
+  $$V\!\begin{pmatrix}\underline{\xi}\\\underline{\eta}\end{pmatrix} = \begin{pmatrix}\Sigma_{11} & \Sigma_{12}\\ \Sigma_{21} & \Sigma_{22}\end{pmatrix}, \qquad \Sigma_{22}>0.$$
+
+  <div class="box green">
+    <strong>Tétel — feltételes VÉ és feltételes szórásmátrix:</strong>
+    <p style="margin-top:10px;"><strong>(a)</strong> A feltételes várható érték a feltételnek <em>lineáris</em> függvénye:</p>
+    $$\mathbb{E}(\underline{\xi}\mid\underline{\eta}) = \mathbb{E}(\underline{\xi}) + \Sigma_{12}\Sigma_{22}^{-1}\!\left(\underline{\eta}-\mathbb{E}(\underline{\eta})\right).$$
+    <p><strong>(b)</strong> A feltételes szórásmátrix <em>nem függ a feltételtől</em>:</p>
+    $$V(\underline{\xi}\mid\underline{\eta}) = \Sigma_{11} - \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}.$$
+  </div>
+
+  <div class="box accent">
+    <strong>Kiegészítés:</strong> a teljes feltételes eloszlás is normális:
+    $$\underline{\xi}\mid\underline{\eta} \;\sim\; N_p\!\left(\mathbb{E}(\underline{\xi}\mid\underline{\eta}),\; V(\underline{\xi}\mid\underline{\eta})\right).$$
+  </div>
+
+  <div class="why"><strong>Miért nagy szám?</strong>
+    <ul style="margin:6px 0 0;">
+      <li>Tudjuk: a <em>legjobb</em> (legkisebb négyzetes hibájú) becslés $\underline{\eta}$-ból $\underline{\xi}$-re az $\mathbb{E}(\underline{\xi}\mid\underline{\eta})$.</li>
+      <li>Normális esetben ez a legjobb becslés <em>biztosan lineáris</em> — a lineáris regresszió maga az optimum.</li>
+      <li>(b) a regressziós hiba szórása (= sajátos „elvi" előrejelzési bizonytalanság), és ez nem függ attól, hogy $\underline{\eta}$-ra konkrétan mit figyeltünk meg.</li>
+    </ul>
+  </div>
+
+  <p>A bizonyítás kulcsötlete (vázlatosan, csak a tájolásra): az <strong>$\underline{\xi}-\Sigma_{12}\Sigma_{22}^{-1}\underline{\eta}$ "függetlenített" vektor</strong> kovariáncián keresztül független $\underline{\eta}$-tól (mert $\mathrm{cov}=\Sigma_{12}-\Sigma_{12}\Sigma_{22}^{-1}\Sigma_{22}=0$). Innen a feltételes VÉ azonnal jön, és négyzetes alakból a feltételes szórásmátrix is.</p>
+</div>
+
+<!-- Mit kell tudni a vizsgára -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Kimondani biztosan:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>Mi a karakterisztikus függvény ($\underline{t}\in\mathbb{R}^p$-re).</li>
+      <li>Cramér–Wold állítása (egydimenziósra való visszavezetés).</li>
+      <li>Folytonossági tétel (karfv-konvergencia $\Rightarrow$ eloszlásbeli konvergencia, ha $\varphi$ folyt. $0$-ban).</li>
+      <li>Karfv-es függetlenség: $\varphi_{(\underline{\xi},\underline{\eta})} = \varphi_{\underline{\xi}}\cdot\varphi_{\underline{\eta}}$.</li>
+      <li>Többdim normális definíciója (lineáris kombinációval).</li>
+      <li>Normális karfv: $\exp(i\underline{t}^T\underline{\mu} - \tfrac{1}{2}\underline{t}^T\Sigma\underline{t})$.</li>
+      <li>SFV-alak ($\Sigma>0$ esetén) — és hogy szinguláris esetben nincs SFV.</li>
+      <li>Normálisak: független $\Leftrightarrow$ korrelálatlan.</li>
+      <li>Normális korreláció tétele: feltételes VÉ a feltétel lineáris fv-e, feltételes szórásmátrix nem függ a feltételtől.</li>
+    </ul>
+    <strong>Formulákat fejből:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$\mathbb{E}(\underline{\xi}\mid\underline{\eta}) = \mathbb{E}(\underline{\xi}) + \Sigma_{12}\Sigma_{22}^{-1}(\underline{\eta}-\mathbb{E}(\underline{\eta}))$</li>
+      <li>$V(\underline{\xi}\mid\underline{\eta}) = \Sigma_{11} - \Sigma_{12}\Sigma_{22}^{-1}\Sigma_{21}$</li>
+      <li>$V(A\underline{\xi}+\underline{b}) = A\Sigma A^T$</li>
+    </ul>
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item active"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="index.html" class="pbn-btn pbn-disabled">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_02.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>
