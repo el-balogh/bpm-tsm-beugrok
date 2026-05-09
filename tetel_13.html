@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 13 — Diszkriminanciaanalízis</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 13 · Diszkriminanciaanalízis</div>
+  <h1>ML és Bayes-i diszkriminanciaszabály, <em>Fisher-féle lineáris diszkr.</em></h1>
+  <div class="meta">Dóri jegyzet 60–66. oldal &nbsp;·&nbsp; vizsgára: ML, Bayes szabály + Fisher LDA</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> Adott $g$ darab populáció (csoport), eloszlásukat ismerjük (vagy becsüljük). Egy új $\underline{x}$ megfigyelést melyik csoportba soroljunk? <strong>ML diszkriminanciaszabály:</strong> oda, ahol a likelihood maximális. <strong>Bayes-i:</strong> figyelembe vesszük az a priori csoportvalószínűségeket és a hibás besorolás költségét — $\pi_j L_j(x)$ maximalizálandó. Normális eloszlású csoportoknál (közös $\Sigma$) a szabály <em>Mahalanobis-távolság minimalizálás</em>-sá egyszerűsödik. <strong>Fisher-féle lineáris diszkr.</strong> nem feltételez semmilyen eloszlást — az "elválasztó hipersík" irányát keresi, ami a csoportok közti / csoporton belüli variancia hányadosát maximalizálja.
+  </div>
+</div>
+
+<!-- Setup -->
+<div class="step">
+  <div class="step-label">1. Beállítások</div>
+
+  <p>Adott $g$ darab populáció: $\Pi_1, \dots, \Pi_g$, sűrűségfüggvényekkel $f_1, \dots, f_g$ (jelölve $L_1, \dots, L_g$, mert likelihood-ként használjuk).</p>
+
+  <div class="box accent">
+    <strong>Cél:</strong> a teret felosztani $\mathbb{R}^p = R_1 \cup \dots \cup R_g$ diszjunkt részekre úgy, hogy ha $\underline{x} \in R_i$, akkor $\underline{x}$-et $\Pi_i$-be soroljuk.
+    <p style="margin:8px 0 0;">Ezt a felosztást nevezzük <em>diszkriminancia-szabálynak</em>.</p>
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Háromfajta helyzet: (a) $f_i$-k pontosan ismertek, (b) az eloszlás-típus ismert, paraméter ismeretlen, (c) semmit nem feltételezünk. (a)-val foglalkozunk először.</p>
+</div>
+
+<!-- ML diszkr. -->
+<div class="step">
+  <div class="step-label">2. <span class="star">★</span> Maximum likelihood diszkriminancia-szabály</div>
+
+  <div class="box green">
+    <strong>ML d.sz.:</strong> $\underline{x}$-et oda soroljuk, ahol a likelihood maximális:
+    $$L_j(\underline{x}) = \max_{1\leq i\leq g} L_i(\underline{x}) \;\Longrightarrow\; \underline{x}\in R_j.$$
+  </div>
+
+  <p>Ha több $j$ is maximalizálja a likelihoodot, bármelyiket választhatjuk.</p>
+
+  <h2>Normális csoportok közös $\Sigma$-val</h2>
+
+  <div class="box green">
+    <strong>Tétel:</strong> Ha $f_i \sim N_p(\underline{\mu}_i, \Sigma)$ (közös kovmátrix), akkor a ML d.sz. ekvivalens:
+    $$\underline{x} \in R_j \;\Longleftrightarrow\; j \text{ minimalizálja } (\underline{x} - \underline{\mu}_i)^T \Sigma^{-1}(\underline{x} - \underline{\mu}_i).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Vagyis a <em>Mahalanobis-távolságot</em> minimalizáló $\underline{\mu}_i$-t választjuk.</p>
+  </div>
+
+  <div class="box accent">
+    <strong>Spec. eset $g=2$:</strong> $\underline{x}$ a $\Pi_1$-be kerül $\Leftrightarrow$
+    $$\underline{a}^T(\underline{x} - \underline{\mu}) > 0, \qquad \underline{\mu} = \tfrac{1}{2}(\underline{\mu}_1 + \underline{\mu}_2), \quad \underline{a} = \Sigma^{-1}(\underline{\mu}_1 - \underline{\mu}_2).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Ez egy <em>lineáris</em> elválasztás: az $\underline{x}-\underline{\mu}$ vektor egy adott (Mahalanobis-szerinti) skaláris szorzata pozitív-e vagy negatív.</p>
+  </div>
+</div>
+
+<!-- Bayes-i -->
+<div class="step">
+  <div class="step-label">3. <span class="star">★</span> Bayes-i diszkriminancia-szabály</div>
+
+  <p>Most adott a priori valószínűségek: $\pi_1, \dots, \pi_g$ ($\sum \pi_i = 1$). Ezek azt mondják, hogy egy random megfigyelés mekkora valószínűséggel jön az $i$-edik csoportból.</p>
+
+  <div class="box green">
+    <strong>Bayes-i d.sz.:</strong> $\underline{x}$ a $\Pi_j$-be kerül, ha
+    $$\pi_j L_j(\underline{x}) = \max_{1\leq i\leq g} \pi_i L_i(\underline{x}).$$
+  </div>
+
+  <div class="why"><strong>Mit mond?</strong> A likelihoodot most az a priori valószínűséggel súlyozzuk. Ha az 1. csoport ritkább ($\pi_1$ kicsi), akkor csak nagyon erős likelihood-evidence esetén soroljuk oda az új megfigyelést.</div>
+
+  <div class="box accent">
+    <strong>Hol találkozunk vele:</strong> 11-es beugró (majmok-feladat) — adott prior valószínűségekkel és sűrűségekkel kell kiszámolni $\pi_i L_i(\underline{x})$-et és kiválasztani a maximumot.
+  </div>
+</div>
+
+<!-- Bayes optimális -->
+<div class="step">
+  <div class="step-label">4. Bayes-i szabály optimalitása</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> Minden Bayes-i diszkriminancia-szabály <em>elfogadható</em> ($\pi_i > 0$ minden $i$-re).
+  </div>
+
+  <div class="box green">
+    <strong>Tétel (helyes döntés valségmaximalizáló):</strong> Nem létezik olyan diszkriminancia-szabály, amely <em>jobb helyes-döntés-valószínűséget</em> adna, mint a Bayes-i.
+  </div>
+
+  <div class="why"><strong>Általánosítás Neyman-Pearson lemmáé:</strong> $g=2$ csoportra, $\pi_i = \tfrac{1}{2}$ esetén pontosan az $L_1/L_2$ likelihood-arány teszt — Neyman-Pearson optimális próba bináris hipotézispróbára.</div>
+</div>
+
+<!-- Veszteségfüggvény -->
+<div class="step">
+  <div class="step-label">5. Veszteségfüggvény és rizikó</div>
+
+  <p>Általánosítás: nem mindegy, hogy melyik hibát követjük el. Vezessünk be költségeket.</p>
+
+  <div class="box accent">
+    <strong>Veszteségfüggvény:</strong>
+    $$K(i, j) = \begin{cases} 0 & \text{ha } i = j \\ c_{ij} > 0 & \text{ha } i\neq j \end{cases}$$
+    azt méri, mennyi a "kár", ha egy $\Pi_j$-belit $\Pi_i$-be sorolunk.
+  </div>
+
+  <div class="box accent">
+    <strong>Rizikófüggvény:</strong> egy $\Pi_j$-beli megfigyelés várható vesztesége az $\underline{d}$ d.sz. mellett:
+    $$R(\underline{d}, j) = \sum_{i=1}^g K(i,j)\,p_{ij} = \sum_{i\neq j} c_{ij}\,p_{ij},$$
+    ahol $p_{ij} = \int_{R_p} \phi_i(\underline{x}) L_j(\underline{x})\,d\mu(\underline{x})$ a $\Pi_j$-beli $\Pi_i$-be sorolásának valószínűsége.
+  </div>
+
+  <div class="box green">
+    <strong>Bayes-i rizikó:</strong> $R(\underline{d}) = \sum_{j=1}^g \pi_j R(\underline{d}, j)$.
+    <p style="margin:8px 0 0;">A <em>Bayes-szabály</em>: $\underline{x}$-et a $\Pi_j$-be soroljuk, ha
+    $$\sum_{k\neq j} c_{jk} \pi_k L_k(\underline{x}) = \min_i \sum_{k\neq i} c_{ik} \pi_k L_k(\underline{x}).$$
+    Ez a szabály <em>minimalizálja a Bayes-i rizikót</em>.</p>
+  </div>
+
+  <div class="why"><strong>Spec eset $c_{ij} \equiv 1$:</strong> visszakapjuk az egyszerű Bayes-i szabályt — $\pi_j L_j(\underline{x})$-et maximalizáljuk.</div>
+</div>
+
+<!-- Tap. és VHS d.sz. -->
+<div class="step">
+  <div class="step-label">6. Tapasztalati ML és VHS diszkr. (mintából)</div>
+
+  <p>Ha az $f_i$-ket nem ismerjük, hanem mintából becsüljük, akkor a sűrűségek paramétereit ($\underline{\mu}_i, \Sigma$) ML-becsüljük: $\hat{\underline{\mu}}_i = \bar{\underline{\xi}}_i$, $\hat\Sigma = \tfrac{1}{n}\sum n_i S_i$ (közös becslés).</p>
+
+  <div class="box green">
+    <strong>Tap. ML d.sz.:</strong> $\underline{\xi}$-et a $\Pi_j$-be soroljuk, ha
+    $$(\underline{\xi} - \bar{\underline{\xi}}_j)^T S^{-1}(\underline{\xi} - \bar{\underline{\xi}}_j)$$
+    minimális (a tap. átlag és tap. szórásmátrix Mahalanobis-távolsága).
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">A valószínűséghányados-alapú diszkrimináns is ehhez vezet $g=2$ és $n_1 = n_2$ esetén.</p>
+</div>
+
+<!-- Fisher LDA -->
+<div class="step">
+  <div class="step-label">7. <span class="star">★</span> Fisher-féle lineáris diszkriminancia</div>
+
+  <p>Most <em>nem</em> tételezünk fel semmit a megfigyelések eloszlásáról — egy másfajta filozófia.</p>
+
+  <div class="box green">
+    <strong>Cél:</strong> Találjuk meg az $\underline{a}\in\mathbb{R}^p$ vektort, amelyre az $\underline{a}^T\underline{\xi}$ projekció <em>maximalizálja a "csoportok közötti / csoportokon belüli négyzetösszeg" hányadosát</em>:
+    $$\frac{\underline{a}^T B \underline{a}}{\underline{a}^T W \underline{a}} \to \max,$$
+    ahol $B$ a csoportok közötti, $W$ a csoporton belüli négyzetösszeg.
+  </div>
+
+  <div class="box accent">
+    <strong>Megoldás:</strong> $\underline{a}$ a $W^{-1}B$ <em>legnagyobb sajátértékéhez tartozó sajátvektor</em>.
+  </div>
+
+  <div class="why"><strong>Geometriai értelmezés:</strong> az $\underline{a}$ az az irány, ami mentén a csoportátlagok a legjobban szétszórnak (heterogén csoportok), miközben a csoportokon belüli szórás kicsi. Az új megfigyelést erre az 1-dim irányra projektáljuk, és <em>ott döntünk</em> — az 1-dim. szabály egyszerű.</div>
+
+  <div class="box green">
+    <strong>Fisher-féle lineáris d.sz.:</strong> $\underline{\xi}$-et $\Pi_j$-be soroljuk, ha
+    $$|\underline{a}^T\underline{\xi} - \underline{a}^T\bar{\underline{\xi}}_j| \leq |\underline{a}^T\underline{\xi} - \underline{a}^T\bar{\underline{\xi}}_i| \quad \forall\,i.$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Vagyis amelyik csoportátlaghoz az $\underline{a}$ projekcióban a legközelebb van.</p>
+  </div>
+</div>
+
+<!-- Hibák valségei -->
+<div class="step">
+  <div class="step-label">8. Hibás döntés valószínűsége</div>
+
+  <p>$g=2$ csoport, közös $\Sigma$, normális eloszlás. A Mahalanobis-távolságnégyzet:</p>
+  $$\Delta^2 = (\underline{\mu}_1 - \underline{\mu}_2)^T \Sigma^{-1} (\underline{\mu}_1 - \underline{\mu}_2).$$
+
+  <div class="box green">
+    <strong>Hibás besorolás valségei:</strong>
+    $$p_{12} = p_{21} = \Phi\!\left(-\tfrac{\Delta}{2}\right),$$
+    ahol $\Phi$ a standard normális EFV.
+  </div>
+
+  <div class="why"><strong>Mit mond ez?</strong> Minél nagyobb a $\Delta$ (Mahalanobis-távolság a két csoport között), annál kisebb a hibázási valség. Egydim: ha $\Delta$ nagy, $\Phi(-\Delta/2)$ közel 0.</div>
+
+  <div class="box accent">
+    <strong>Becslés mintából (túl optimista):</strong> $\hat p_{ii} = \frac{n_{ii}}{n_i}$ — mintabeli helyes besorolások aránya.
+  </div>
+
+  <div class="box accent">
+    <strong>Keresztvalidálás (cross-validation):</strong> az adatokat tanuló (~70%) és teszt (~30%) részekre osztjuk; tanulón becsülünk, teszten értékelünk. Reálisabb hiba-becslés.
+  </div>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Diszkriminanciaszabályok kimondása:</strong>
+    <ul style="margin-bottom:8px;">
+      <li><strong>ML d.sz.:</strong> $L_j(\underline{x}) = \max_i L_i(\underline{x})$.</li>
+      <li><strong>Bayes-i d.sz. (★):</strong> $\pi_j L_j(\underline{x}) = \max_i \pi_i L_i(\underline{x})$.</li>
+      <li><strong>Bayes-szabály költséggel:</strong> $\sum_{k\neq j}c_{jk}\pi_k L_k(\underline{x})$ minimumát keressük.</li>
+      <li><strong>Tap. ML d.sz.:</strong> Mahalanobis-távolság $S^{-1}$-gyel.</li>
+      <li><strong>Fisher LDA (★):</strong> $\underline{a}$ a $W^{-1}B$ legnagyobb SÉ-hez tartozó SV-a.</li>
+    </ul>
+    <strong>Speciális eredmények:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>Normális közös $\Sigma$: ML d.sz. = Mahalanobis-min.</li>
+      <li>$g=2$, normális: hibavalség $p_{12} = \Phi(-\Delta/2)$.</li>
+      <li>Bayes-i d.sz. <em>elfogadható</em> és helyes-döntés-valségben optimális.</li>
+    </ul>
+    <strong>Hol találkozunk vele:</strong>
+    <ul style="margin-bottom:0;">
+      <li><strong>11-es beugró (majmok):</strong> Bayes-i d.sz. közvetlen alkalmazása.</li>
+      <li>Konkrét feladatok: 3 csoport adott normális eloszlással, melyikbe kerül $\underline{x} = (\dots)^T$? — kis Mahalanobis-számolás.</li>
+    </ul>
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <a href="tetel_05.html" class="nav-sb-item"><span class="nav-sb-num">T05</span><span>Wilks-lambda</span></a>
+    <a href="tetel_06.html" class="nav-sb-item"><span class="nav-sb-num">T06</span><span>ML becslések, kényszerek</span></a>
+    <a href="tetel_07.html" class="nav-sb-item"><span class="nav-sb-num">T07</span><span>Aszimptotika, megengedhetőség</span></a>
+    <a href="tetel_08.html" class="nav-sb-item"><span class="nav-sb-num">T08</span><span>Hipotézisvizsgálat 1: VHP</span></a>
+    <a href="tetel_09.html" class="nav-sb-item"><span class="nav-sb-num">T09</span><span>Hipotézisvizsgálat 2: MANOVA</span></a>
+    <a href="tetel_10.html" class="nav-sb-item"><span class="nav-sb-num">T10</span><span>Főkomponensanalízis</span></a>
+    <a href="tetel_11.html" class="nav-sb-item"><span class="nav-sb-num">T11</span><span>Faktoranalízis 1</span></a>
+    <a href="tetel_12.html" class="nav-sb-item"><span class="nav-sb-num">T12</span><span>Faktoranalízis 2: ML, Joreskog</span></a>
+    <a href="tetel_13.html" class="nav-sb-item active"><span class="nav-sb-num">T13</span><span>Diszkriminanciaanalízis</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_12.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_14.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

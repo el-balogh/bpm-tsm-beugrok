@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 11 — Faktoranalízis 1.: definíció, létezés, főfaktor</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 11 · Faktoranalízis 1. — definíció, létezés, főfaktor</div>
+  <h1>$k$-faktormodell, <em>létezés feltétele</em>, főfaktor-analízis</h1>
+  <div class="meta">Dóri jegyzet 43–46. oldal &nbsp;·&nbsp; vizsgára: definíció + Σ = AAᵀ + Ψ feltétel</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> A faktoranalízis is egy <em>dimenziócsökkentő módszer</em>, de más filozófia: a megfigyelt $\underline{\xi}$-t feltételezzük, hogy <em>kevés látens (rejtett) faktor</em> + zaj formájában áll elő: $\underline{\xi} = AF + W + \underline{\mu}$. <strong>$F$ közös faktor</strong>, <strong>$W$ egyedi (zavaró) faktor</strong>, $A$ a "loading"-mátrix. A modell létezése egyenértékű azzal, hogy $\Sigma = AA^T + \Psi$ (ahol $\Psi$ diagonális). Ezt nem mindig lehet teljesíteni — szemben a főkomponens-analízissel, ami mindig elvégezhető. A főfaktor-analízis egy konkrét becslési eljárás $A$ és $\Psi$ meghatározására.
+  </div>
+</div>
+
+<!-- Spearman példa -->
+<div class="step">
+  <div class="step-label">1. Motiváció — Spearman példája</div>
+
+  <p>Diákok vizsgaeredményei: $\xi_1$ klasszikus nyelvek, $\xi_2$ francia, $\xi_3$ angol. Spearman a következő modellt javasolta:</p>
+
+  <div class="box accent">
+    $$\xi_1 = a_1 f + u_1, \quad \xi_2 = a_2 f + u_2, \quad \xi_3 = a_3 f + u_3,$$
+    ahol
+    <ul style="margin-bottom:0;">
+      <li>$f$ a <strong>közös faktor</strong> ("nyelvérzék"),</li>
+      <li>$a_1, a_2, a_3$ a <strong>faktorhozzájárulások</strong> (loading),</li>
+      <li>$u_1, u_2, u_3$ az <strong>egyedi tényezők</strong> (hibatagok).</li>
+    </ul>
+  </div>
+
+  <div class="why"><strong>A logika:</strong> ha minden tantárgyat egy "általános képesség" magyaráz a leginkább, akkor egy darab faktor kiemelése után a maradékok már függetlennek tekinthetők. A faktoranalízis ezt formalizálja.</div>
+</div>
+
+<!-- k-faktormodell definíciója -->
+<div class="step">
+  <div class="step-label">2. <span class="star">★</span> $k$-faktormodell definíciója</div>
+
+  <div class="box green">
+    <strong>Definíció:</strong> $\underline{\xi}$ p-dim vv, $\mathbb{E}(\underline{\xi}) = \underline{\mu}$, $V(\underline{\xi}) = \Sigma$. <em>$\underline{\xi}$ leírható $k$-faktormodellel</em>, ha
+    $$\boxed{\underline{\xi} = AF + W + \underline{\mu}}$$
+    ahol
+    <ul style="margin-bottom:0;">
+      <li>$A$: $p\times k$-as <em>loading- (hozzárendelési) mátrix</em></li>
+      <li>$F$: $k$-dim vv — a <em>közös faktorok</em>, $\mathbb{E}(F) = \underline{0}$, $V(F) = I_k$.</li>
+      <li>$W$: $p$-dim vv — az <em>egyedi faktorok</em>, $\mathbb{E}(W) = \underline{0}$, $V(W) = \Psi = \mathrm{diag}(\Psi_{11},\dots,\Psi_{pp})$.</li>
+      <li>$\mathbb{E}(FW^T) = \underline{0}$ &nbsp;<em>(közös és egyedi faktorok korrelálatlanok).</em></li>
+    </ul>
+  </div>
+
+  <div class="why"><strong>Mi a megkötés?</strong>
+    <ul style="margin:6px 0 0;">
+      <li>$F$ koordinátái <em>standardizáltak</em> ($V(F) = I_k$): páronként korrelálatlanok, varianciájuk 1.</li>
+      <li>$W$ kovmátrixa <em>diagonális</em>: az egyedi tényezők <em>egymással is korrelálatlanok</em> — minden $u_i$ egy "saját" zaj.</li>
+    </ul>
+    Ez a két strukturális feltétel teszi a modellt értelmessé.
+  </div>
+</div>
+
+<!-- Létezés feltétele -->
+<div class="step">
+  <div class="step-label">3. <span class="star">★</span> $k$-faktormodell létezésének feltétele</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> $\Sigma > 0$ esetén
+    $$\boxed{k\text{-faktormodell létezik} \;\Longleftrightarrow\; \Sigma = AA^T + \Psi}$$
+    valamilyen $p\times k$-as $A$-val és $\Psi \geq 0$ diagonális mátrixszal.
+  </div>
+
+  <div class="box accent">
+    <strong>Eszerint:</strong>
+    $$\xi_i = \sum_{j=1}^k a_{ij} F_j + w_i + \mu_i, \qquad \mathrm{cov}(\xi_i, F_j) = a_{ij},$$
+    $$\sigma_{ii} = D^2(\xi_i) = \underbrace{\sum_{j=1}^k a_{ij}^2}_{\text{kommunalitás } h_i^2} + \underbrace{\Psi_{ii}}_{\text{egyedi var.}}.$$
+  </div>
+
+  <div class="why"><strong>Mi a kommunalitás?</strong> $h_i^2 = \sum a_{ij}^2$ azt méri, mennyire <em>magyarázzák a közös faktorok</em> az $i$-edik megfigyelt változót. $\Psi_{ii}$ a maradék (saját) variancia. A kettő összege adja az eredeti varianciát: <em>variancia = kommunalitás + egyedi variancia</em>.</div>
+
+  <div class="box blue">
+    <strong>Hol találkozunk vele:</strong> 13-as beugró — konkrét $\Sigma$ esetén az 1-faktormodell létezésének ellenőrzése: $\Sigma_{ij} = a_i a_j$ ($i\neq j$), $\Sigma_{ii} = a_i^2 + \Psi_{ii}$ egyenleteket kell megoldani.
+  </div>
+</div>
+
+<!-- Modell egyértelműsége -->
+<div class="step">
+  <div class="step-label">4. Modell <em>nem</em> egyértelmű</div>
+
+  <div class="box accent">
+    <strong>Megjegyzés:</strong> Ha $C$ ortogonális mátrix ($CC^T = I$), akkor
+    $$\underline{\xi} = (AC)(C^T F) + W + \underline{\mu}$$
+    is érvényes faktormodell ugyanazzal a $\Sigma$-val, csak más $A' = AC$-vel és $F' = C^TF$-fel. A faktormodell tehát <strong>ortogonális rotáció erejéig egyértelmű</strong>.
+  </div>
+
+  <div class="why"><strong>Mit csinálunk vele?</strong> A gyakorlatban tipikusan kiegészítő feltételeket szabunk az egyértelműséghez (pl. $A^T\Psi^{-1}A$ legyen diagonális, vagy $A^T\,\mathrm{diag}(\Sigma)\, A$ legyen diagonális). Ezzel $\frac{1}{2}k(k-1)$ szabadsági fokot rögzítünk.</div>
+</div>
+
+<!-- Skálainvariancia -->
+<div class="step">
+  <div class="step-label">5. Skálainvariancia</div>
+
+  <div class="box accent">
+    A faktormodellek <em>skálainvariánsak</em>: ha $D = \mathrm{diag}(d_1,\dots,d_p)$ és $\underline{\xi} = AF + W + \underline{\mu}$, akkor
+    $$D\underline{\xi} = (DA)F + DW + D\underline{\mu}$$
+    ugyanolyan szerkezetű — csak az $A$-loading és a $\Psi$-diag változnak megfelelően.
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Ezzel szemben a főkomponensanalízis <em>nem skálainvariáns</em> (ott a $\Sigma$ skálázása megváltoztatja a sajátvektorokat). Ez a faktoranalízis egyik elméleti előnye.</p>
+</div>
+
+<!-- Mikor van megoldás -->
+<div class="step">
+  <div class="step-label">6. Paraméterszámolás — mikor "van remény"?</div>
+
+  <p>Hány paraméter? $A$ ($p\times k$): $pk$ szám, $\Psi$: $p$ diagonális, plusz $\frac{k(k-1)}{2}$ azonosítási kényszer:</p>
+
+  <div class="box accent">
+    $$s = \frac{1}{2}p(p+1) - \left(pk + p - \frac{k(k-1)}{2}\right) = \frac{(p-k)^2 - (p+k)}{2}.$$
+    <ul style="margin-bottom:0;">
+      <li>$s > 0$: a modell <em>esélyes</em>, hogy megoldható.</li>
+      <li>$s = 0$: pontosan kiegyenlített rendszer.</li>
+      <li>$s < 0$: a modell <em>túldefiniált</em>, nem jól definiált.</li>
+    </ul>
+  </div>
+
+  <div class="why"><strong>Lényeg:</strong> ha túl sok faktort akarunk a kis dimenzióhoz képest, a modell nem konzisztens — nincs megoldás. Ezért $k$-t mindig $p$-hez képest kicsire választjuk.</div>
+</div>
+
+<!-- Főfaktor-analízis -->
+<div class="step">
+  <div class="step-label">7. Főfaktor-analízis (becslési eljárás $A$, $\Psi$-re)</div>
+
+  <p>Adott $R$ tap. korrelációs mátrix (vagy $S$). Cél: megtalálni az $A$ loadingot és $\Psi$-t. A főfaktor-analízis egy iteratív eljárás.</p>
+
+  <div class="box accent">
+    <strong>Lépések:</strong>
+    <ol style="margin-bottom:0;">
+      <li><strong>Becsült kommunalitások:</strong> $\tilde h_i^2 = \max_{j\neq i}|r_{ij}|$ (durva indulóérték), $\tilde\Psi_{ii} = 1 - \tilde h_i^2$.</li>
+      <li><strong>Redukált mátrix:</strong> $R - \hat\Psi$ (a főátlóban $\tilde h_i^2$, a többi helyen $r_{ij}$).</li>
+      <li><strong>Spektrálfelbontás:</strong> $R - \hat\Psi = \sum_{i=1}^p d_i \underline{\gamma}_{(i)}\underline{\gamma}_{(i)}^T$, sajátértékek csökkenő sorrendben.</li>
+      <li><strong>Loading-mátrix:</strong> $\hat A = \Gamma_1 \Lambda_1^{1/2}$, ahol $\Gamma_1$ az első $k$ sajátvektor, $\Lambda_1 = \mathrm{diag}(d_1,\dots,d_k)$.</li>
+      <li><strong>Egyedi varianciák:</strong> $\hat\Psi_{ii} = 1 - \sum_{j=1}^k \hat a_{ij}^2$.</li>
+    </ol>
+  </div>
+
+  <div class="why"><strong>Mi az ötlet?</strong> Ha a $k$-faktormodell érvényes, akkor $R - \Psi = AA^T$ pontosan $k$-rangú, és a $k$ legnagyobb sajátértékhez tartozó sajátvektorok adják $A$ oszlopait. Az iteráció finomítja ezt a becslést.</div>
+
+  <p style="font-size:14px;color:var(--muted);">A főfaktor-analízis <em>megengedhető</em>, ha $R - \Psi$ nemnegatív, azaz $\Psi_{ii} \geq 0$ minden $i$-re. Ha az iteráció "Heywood-eset"-be ütközik ($\Psi_{ii} < 0$ becslés), akkor a modell nem életképes.</p>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Definíciók fejből:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$k$-faktormodell: $\underline{\xi} = AF + W + \underline{\mu}$, $V(F)=I_k$, $V(W)=\Psi$ diag, $\mathbb{E}(FW^T)=0$.</li>
+      <li>Loading-mátrix $A$: $p\times k$, oszlopai a faktorhozzájárulások.</li>
+      <li>Kommunalitás: $h_i^2 = \sum_j a_{ij}^2$ (közös faktorok hozzájárulása $\xi_i$ varianciájához).</li>
+      <li>Egyedi variancia: $\Psi_{ii}$.</li>
+    </ul>
+    <strong>Tételeket kimondani:</strong>
+    <ul style="margin-bottom:8px;">
+      <li><strong>Létezés (★):</strong> $k$-faktormodell létezik $\Leftrightarrow$ $\Sigma = AA^T + \Psi$ ($\Psi\geq 0$ diag).</li>
+      <li>$\sigma_{ii} = h_i^2 + \Psi_{ii}$ (variancia-felbontás).</li>
+      <li>$\mathrm{cov}(\xi_i, F_j) = a_{ij}$.</li>
+      <li>Modell ortogonális rotációra <em>nem egyértelmű</em>; faktoranalízis <em>skálainvariáns</em> (PCA nem).</li>
+    </ul>
+    <strong>Hol találkozunk vele:</strong> 13-as beugró — konkrét $\Sigma$ adott, 1-faktormodell létezésének eldöntése. A $\sigma_{ij} = a_i a_j$ ($i\neq j$) és $\sigma_{ii} = a_i^2 + \Psi_{ii}$ egyenleteket kell megoldani; ha $\Psi_{ii} \geq 0$ minden $i$-re kijön, a modell létezik.
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <a href="tetel_05.html" class="nav-sb-item"><span class="nav-sb-num">T05</span><span>Wilks-lambda</span></a>
+    <a href="tetel_06.html" class="nav-sb-item"><span class="nav-sb-num">T06</span><span>ML becslések, kényszerek</span></a>
+    <a href="tetel_07.html" class="nav-sb-item"><span class="nav-sb-num">T07</span><span>Aszimptotika, megengedhetőség</span></a>
+    <a href="tetel_08.html" class="nav-sb-item"><span class="nav-sb-num">T08</span><span>Hipotézisvizsgálat 1: VHP</span></a>
+    <a href="tetel_09.html" class="nav-sb-item"><span class="nav-sb-num">T09</span><span>Hipotézisvizsgálat 2: MANOVA</span></a>
+    <a href="tetel_10.html" class="nav-sb-item"><span class="nav-sb-num">T10</span><span>Főkomponensanalízis</span></a>
+    <a href="tetel_11.html" class="nav-sb-item active"><span class="nav-sb-num">T11</span><span>Faktoranalízis 1</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_10.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_12.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 06 — Becsléselmélet, ML becslések, mátrix-deriválás</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 06 · Becsléselmélet, ML becslések, mátrix-deriválás</div>
+  <h1>Likelihood-függvény, ML becslések, <em>kényszerek alatti $\hat{\mu}$</em></h1>
+  <div class="meta">Dóri jegyzet 19–22. oldal &nbsp;·&nbsp; vizsgára: alap ML formulák + speciális esetek</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> $N_p(\underline{\mu},\Sigma)$ mintából $\underline{\mu}$ és $\Sigma$ becslése. A loglikelihood ügyes átírás után $-\tfrac{n}{2}\log|2\pi\Sigma| - \tfrac{n}{2}\mathrm{tr}(\Sigma^{-1}(S+(\bar{\xi}-\mu)(\bar{\xi}-\mu)^T))$ alakú. Innen a <strong>mátrixderiváltakkal</strong> levezethető, hogy a <em>nem korlátozott</em> esetben $\hat{\underline{\mu}} = \bar{\underline{\xi}}$ és $\hat{\Sigma} = S$. Ha kényszer van $\underline{\mu}$-re (pl. $\underline{\mu} = k\underline{\mu}_0$ vagy $R\underline{\mu}=\underline{r}$), módosított képletek jönnek ki — ezek a vizsga-feladat kedvencei (lásd 15-ös beugró).
+  </div>
+</div>
+
+<!-- Likelihood -->
+<div class="step">
+  <div class="step-label">1. Likelihood-függvény és átalakítása</div>
+
+  <p>Legyen $\underline{\xi}_1,\dots,\underline{\xi}_n \sim N_p(\underline{\mu},\Sigma)$ FAE minta. A likelihood-függvény a többdim normális SFV-ek szorzata:</p>
+
+  <div class="box accent">
+    $$L(\underline{\xi},\underline{\mu},\Sigma) = |2\pi\Sigma|^{-n/2}\,\exp\!\left(-\tfrac{1}{2}\sum_{i=1}^n (\underline{\xi}_i - \underline{\mu})^T \Sigma^{-1}(\underline{\xi}_i - \underline{\mu})\right).$$
+  </div>
+
+  <p>A loglikelihood:</p>
+  $$\ell = \log L = -\tfrac{n}{2}\log|2\pi\Sigma| - \tfrac{1}{2}\sum_{i=1}^n (\underline{\xi}_i - \underline{\mu})^T\Sigma^{-1}(\underline{\xi}_i - \underline{\mu}).$$
+
+  <div class="box green">
+    <strong>Kulcs-átírás (★):</strong> a $\bar{\xi}$ kihúzásával a $\sum$ szétválasztható egy "S-rész"-re és egy "$\bar{\xi}-\mu$ rész"-re:
+    $$\sum_{i=1}^n (\underline{\xi}_i - \underline{\mu})^T\Sigma^{-1}(\underline{\xi}_i - \underline{\mu}) = n\,\mathrm{tr}\!\left(\Sigma^{-1}\!\left[S + (\bar{\underline{\xi}}-\underline{\mu})(\bar{\underline{\xi}}-\underline{\mu})^T\right]\right).$$
+  </div>
+
+  <div class="box blue">
+    <strong>Innen a likelihood átírható alakja:</strong>
+    $$\ell = -\tfrac{n}{2}\log|2\pi\Sigma| - \tfrac{n}{2}\,\mathrm{tr}\!\left(\Sigma^{-1}\!\left[S + (\bar{\underline{\xi}}-\underline{\mu})(\bar{\underline{\xi}}-\underline{\mu})^T\right]\right).$$
+  </div>
+
+  <div class="why"><strong>Miért hasznos?</strong> Ebben az alakban világosan látszik, hogy $\underline{\mu}$ csak a $(\bar{\underline{\xi}}-\underline{\mu})(\bar{\underline{\xi}}-\underline{\mu})^T$ tagon keresztül szerepel — ez egy nemnegatív tag, és pont 0 lesz, ha $\underline{\mu} = \bar{\underline{\xi}}$.</div>
+</div>
+
+<!-- Mátrix-deriválás -->
+<div class="step">
+  <div class="step-label">2. Mátrix-deriválás — eszközkészlet</div>
+
+  <p>$f: \mathbb{R}^{n\times p} \to \mathbb{R}$, $C$ egy $n\times p$-s mátrix esetén</p>
+  $$\frac{\partial f(C)}{\partial C} := \left(\frac{\partial f(C)}{\partial c_{ij}}\right) \quad \text{egy } n\times p \text{-s mátrix.}$$
+
+  <div class="box accent">
+    <strong>Hasznos azonosságok:</strong>
+    <ol style="margin-bottom:0;">
+      <li>$\dfrac{\partial(\underline{a}^T\underline{c})}{\partial\underline{c}} = \underline{a}$</li>
+      <li>$\dfrac{\partial(\underline{c}^T\underline{c})}{\partial\underline{c}} = 2\underline{c}$</li>
+      <li>$\dfrac{\partial(\underline{c}^TA\underline{c})}{\partial\underline{c}} = 2A\underline{c}$ (ha $A$ szimm.)</li>
+      <li>$\dfrac{\partial(\underline{c}^TA\underline{y})}{\partial\underline{c}} = A\underline{y}$</li>
+      <li>$\dfrac{\partial|C|}{\partial C}$ az ún. <em>kofaktor-mátrix</em>; ha $C$ szimm., akkor $2c^{(ij)}$ a nem-átlós, $c^{(ii)}$ az átlós helyeken.</li>
+      <li>$\dfrac{\partial\,\mathrm{tr}(CY)}{\partial C}$: szimm. $C$-re $Y + Y^T - \mathrm{diag}(Y)$, általában $Y^T$.</li>
+    </ol>
+  </div>
+</div>
+
+<!-- ML becslés alapeset -->
+<div class="step">
+  <div class="step-label">3. <span class="star">★</span> ML becslés — alapeset (mindkettő ismeretlen)</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> Ha $\underline{\mu}$ és $\Sigma$ <em>egyaránt ismeretlen</em>, akkor a maximum likelihood becslések:
+    $$\hat{\underline{\mu}} = \bar{\underline{\xi}}, \qquad \hat{\Sigma} = S.$$
+  </div>
+
+  <div class="why"><strong>Miért?</strong>
+    <ul style="margin:6px 0 0;">
+      <li>$\underline{\mu}$ szerint: a $(\bar{\underline{\xi}}-\underline{\mu})(\bar{\underline{\xi}}-\underline{\mu})^T$ tag PSD, és pont $\underline{\mu}=\bar{\underline{\xi}}$-nél tűnik el $\Rightarrow$ ott $\ell$ maximális.
+      <li>$\Sigma$ szerint: a $\mu$-rész kiesik, az $\ell = -\tfrac{n}{2}\log|2\pi\Sigma| - \tfrac{n}{2}\mathrm{tr}(\Sigma^{-1}S)$ alakot kell maximalizálni — a mátrix-deriválás alapján $\hat{\Sigma}=S$ jön ki.</li>
+    </ul>
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">A $(\bar{\underline{\xi}}, S)$ pár <strong>elégséges és teljes statisztika</strong>, ezért $\bar{\underline{\xi}}$ és $\tfrac{n}{n-1}S$ <em>hatásos torzítatlan</em> becslés $(\underline{\mu},\Sigma)$-ra.</p>
+</div>
+
+<!-- Spec eset (a) μ = k·μ₀ -->
+<div class="step">
+  <div class="step-label">4. <span class="star">★</span> Spec. eset (a): $\underline{\mu} = k\cdot\underline{\mu}_0$ alakú kényszer</div>
+
+  <p>Ismerjük az „irányt" $\underline{\mu}_0$-ban, csak a $k$ skalár ismeretlen.</p>
+
+  <div class="box green">
+    <strong>(i) Ha $\Sigma$ ismert:</strong>
+    $$\hat{k} = \frac{\underline{\mu}_0^T \Sigma^{-1}\bar{\underline{\xi}}}{\underline{\mu}_0^T \Sigma^{-1} \underline{\mu}_0}.$$
+  </div>
+
+  <div class="box green">
+    <strong>(ii) Ha $\Sigma$ ismeretlen:</strong>
+    $$\hat{k} = \frac{\underline{\mu}_0^T S^{-1}\bar{\underline{\xi}}}{\underline{\mu}_0^T S^{-1} \underline{\mu}_0}.$$
+  </div>
+
+  <div class="why"><strong>Mintázat:</strong> $\Sigma$ ismeretlen esetén ugyanaz a képlet, csak $\Sigma\to S$. A levezetés Lagrange-féle multiplikátor módszerrel megy: a likelihoodot $k$ szerint deriválva $\underline{\mu}_0^T\Sigma^{-1}(\bar{\underline{\xi}}-k\underline{\mu}_0)=0$ jön ki, ami átrendezve a fenti hányadost adja.</div>
+
+  <div class="box accent">
+    <strong>Hol találkozunk vele:</strong> 15-ös beugró ($\underline{\mu} = a\cdot(4,2)^T$ alakú kényszerre konkrét $\hat{a}$ kiszámítása) — itt is a fenti formulát kell alkalmazni $\Sigma$ ismeretlen esetben.
+  </div>
+</div>
+
+<!-- Spec eset (b) Σ = β·Σ₀ -->
+<div class="step">
+  <div class="step-label">5. Spec. eset (b): $\Sigma = \beta\cdot\Sigma_0$ alakú kényszer</div>
+
+  <p>Ismerjük $\Sigma$ "alakját" $\Sigma_0$-ban, csak a $\beta$ skála-paraméter ismeretlen.</p>
+
+  <div class="box green">
+    <strong>(i) Ha $\underline{\mu}$ ismert:</strong>
+    $$\hat{\beta} = \frac{\mathrm{tr}\!\left(\Sigma_0^{-1}(S + (\bar{\underline{\xi}}-\underline{\mu})(\bar{\underline{\xi}}-\underline{\mu})^T)\right)}{p}.$$
+  </div>
+
+  <div class="box green">
+    <strong>(ii) Ha $\underline{\mu}$ ismeretlen:</strong>
+    $$\hat{\beta} = \frac{\mathrm{tr}(\Sigma_0^{-1} S)}{p}.$$
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Természetes értelmezés: ha $n\to\infty$, akkor $S\to\beta\Sigma_0$, és $\mathrm{tr}(\Sigma_0^{-1}\beta\Sigma_0)/p = \beta\,\mathrm{tr}(I_p)/p = \beta$.</p>
+</div>
+
+<!-- Spec eset (c) k csoport -->
+<div class="step">
+  <div class="step-label">6. Spec. eset (c): $k$ csoport, közös $\Sigma$, eltérő $\underline{\mu}_i$-k</div>
+
+  <p>Mintánk $k$ db csoportból áll: $\underline{\xi}_{i,j}\sim N_p(\underline{\mu}_i,\Sigma)$, $j=1,\dots,n_i$, $i=1,\dots,k$.</p>
+
+  <div class="box green">
+    <strong>ML becslések:</strong>
+    $$\hat{\underline{\mu}}_i = \bar{\underline{\xi}}_i, \qquad \hat{\Sigma} = \frac{1}{n}\sum_{i=1}^k n_i S_i, \quad n = \sum n_i.$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">$\underline{\mu}_i$ becslése: az $i$-edik csoport tap. átlaga. $\Sigma$ becslése: a csoportok tap. szórásmátrixainak <em>$n_i$-vel súlyozott</em> átlaga.</p>
+  </div>
+</div>
+
+<!-- Spec eset (d) Rμ = r kényszer -->
+<div class="step">
+  <div class="step-label">7. Spec. eset (d): $R\underline{\mu} = \underline{r}$ alakú lineáris kényszer (HF / +3pt beugró)</div>
+
+  <p>$R: k\times p$ mátrix, $\underline{r}\in\mathbb{R}^k$ ($k<p$). Példa: $\underline{\mu}_1+\underline{\mu}_2 = 2$ ($p=2$, $R=(1,1)$, $\underline{r}=2$).</p>
+
+  <div class="box green">
+    <strong>(i) Ha $\Sigma$ ismert:</strong>
+    $$\hat{\underline{\mu}} = \bar{\underline{\xi}} - \Sigma R^T(R\Sigma R^T)^{-1}(R\bar{\underline{\xi}} - \underline{r}).$$
+  </div>
+
+  <div class="box green">
+    <strong>(ii) Ha $\Sigma$ ismeretlen:</strong>
+    $$\hat{\underline{\mu}} = \bar{\underline{\xi}} - S R^T(R S R^T)^{-1}(R\bar{\underline{\xi}} - \underline{r}).$$
+  </div>
+
+  <div class="why"><strong>Geometriai jelentés:</strong> $\bar{\underline{\xi}}$-ből egy "vetítést" csinálunk az $R\underline{\mu} = \underline{r}$ feltételi altérre, $\Sigma$ által generált metrika szerint. Ha a kényszer már teljesül $\bar{\underline{\xi}}$-re ($R\bar{\underline{\xi}}=\underline{r}$), akkor a korrekció 0.</div>
+
+  <div class="box accent">
+    <strong>Vizsga-szempont:</strong> ez a tétel adja a 04-es beugró ($H_0: \mu_1+\mu_2=4$) próbastatisztikájának hátterét — ott a megfelelő likelihood-arány vezet $-2\log\lambda = n(R\bar{\underline{\xi}}-\underline{r})^T(R\Sigma R^T)^{-1}(R\bar{\underline{\xi}}-\underline{r})$-re.
+  </div>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Formulák fejből:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>Likelihood-függvény átírt alakja: $\ell = -\tfrac{n}{2}\log|2\pi\Sigma| - \tfrac{n}{2}\mathrm{tr}(\Sigma^{-1}[S + (\bar{\underline{\xi}}-\underline{\mu})(\bar{\underline{\xi}}-\underline{\mu})^T])$.</li>
+      <li>Alap ML becslések: $\hat{\underline{\mu}} = \bar{\underline{\xi}}$, $\hat{\Sigma} = S$.</li>
+      <li>$\underline{\mu} = k\underline{\mu}_0$ kényszer: $\hat{k} = \dfrac{\underline{\mu}_0^T\Sigma^{-1}\bar{\underline{\xi}}}{\underline{\mu}_0^T\Sigma^{-1}\underline{\mu}_0}$ ($\Sigma$-t $S$-re cserélni, ha ismeretlen).</li>
+      <li>$R\underline{\mu}=\underline{r}$ kényszer: $\hat{\underline{\mu}} = \bar{\underline{\xi}} - \Sigma R^T(R\Sigma R^T)^{-1}(R\bar{\underline{\xi}}-\underline{r})$.</li>
+      <li>$k$ csoport, közös $\Sigma$: $\hat{\underline{\mu}}_i = \bar{\underline{\xi}}_i$, $\hat{\Sigma} = \tfrac{1}{n}\sum n_i S_i$.</li>
+    </ul>
+    <strong>Tudni kell kimondani:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$(\bar{\underline{\xi}},S)$ elégséges (és teljes) statisztika.</li>
+      <li>$\bar{\underline{\xi}}$ és $\tfrac{n}{n-1}S$ hatásos torzítatlan becslés.</li>
+      <li>Mátrix-deriválás alap-azonosságait (legalább vektor szerinti deriválást).</li>
+    </ul>
+    <strong>Hol találkozunk vele:</strong> 15-ös beugró ($\underline{\mu}=a\underline{\mu}_0$ kényszerre $\hat{a}$ konkrét számítása). A spec. esetek formuláit fejből kell alkalmazni — nem a levezetést kérdezik.
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <a href="tetel_05.html" class="nav-sb-item"><span class="nav-sb-num">T05</span><span>Wilks-lambda</span></a>
+    <a href="tetel_06.html" class="nav-sb-item active"><span class="nav-sb-num">T06</span><span>ML becslések, kényszerek</span></a>
+    <a href="tetel_07.html" class="nav-sb-item"><span class="nav-sb-num">T07</span><span>Aszimptotika, megengedhetőség</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_05.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_07.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 16 — Kanonikus korrelációanalízis</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 16 · Kanonikus korrelációanalízis</div>
+  <h1>Szinguláris érték felbontás, <em>kanonikus korreláció</em>, optimalitás</h1>
+  <div class="meta">Dóri jegyzet 66–69. oldal &nbsp;·&nbsp; vizsgára: SVD + kanonikus korr. definíciók</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> Két véletlen vektor: $\underline{\xi}$ ($q$-dim) és $\underline{\eta}$ ($p$-dim). Hogyan mérjük a köztük lévő (lineáris) kapcsolatot? Egy átlagos korreláció helyett <em>linkearis kombinációkat</em> keresünk: az olyan $\underline{a}^T\underline{\xi}$ és $\underline{b}^T\underline{\eta}$ párokat, amelyek korrelációja a legnagyobb. Ezek a <strong>kanonikus változók</strong>, együtthatóik a <strong>kanonikus korrelációk</strong>. Az eljárás kulcsa a $K = \Sigma_{11}^{-1/2}\Sigma_{12}\Sigma_{22}^{-1/2}$ mátrix <strong>szinguláris érték felbontása</strong> — a szinguláris értékek pontosan a kanonikus korrelációk. Ez a többdim statisztika "szimmetrikus regresszió"-megközelítése.
+  </div>
+</div>
+
+<!-- SVD -->
+<div class="step">
+  <div class="step-label">1. <span class="star">★</span> Szinguláris érték felbontás (SVD)</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> Legyen $A$ egy $n\times p$-s mátrix, $\mathrm{rang}(A) = r$. Ekkor
+    $$A = U L V^T,$$
+    ahol
+    <ul style="margin-bottom:0;">
+      <li>$U$: $n\times r$, oszlopai ortonormáltak ($U^TU = I_r$),</li>
+      <li>$V$: $p\times r$, oszlopai ortonormáltak ($V^TV = I_r$),</li>
+      <li>$L$: $r\times r$ diagonális, főátlójában a <em>szinguláris értékek</em> $l_1 \geq l_2 \geq \dots \geq l_r > 0$.</li>
+    </ul>
+  </div>
+
+  <div class="box accent">
+    <strong>Kapcsolat a sajátértékekkel:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$V$ oszlopai $A^TA$ sajátvektorai (ortonormált).</li>
+      <li>$U$ oszlopai $AA^T$ sajátvektorai.</li>
+      <li>$\lambda_i = l_i^2$ az $A^TA$ és $AA^T$ közös nemnulla sajátértékei.</li>
+    </ul>
+  </div>
+
+  <div class="why"><strong>Mit nyújt az SVD?</strong> Ez a többdim statisztika legfontosabb mátrix-felbontása. Általánosítása a szimmetrikus mátrix spektrálfelbontásának, de tetszőleges (nem négyzetes, nem szimmetrikus) mátrixra is működik. A főkomponensanalízis, a faktoranalízis, az MDS és a kanonikus korreláció mind az SVD-re épülnek a háttérben.</div>
+</div>
+
+<!-- Kanonikus korreláció setup -->
+<div class="step">
+  <div class="step-label">2. Kanonikus korrelációanalízis — beállítások</div>
+
+  <p>Két véletlen vektor együttes eloszlással:</p>
+  <div class="box accent">
+    $$\underline{\xi} \sim N_q(\underline{\mu}, \Sigma_{11}), \quad \underline{\eta} \sim N_p(\underline{\nu}, \Sigma_{22}), \quad \mathrm{cov}(\underline{\xi}, \underline{\eta}) = \Sigma_{12}.$$
+    Az együttes kovmátrix:
+    $$V = \begin{pmatrix} \Sigma_{11} & \Sigma_{12} \\ \Sigma_{21} & \Sigma_{22} \end{pmatrix}, \quad \Sigma_{11} > 0,\; \Sigma_{22} > 0.$$
+  </div>
+
+  <div class="box accent">
+    <strong>Cél:</strong> találjuk meg azt az $\underline{a},\underline{b}$ párt, amelyre a $\psi = \underline{a}^T\underline{\xi}$ és $\phi = \underline{b}^T\underline{\eta}$ <em>korrelációja maximális</em>:
+    $$\rho(\underline{a},\underline{b}) = \frac{\underline{a}^T\Sigma_{12}\underline{b}}{(\underline{a}^T\Sigma_{11}\underline{a})^{1/2}(\underline{b}^T\Sigma_{22}\underline{b})^{1/2}}.$$
+  </div>
+</div>
+
+<!-- K mátrix -->
+<div class="step">
+  <div class="step-label">3. <span class="star">★</span> A $K$ mátrix és SVD-je</div>
+
+  <div class="box green">
+    <strong>Definíció:</strong>
+    $$K = \Sigma_{11}^{-1/2}\Sigma_{12}\Sigma_{22}^{-1/2} \quad (q\times p\text{-s mátrix}).$$
+    $K$ rangja $k = \mathrm{rang}(\Sigma_{12})$.
+  </div>
+
+  <p>Vegyük $K$ szinguláris érték felbontását:</p>
+  $$K = (\underline{\alpha}_1 | \dots | \underline{\alpha}_k)\,D\,(\underline{\beta}_1 | \dots | \underline{\beta}_k)^T,$$
+  ahol
+  <ul>
+    <li>$\underline{\alpha}_i$ a $K$ baloldali szinguláris vektorai ($K K^T$ sajátvektorai),</li>
+    <li>$\underline{\beta}_i$ a $K$ jobboldali szinguláris vektorai ($K^TK$ sajátvektorai),</li>
+    <li>$D = \mathrm{diag}(\lambda_1^{1/2}, \dots, \lambda_k^{1/2})$ — szinguláris értékek diagonálisa.</li>
+  </ul>
+</div>
+
+<!-- Kanonikus elemek -->
+<div class="step">
+  <div class="step-label">4. <span class="star">★</span> Kanonikus korreláció elemei (definíciók)</div>
+
+  <div class="box green">
+    Az <strong>$i$-edik kanonikus elemek</strong>:
+    <ol style="margin-top:6px;margin-bottom:0;">
+      <li><strong>Kanonikus korrelációvektorok:</strong>
+        $$\underline{a}_i = \Sigma_{11}^{-1/2}\underline{\alpha}_i, \qquad \underline{b}_i = \Sigma_{22}^{-1/2}\underline{\beta}_i.$$
+      </li>
+      <li><strong>Kanonikus korrelációváltozók:</strong>
+        $$\psi_i = \underline{a}_i^T\underline{\xi}, \qquad \phi_i = \underline{b}_i^T\underline{\eta}.$$
+      </li>
+      <li><strong>Kanonikus korrelációs együttható:</strong>
+        $$\rho_i = \lambda_i^{1/2} \quad (K \text{ szinguláris értéke}).$$
+      </li>
+    </ol>
+  </div>
+</div>
+
+<!-- Tulajdonságok -->
+<div class="step">
+  <div class="step-label">5. <span class="star">★</span> A kanonikus változók tulajdonságai</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong>
+    <ol style="margin-top:6px;margin-bottom:0;">
+      <li><strong>$D^2(\psi_i) = D^2(\phi_i) = 1$</strong> — a kanonikus változók standardizáltak.</li>
+      <li><strong>$\mathrm{corr}(\psi_i, \psi_j) = 0$, $\mathrm{corr}(\phi_i, \phi_j) = 0$</strong> ($i \neq j$) — a kanonikus változók egymással korrelálatlanok.</li>
+      <li><strong>$\mathrm{corr}(\psi_i, \phi_j) = \rho_i \delta_{ij}$</strong>:
+        <ul>
+          <li>$i = j$: a kanonikus korreláció $\rho_i = \lambda_i^{1/2}$.</li>
+          <li>$i \neq j$: 0 — különböző párok közötti korreláció eltűnik.</li>
+        </ul>
+      </li>
+    </ol>
+  </div>
+
+  <div class="box accent">
+    Vagyis a $(\underline{\psi},\underline{\phi})$ vektor együttes kovmátrixa:
+    $$V\begin{pmatrix}\underline{\psi}\\ \underline{\phi}\end{pmatrix} = \begin{pmatrix} I_k & D \\ D & I_k \end{pmatrix}.$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">A kanonikus transzformáció után az $\underline{\xi}$ és $\underline{\eta}$ közti korreláció szerkezete a lehető legegyszerűbb: minden páronkénti korreláció 0, kivéve $(\psi_i, \phi_i)$ párokat, ahol $\rho_i$.</p>
+  </div>
+</div>
+
+<!-- Optimalitás -->
+<div class="step">
+  <div class="step-label">6. <span class="star">★</span> Optimalitási tétel</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> A maximális korreláció a kanonikus változók párjával érhető el. Pontosabban, $1 \leq j \leq k$-ra:
+    $$\max_{\substack{\underline{a}^T\Sigma_{11}\underline{a}=1 \\ \underline{b}^T\Sigma_{22}\underline{b}=1 \\ \underline{a}_i^T\Sigma_{11}\underline{a}=0,\, i<j}}\, \underline{a}^T\Sigma_{12}\underline{b} = \rho_j,$$
+    és a maximumot az $\underline{a} = \underline{a}_j$, $\underline{b} = \underline{b}_j$ pár éri el.
+  </div>
+
+  <div class="why"><strong>Mit mond?</strong>
+    <ul style="margin:6px 0 0;">
+      <li><em>Az 1. kanonikus pár</em> ($\underline{a}_1, \underline{b}_1$) a legnagyobb korrelációt adja a teljes lineáris kombinációk között.</li>
+      <li><em>A 2. kanonikus pár</em> a 2. legnagyobb korrelációt adja, az 1.-re ortogonális (korrelálatlan) feltétel mellett.</li>
+      <li><em>...stb.</em> — minden következő pár "új információt" hordoz.</li>
+    </ul>
+    Az analógia tiszta: ahogy a főkomponensanalízisben a sajátvektorok hierarchikusan a legnagyobb varianciát adják, úgy itt a kanonikus változók hierarchikusan a legnagyobb keresztkorrelációt.
+  </div>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>SVD kimondása:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$A = ULV^T$, $U^TU = V^TV = I_r$, $L$ diag pozitív elemekkel.</li>
+      <li>$V$ oszlopai $A^TA$ sajátvektorai, $U$ oszlopai $AA^T$ sajátvektorai.</li>
+      <li>Szinguláris értékek = $A^TA$ sajátértékeinek négyzetgyökei.</li>
+    </ul>
+    <strong>Kanonikus korreláció definíciói:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$K = \Sigma_{11}^{-1/2}\Sigma_{12}\Sigma_{22}^{-1/2}$.</li>
+      <li>$K = (\underline{\alpha}_1|\dots|\underline{\alpha}_k)D(\underline{\beta}_1|\dots|\underline{\beta}_k)^T$ az SVD.</li>
+      <li><strong>Kanonikus korr. vektorok:</strong> $\underline{a}_i = \Sigma_{11}^{-1/2}\underline{\alpha}_i$, $\underline{b}_i = \Sigma_{22}^{-1/2}\underline{\beta}_i$.</li>
+      <li><strong>Kanonikus korr. változók:</strong> $\psi_i = \underline{a}_i^T\underline{\xi}$, $\phi_i = \underline{b}_i^T\underline{\eta}$.</li>
+      <li><strong>Kanonikus korr. együtthatók:</strong> $\rho_i = \lambda_i^{1/2}$ ($K$ szinguláris értékei).</li>
+    </ul>
+    <strong>Tulajdonságok:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$D^2(\psi_i) = D^2(\phi_i) = 1$ (standardizáltak).</li>
+      <li>$\mathrm{corr}(\psi_i, \psi_j) = \mathrm{corr}(\phi_i, \phi_j) = 0$ ($i\neq j$).</li>
+      <li>$\mathrm{corr}(\psi_i, \phi_j) = \rho_i \delta_{ij}$ — csak az azonos indexű kanonikus pár korrelált, kanonikus korr-tal.</li>
+    </ul>
+    <strong>Optimalitás:</strong> a kanonikus változók maximalizálják a korrelációt, hierarchikusan ($\underline{a}_1, \underline{b}_1$ a legnagyobb stb.).
+    <br><br>
+    <strong>Vizsga-szempont:</strong> a tétel többnyire kimondás-szintű. A definíciókat fejből kell tudni; a részletes biz. ($K$ SVD-je adja a megoldást a Lagrange-féle multiplikátorral) nem kell.
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <a href="tetel_05.html" class="nav-sb-item"><span class="nav-sb-num">T05</span><span>Wilks-lambda</span></a>
+    <a href="tetel_06.html" class="nav-sb-item"><span class="nav-sb-num">T06</span><span>ML becslések, kényszerek</span></a>
+    <a href="tetel_07.html" class="nav-sb-item"><span class="nav-sb-num">T07</span><span>Aszimptotika, megengedhetőség</span></a>
+    <a href="tetel_08.html" class="nav-sb-item"><span class="nav-sb-num">T08</span><span>Hipotézisvizsgálat 1: VHP</span></a>
+    <a href="tetel_09.html" class="nav-sb-item"><span class="nav-sb-num">T09</span><span>Hipotézisvizsgálat 2: MANOVA</span></a>
+    <a href="tetel_10.html" class="nav-sb-item"><span class="nav-sb-num">T10</span><span>Főkomponensanalízis</span></a>
+    <a href="tetel_11.html" class="nav-sb-item"><span class="nav-sb-num">T11</span><span>Faktoranalízis 1</span></a>
+    <a href="tetel_12.html" class="nav-sb-item"><span class="nav-sb-num">T12</span><span>Faktoranalízis 2: ML, Joreskog</span></a>
+    <a href="tetel_13.html" class="nav-sb-item"><span class="nav-sb-num">T13</span><span>Diszkriminanciaanalízis</span></a>
+    <a href="tetel_14.html" class="nav-sb-item"><span class="nav-sb-num">T14</span><span>Többdim. skálázás (MDS)</span></a>
+    <a href="tetel_15.html" class="nav-sb-item"><span class="nav-sb-num">T15</span><span>Többdim. lin. regresszió</span></a>
+    <a href="tetel_16.html" class="nav-sb-item active"><span class="nav-sb-num">T16</span><span>Kanonikus korreláció</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_15.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="index.html" class="pbn-btn pbn-disabled">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

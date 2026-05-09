@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 14 — Többdimenziós skálázás</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 14 · Többdimenziós skálázás</div>
+  <h1>Távolságmátrix euklideszisége, <em>főkoordináták</em>, MDS</h1>
+  <div class="meta">Dóri jegyzet 49–53. oldal &nbsp;·&nbsp; vizsgára: D euklideszi ⟺ B≥0 + főkoordináták</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> Adott $n$ objektum páronkénti távolságmátrixa $D = (d_{rs})$. <em>Lehetséges-e ezeket a tárgyakat egy euklideszi térben pontokkal reprezentálni úgy, hogy a páronkénti euklideszi távolságok pont a $D$ értékek legyenek?</em> A <strong>★ főtétel:</strong> $D$ pontosan akkor euklideszi, ha a $B = HAH$ mátrix pozitív szemidefinit (ahol $A_{rs} = -\tfrac{1}{2}d_{rs}^2$, $H$ a centráló mátrix). Ha igen, akkor a $B$ spektrálfelbontásából (sajátvektorokból) <strong>főkoordinátákat</strong> nyerünk: ezek adják a pontok lehetséges koordinátáit. A klasszikus MDS algoritmus ezzel az eljárással csökkent dimenziót — és a hiba minimalizálva van.
+  </div>
+</div>
+
+<!-- Távolságmátrix -->
+<div class="step">
+  <div class="step-label">1. Távolságmátrix definíciója</div>
+
+  <div class="box accent">
+    <strong>Definíció:</strong> Egy $n\times n$-es $D = (d_{r,s})$ mátrix <em>távolságmátrix</em>, ha
+    <ul style="margin-bottom:0;">
+      <li>szimmetrikus: $d_{r,s} = d_{s,r}$,</li>
+      <li>$d_{r,r} = 0$ (önmagától vett távolság 0),</li>
+      <li>$d_{r,s} \geq 0$ (nemnegatív).</li>
+    </ul>
+  </div>
+
+  <div class="why"><strong>Háromszög-egyenlőtlenség:</strong> a definícióból nem következik automatikusan! Ha egy „távolság"-mátrix nem teljesíti a háromszög-egyenlőtlenséget (pl. $d_{ab} > d_{ac} + d_{cb}$), akkor még maga a "távolságmátrix" tulajdonság is sérülhet. (Lásd 08-as beugró.)</div>
+</div>
+
+<!-- Euklideszi távmátrix -->
+<div class="step">
+  <div class="step-label">2. <span class="star">★</span> Euklideszi távolságmátrix</div>
+
+  <div class="box accent">
+    <strong>Definíció:</strong> $D$ <em>euklideszi</em>, ha létezik $p\geq 1$ és $\underline{x}_1,\dots,\underline{x}_n \in \mathbb{R}^p$, hogy
+    $$d_{r,s}^2 = (\underline{x}_r - \underline{x}_s)^T(\underline{x}_r - \underline{x}_s) = \|\underline{x}_r - \underline{x}_s\|^2.$$
+  </div>
+
+  <p>Vagyis a tárgyak <em>előállíthatók</em> egy euklideszi tér pontjaiként, és a páronkénti euklideszi távolságok pont a $D$ értékei.</p>
+</div>
+
+<!-- B mátrix konstrukció -->
+<div class="step">
+  <div class="step-label">3. A $B$ mátrix konstrukciója</div>
+
+  <p>$D$ euklideszi-vizsgálatához vezessük be:</p>
+
+  <div class="box accent">
+    <ul style="margin-bottom:0;">
+      <li>$a_{r,s} = -\tfrac{1}{2} d_{r,s}^2$, &nbsp; $A = (a_{r,s})$.</li>
+      <li>$H = I_n - \tfrac{1}{n}\mathbf{1}_n \mathbf{1}_n^T$ (centráló mátrix).</li>
+      <li>$B = HAH$ (kétoldali centrálás).</li>
+    </ul>
+  </div>
+
+  <p>$B$ elemeinek explicit kifejezése:</p>
+  $$b_{r,s} = -\tfrac{1}{2}\!\left(d_{r,s}^2 - \tfrac{1}{n}\!\sum_i d_{r,i}^2 - \tfrac{1}{n}\!\sum_j d_{j,s}^2 + \tfrac{1}{n^2}\!\sum_{i,j} d_{i,j}^2\right).$$
+</div>
+
+<!-- Főtétel: D euklideszi <=> B PSD -->
+<div class="step">
+  <div class="step-label">4. <span class="star">★ ★</span> Főtétel: $D$ euklideszi $\Leftrightarrow$ $B$ PSD</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong>
+    $$\boxed{D \text{ euklideszi} \;\Longleftrightarrow\; B = HAH \geq 0 \;(\text{pozitív szemidefinit})}$$
+  </div>
+
+  <div class="box accent">
+    <strong>Két irány:</strong>
+    <p style="margin-top:10px;"><strong>(a) Ha $D$ euklideszi:</strong> $\underline{z}_1,\dots,\underline{z}_n \in \mathbb{R}^p$ pontok távolságmátrixa $\Rightarrow$ $B = (HZ)(HZ)^T \geq 0$, ahol $Z = (\underline{z}_1, \dots, \underline{z}_n)^T$ az "adatmátrix".</p>
+    <p style="margin-bottom:0;"><strong>(b) Ha $B \geq 0$:</strong> $r(B) = p$, sajátértékek $\lambda_1 \geq \dots \geq \lambda_p > 0$, sajátvektorok $\underline{x}_i$ ($\underline{x}_i^T\underline{x}_i = \lambda_i$). Ekkor $\underline{z}_r = (x_{r1}, \dots, x_{rp})^T$ pontok adják az euklideszi reprezentációt: $d_{r,s}^2 = (\underline{z}_r - \underline{z}_s)^T(\underline{z}_r - \underline{z}_s)$.</p>
+  </div>
+
+  <div class="why"><strong>Mi az ötlet?</strong> A $b_{r,s}$ képletének mágikus átírható alakja:
+    $$b_{r,s} = (\underline{z}_r - \bar{\underline{z}})^T(\underline{z}_s - \bar{\underline{z}})$$
+    — vagyis $B$ a centrált pontok skalárszorzat-mátrixa (Gram-mátrix). Egy ilyen mátrix mindig PSD, és visszafordítva: ha $B \geq 0$, akkor sajátfelbontásból megkapjuk az $\underline{z}$-pontokat.
+  </div>
+
+  <div class="box blue">
+    <strong>Hol találkozunk vele:</strong>
+    <ul style="margin-bottom:0;">
+      <li><strong>01-es beugró:</strong> a tétel <em>kimondása + bizonyítása</em> — 8 pontos kérdés.</li>
+      <li><strong>08-as beugró:</strong> konkrét $3\times 3$-as mátrixra ellenőrzés ($B$ PSD-e).</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Hasonlósági mátrix -->
+<div class="step">
+  <div class="step-label">5. Hasonlósági mátrix</div>
+
+  <div class="box accent">
+    <strong>Definíció:</strong> $C = (c_{r,s})$ <em>hasonlósági mátrix</em>, ha $c_{r,s} = c_{s,r}$ és $c_{r,s} \leq c_{r,r}$ (minden objektum legjobban saját magára hasonlít).
+  </div>
+
+  <p>$C$-ből távolságot konstruálhatunk: $d_{r,s} = (c_{r,r} - 2c_{r,s} + c_{s,s})^{1/2}$.</p>
+
+  <div class="box green">
+    <strong>Tétel:</strong> Ha $C \geq 0$ (PSD), akkor a fenti $D$ <em>euklideszi</em>, és $B = HCH$.
+  </div>
+</div>
+
+<!-- Főkoordináták -->
+<div class="step">
+  <div class="step-label">6. <span class="star">★</span> Főkoordináták</div>
+
+  <p>Tegyük fel, hogy van egy mintánk $\underline{\xi}_1, \dots, \underline{\xi}_n \in \mathbb{R}^p$. Konstruáljuk a $D$ távolságmátrixot, majd $B$-t a fenti módon.</p>
+
+  <div class="box accent">
+    <strong>Tétel-szerkezet:</strong> $B = (HZ)(HZ)^T$, ahol $Z = \tilde X$ (adatmátrix). $nS = \tilde X^T H \tilde X = A^T A$ — a tap. szórásmátrix $n$-szerese.
+    <p style="margin:8px 0 0;">A sajátvektorok kapcsolata: ha $A^T A \underline{w}_i = \lambda_i \underline{w}_i$, akkor $\underline{v}_i = A\underline{w}_i$ a $B$ sajátvektora.</p>
+  </div>
+
+  <div class="box green">
+    <strong>Definíció — főkoordináták:</strong> Legyen $V_k = (\underline{v}_1 | \dots | \underline{v}_k)$ ($n\times k$). Ennek <em>sorai</em> az $\tilde X$ mátrix <strong>$k$-dimenziós főkoordinátái</strong>.
+  </div>
+
+  <div class="box accent">
+    Az $r$-edik főkoordináta:
+    $$\left(\underline{w}_1^T(\underline{\xi}_r - \bar{\underline{\xi}}),\, \dots,\, \underline{w}_k^T(\underline{\xi}_r - \bar{\underline{\xi}})\right).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Vagyis az $r$-edik megfigyelés és a tap. átlag különbségének projekciója a tap. első $k$ főkomponensének irányába.</p>
+  </div>
+
+  <div class="why"><strong>Kapcsolat a főkomponensekkel:</strong> a főkoordináták <em>pontosan</em> a tapasztalati főkomponensek (Tétel 10) — vagyis a klasszikus MDS lényegében ugyanaz, mint a PCA, csak egy másik nyelvre lefordítva. Ha az adatok eleve euklideszi térből származnak, a két eljárás azonos eredményt ad.</div>
+</div>
+
+<!-- Klasszikus megoldás optimalitása -->
+<div class="step">
+  <div class="step-label">7. <span class="star">★</span> Klasszikus MDS optimalitása (LNH)</div>
+
+  <p>$L: \mathbb{R}^p \to \mathbb{R}^p$ ortogonális, $L = (L_1 | L_2)$ ($L_1$: $p\times k$). Az új távolságok $\hat d_{r,s}^2 = \sum_{i=1}^k(\underline{\xi}_r^T \underline{l}_i - \underline{\xi}_s^T \underline{l}_i)^2 \leq d_{r,s}^2$.</p>
+
+  <div class="box accent">
+    <strong>Hibafüggvény:</strong>
+    $$\phi = \sum_{r,s=1}^n (d_{r,s}^2 - \hat d_{r,s}^2).$$
+    Mit válasszunk $L_1$-nek, hogy ez a hiba minimális legyen?
+  </div>
+
+  <div class="box green">
+    <strong>Tétel:</strong> A főkoordinátákba történő projekció adja a legkisebb $\phi$ hibát.
+  </div>
+
+  <div class="why"><strong>Összegzés:</strong> a $k$-dim MDS-megoldás (főkoordináták) <em>optimális</em> a négyzetes távolság-eltérés értelmében. Ez ugyanaz az eredmény, mint főkomponensanalízisnél: az első $k$ főkomponens minimalizálja a négyzetes hibát.</div>
+</div>
+
+<!-- Nem-metrikus MDS -->
+<div class="step">
+  <div class="step-label">8. Nem-metrikus MDS — Shepard–Kruskal</div>
+
+  <p>Ha csak a <em>relatív sorrendet</em> akarjuk megőrizni a távolságok között (nem konkrét értékeket), <em>nem-metrikus skálázást</em> használunk.</p>
+
+  <div class="box accent">
+    <strong>Monoton kapcsolat:</strong> $\{x_i\}$ és $\{y_i\}$ <em>monoton kapcsolatban</em>, ha $x_i < x_j \Rightarrow y_i \leq y_j$. Jelölés: $x \sim_{\text{mon}} y$.
+  </div>
+
+  <div class="box green">
+    <strong>Legkisebb négyzetes monoton regresszió:</strong> $\{y_i\}$-nek $\{x_i\}$-re vonatkozó becslése az a $\{x_i^*\}$ sorozat, ahol
+    $$x^* \sim_{\text{mon}} x \quad \text{és} \quad \sum_i (y_i - x_i^*)^2 = \min.$$
+  </div>
+
+  <div class="box accent">
+    <strong>Algoritmus (Shepard–Kruskal):</strong> Ahol nem teljesül a monotonitás, az adott szakaszt helyettesítjük az érintett $y_i$-k <em>átlagával</em>. Az eljárást ismételjük, amíg monoton sorozatot nem kapunk.
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">A többdim skálázás <em>iteratív</em> változata: (1) klasszikus MDS-sel kapunk euklideszi $\hat D$-t; (2) kiszámoljuk $\hat D$ legkisebb négyzetes monoton regresszióját az eredeti $D$-re; (3) az új $\hat D^*$-ra megint MDS; (4) iteráljuk.</p>
+  </div>
+
+  <div class="box blue">
+    <strong>Hol találkozunk vele:</strong> 12-es beugró — konkrét sorozaton ($y = (5,7,4,3)$, $x = (6,3,2,8)$) végrehajtani a monoton regressziót.
+  </div>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Definíciók fejből:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>Távolságmátrix: szimmetrikus, $d_{r,r}=0$, $d_{r,s}\geq 0$.</li>
+      <li>Euklideszi távmátrix: $\exists p, \underline{x}_1,\dots,\underline{x}_n\in\mathbb{R}^p$, $d_{r,s}^2 = \|\underline{x}_r-\underline{x}_s\|^2$.</li>
+      <li>$A_{r,s} = -\tfrac{1}{2}d_{r,s}^2$, $H$ centráló, $B = HAH$.</li>
+    </ul>
+    <strong>Főtétel kimondása (★ ★):</strong>
+    $$D \text{ euklideszi} \;\Longleftrightarrow\; B \geq 0.$$
+    <strong>További tételeket kimondani:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$D$ euklideszi $\Rightarrow$ $B = (HZ)(HZ)^T \geq 0$, ahol $Z$ a pontok mátrixa.</li>
+      <li>$B \geq 0$, sajátfelbontásából a pontok visszanyerhetőek (főkoordináták).</li>
+      <li>Klasszikus MDS optimális: a főkoordinátákba projekció minimalizálja a $\phi$ hibát.</li>
+      <li>Hasonlósági mátrix $C \geq 0$ $\Rightarrow$ a belőle származó $D$ euklideszi.</li>
+    </ul>
+    <strong>Hol találkozunk vele:</strong>
+    <ul style="margin-bottom:0;">
+      <li><strong>01-es beugró:</strong> $D$ euklideszi $\Leftrightarrow$ $B \geq 0$ — kimondás+bizonyítás (8 pont).</li>
+      <li><strong>08-as beugró:</strong> konkrét $3\times 3$ mátrixra eldönteni, euklideszi-e (4 pont).</li>
+      <li><strong>12-es beugró:</strong> Shepard–Kruskal monoton regresszió.</li>
+    </ul>
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <a href="tetel_05.html" class="nav-sb-item"><span class="nav-sb-num">T05</span><span>Wilks-lambda</span></a>
+    <a href="tetel_06.html" class="nav-sb-item"><span class="nav-sb-num">T06</span><span>ML becslések, kényszerek</span></a>
+    <a href="tetel_07.html" class="nav-sb-item"><span class="nav-sb-num">T07</span><span>Aszimptotika, megengedhetőség</span></a>
+    <a href="tetel_08.html" class="nav-sb-item"><span class="nav-sb-num">T08</span><span>Hipotézisvizsgálat 1: VHP</span></a>
+    <a href="tetel_09.html" class="nav-sb-item"><span class="nav-sb-num">T09</span><span>Hipotézisvizsgálat 2: MANOVA</span></a>
+    <a href="tetel_10.html" class="nav-sb-item"><span class="nav-sb-num">T10</span><span>Főkomponensanalízis</span></a>
+    <a href="tetel_11.html" class="nav-sb-item"><span class="nav-sb-num">T11</span><span>Faktoranalízis 1</span></a>
+    <a href="tetel_12.html" class="nav-sb-item"><span class="nav-sb-num">T12</span><span>Faktoranalízis 2: ML, Joreskog</span></a>
+    <a href="tetel_13.html" class="nav-sb-item"><span class="nav-sb-num">T13</span><span>Diszkriminanciaanalízis</span></a>
+    <a href="tetel_14.html" class="nav-sb-item active"><span class="nav-sb-num">T14</span><span>Többdim. skálázás (MDS)</span></a>
+    <a href="tetel_15.html" class="nav-sb-item"><span class="nav-sb-num">T15</span><span>Többdim. lin. regresszió</span></a>
+    <a href="tetel_16.html" class="nav-sb-item"><span class="nav-sb-num">T16</span><span>Kanonikus korreláció</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_13.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_15.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

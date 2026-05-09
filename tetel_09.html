@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 09 — Hipotézisvizsgálat 2.: MANOVA, részvektorok függetlensége</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 09 · Hipotézisvizsgálat 2. — MANOVA, részvektorok függetlensége</div>
+  <h1>Részvektorok függetlensége, <em>MANOVA</em>, többmintás próbák</h1>
+  <div class="meta">Dóri jegyzet 32–35. oldal &nbsp;·&nbsp; vizsgára: MANOVA-konstrukció és Wilks-lambda paraméterek</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> Két fő témakör: <strong>(1) két részvektor függetlenségének tesztje</strong> ($H_0: \Sigma_{12}=0$) — Wilks-lambda eloszlás jön ki próbastatisztikának; <strong>(2) MANOVA</strong>, vagyis $k$ csoport átlagainak egyezésének tesztelése ($H_0: \underline{\mu}_1=\dots=\underline{\mu}_k$). Ez utóbbi az 1-szempontú szórásanalízis többdim. megfelelője: a teljes varianciát $T$ (total) felbontjuk $W$ (within = csoporton belüli) + $B$ (between = csoportok közötti) alakra, és $|W|/|T|$ Wilks-lambda eloszlású. $k=2$ esetén a próba pont a Hotelling-T².
+  </div>
+</div>
+
+<!-- 1. Két részvektor függetlensége -->
+<div class="step">
+  <div class="step-label">1. <span class="star">★</span> $H_0: \Sigma_{12}=0$ (részvektorok függetlensége)</div>
+
+  <p>Tegyük fel: $\underline{\mu} = \begin{pmatrix}\underline{\mu}_1\\ \underline{\mu}_2\end{pmatrix}$, $\Sigma = \begin{pmatrix}\Sigma_{11} & \Sigma_{12}\\ \Sigma_{21} & \Sigma_{22}\end{pmatrix}$, $p = p_1 + p_2$.</p>
+
+  <p>$H_0$ alatt $\Sigma_{12}=0$, vagyis a két részvektor (koordinátaszinten az első $p_1$ és utolsó $p_2$ koordináta) független.</p>
+
+  <div class="box accent">
+    <strong>ML-becslések:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$H_0$ alatt: $\hat{\Sigma} = \begin{pmatrix}S_{11} & 0\\ 0 & S_{22}\end{pmatrix}$ (blokk-diagonális).</li>
+      <li>$H_1$ alatt: $\hat{\Sigma} = S$ (a teljes tap. szórásmátrix).</li>
+    </ul>
+  </div>
+
+  <div class="box green">
+    <strong>VHS — Wilks-lambda alakban:</strong>
+    $$\lambda^{2/n} = \frac{|S_{22} - S_{21}S_{11}^{-1}S_{12}|}{|S_{22}|} = \frac{|S|}{|S_{11}||S_{22}|} \;\sim\; \Lambda(p_2,\, n-1-p_1,\, p_1).$$
+  </div>
+
+  <div class="why"><strong>Mit jelent?</strong> A $|S_{22} - S_{21}S_{11}^{-1}S_{12}|$ a $\underline{\xi}_2$ "$\underline{\xi}_1$-re vetített maradékának" determinánsa (Schur-komplement). Ha a két részvektor független, akkor ez a maradék egyenlő $|S_{22}|$-vel, és a hányados $\approx 1$. Ha viszont van összefüggés, akkor a maradék <em>kisebb</em>, és a hányados távol esik 1-től.</div>
+
+  <p>A Wishart-almátrixok alapján:</p>
+  <ul>
+    <li>$M_{22\cdot 1} = n(S_{22} - S_{21}S_{11}^{-1}S_{12}) \sim W_{p_2}(\Sigma_{22}, n-1-p_1)$,</li>
+    <li>$M_{22} - M_{22\cdot 1} \sim W_{p_2}(\Sigma_{22}, p_1)$, és ezek függetlenek.</li>
+    <li>A Wilks-lambda definíció szerint: $\Lambda = \dfrac{|M_{22\cdot 1}|}{|M_{22\cdot 1}+(M_{22}-M_{22\cdot 1})|}$.</li>
+  </ul>
+</div>
+
+<!-- 2. MANOVA -->
+<div class="step">
+  <div class="step-label">2. <span class="star">★</span> MANOVA — $k$ csoport, átlagok egyezése</div>
+
+  <p>Vegyünk $k$ db mintát (minden mintaelem $p$-dim, közös $\Sigma$):</p>
+  $$\underline{\xi}_{i,1}, \dots, \underline{\xi}_{i,n_i} \sim N_p(\underline{\mu}_i, \Sigma), \quad i = 1,\dots,k.$$
+
+  <div class="box accent">
+    <strong>Jelölések:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$\bar{\underline{\xi}}_i = \tfrac{1}{n_i}\sum_j \underline{\xi}_{i,j}$ (csoportonkénti átlagok)</li>
+      <li>$S_i = \tfrac{1}{n_i}\sum_j (\underline{\xi}_{i,j}-\bar{\underline{\xi}}_i)(\underline{\xi}_{i,j}-\bar{\underline{\xi}}_i)^T$ (csoporton belüli szórásmátrixok)</li>
+      <li>$n = \sum n_i$, $\bar{\underline{\xi}} = \tfrac{1}{n}\sum_i n_i \bar{\underline{\xi}}_i$ (közös átlag)</li>
+    </ul>
+  </div>
+
+  <div class="box green">
+    <strong>$H_0: \underline{\mu}_1 = \underline{\mu}_2 = \dots = \underline{\mu}_k$</strong> (a csoportátlagok egyenlőek).
+  </div>
+
+  <div class="box accent">
+    <strong>Variancia-felbontás (★ — MANOVA-azonosság):</strong>
+    $$T = W + B,$$
+    ahol
+    <ul style="margin-bottom:0;">
+      <li>$T = nS = \sum_{i,j}(\underline{\xi}_{i,j}-\bar{\underline{\xi}})(\underline{\xi}_{i,j}-\bar{\underline{\xi}})^T$ &nbsp;<em>(teljes négyzetösszeg)</em></li>
+      <li>$W = \sum_i n_i S_i = \sum_{i,j}(\underline{\xi}_{i,j}-\bar{\underline{\xi}}_i)(\underline{\xi}_{i,j}-\bar{\underline{\xi}}_i)^T$ &nbsp;<em>(csoporton belüli, "within")</em></li>
+      <li>$B = \sum_i n_i(\bar{\underline{\xi}}_i - \bar{\underline{\xi}})(\bar{\underline{\xi}}_i - \bar{\underline{\xi}})^T$ &nbsp;<em>(csoportok közötti, "between")</em></li>
+    </ul>
+  </div>
+
+  <div class="why"><strong>Intuíció:</strong> $W$ azt méri, mennyire szórnak az adatok a saját csoportátlaguk körül (mintha minden csoportban volna saját középpont). $B$ azt méri, mennyire térnek el a csoportátlagok a közös átlagtól. Ha $H_0$ igaz, $B$ kicsi (zaj). Ha $H_0$ hamis, $B$ nagy.</div>
+</div>
+
+<!-- MANOVA próbastatisztika -->
+<div class="step">
+  <div class="step-label">3. <span class="star">★</span> MANOVA próbastatisztika</div>
+
+  <div class="box green">
+    <strong>VHS:</strong>
+    $$-2\log\lambda = n\,\log\!\left(\frac{|nS|}{|W|}\right) = n\log\!\left(\frac{|T|}{|W|}\right).$$
+  </div>
+
+  <div class="box green">
+    <strong>Wilks-lambda alak:</strong>
+    $$\lambda^{2/n} = \frac{|W|}{|T|} = \frac{|W|}{|W+B|} = |I + W^{-1}B|^{-1} \;\sim\; \Lambda(p,\, n-k,\, k-1).$$
+  </div>
+
+  <div class="why"><strong>Hogyan jutunk az eloszláshoz?</strong>
+    <ul style="margin:6px 0 0;">
+      <li>$W \sim W_p(\Sigma, n-k)$ — Cochran-tétellel ($C_1 = \sum H_i$ idempotens, $\mathrm{rang} = n-k$).</li>
+      <li>$B \sim W_p(\Sigma, k-1)$ — szintén Cochran ($C_2$ idempotens, $\mathrm{rang} = k-1$).</li>
+      <li>$W$ és $B$ függetlenek — Craig-tétellel ($C_1 C_2 = 0$).</li>
+      <li>$\Lambda$ definíció szerint $|W|/|W+B|$ Wilks-lambda.</li>
+    </ul>
+  </div>
+
+  <div class="box accent">
+    <strong>Elutasítjuk $H_0$-t,</strong> ha $\lambda^{2/n}$ kicsi (azaz $|W|/|T|$ kicsi $\Leftrightarrow$ a "csoportok közötti" rész nagy a "csoporton belülihez" képest).
+  </div>
+</div>
+
+<!-- k=2 eset: Hotelling-T² -->
+<div class="step">
+  <div class="step-label">4. $k=2$ esete — kétmintás Hotelling-T²</div>
+
+  <p>$k=2$-re a MANOVA visszaadja a kétmintás Hotelling-T²-próbát.</p>
+
+  <div class="box green">
+    <strong>Levezetés:</strong> $\bar{\underline{\xi}} = \tfrac{n_1\bar{\underline{\xi}}_1 + n_2\bar{\underline{\xi}}_2}{n}$ esetén
+    $$B = \frac{n_1 n_2}{n}(\bar{\underline{\xi}}_1 - \bar{\underline{\xi}}_2)(\bar{\underline{\xi}}_1 - \bar{\underline{\xi}}_2)^T = \frac{n_1 n_2}{n}\underline{d}\,\underline{d}^T,$$
+    ahol $\underline{d} = \bar{\underline{\xi}}_1 - \bar{\underline{\xi}}_2$.
+  </div>
+
+  <div class="box accent">
+    <strong>A próbastatisztika:</strong>
+    $$\frac{n_1 n_2}{n}\,\underline{d}^T\!\left(\frac{W}{n-2}\right)^{\!-1}\underline{d} \;\sim\; T^2(p,\, n-2).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Ez a kétmintás Hotelling $T^2$-próba — az 1-dim kétmintás Student-féle $t$-próba többdim megfelelője.</p>
+  </div>
+</div>
+
+<!-- Behrens-Fisher -->
+<div class="step">
+  <div class="step-label">5. Behrens–Fisher probléma — $\Sigma_1\neq\Sigma_2$</div>
+
+  <p>$k=2$ minta, de a kovmátrixok különbözőek: $\Sigma_1, \Sigma_2$. $H_0: \underline{\mu}_1 = \underline{\mu}_2$.</p>
+
+  <div class="box accent">
+    <strong>ML-becslések:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$H_1$ alatt: $\hat{\underline{\mu}}_i = \bar{\underline{\xi}}_i$, $\hat{\Sigma}_i = S_i$ (külön-külön).</li>
+      <li>$H_0$ alatt: nincs explicit megoldás, <strong>iteratív eljárás</strong> kell.</li>
+    </ul>
+  </div>
+
+  <div class="why"><strong>Miért nehéz?</strong> $H_0$-t deriválva $\underline{\mu}$ szerint:
+    $$\frac{\partial \ell_0}{\partial \underline{\mu}} = -n_1\Sigma_1^{-1}(\bar{\underline{\xi}}_1-\underline{\mu}) - n_2\Sigma_2^{-1}(\bar{\underline{\xi}}_2-\underline{\mu}) = 0,$$
+    egy implicit egyenlet $\underline{\mu}, \Sigma_1, \Sigma_2$-re. Egyetlen lépésben nem oldható meg, csak iterációval. A Behrens–Fisher probléma a klasszikus statisztika egyik nyitott témája.
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Vizsgára: elég megemlíteni, hogy ezzel a fő probléma az iterativitás, és hogy nincs elegáns zárt formulánk.</p>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Konstrukciók kimondása:</strong>
+    <ul style="margin-bottom:8px;">
+      <li><strong>Részvektorok függetlenség-próbája ($\Sigma_{12}=0$):</strong> $\lambda^{2/n} = |S|/(|S_{11}||S_{22}|) \sim \Lambda(p_2, n-1-p_1, p_1)$.</li>
+      <li><strong>MANOVA variancia-felbontás:</strong> $T = W + B$, ahol $T$ = teljes, $W$ = csoporton belüli, $B$ = csoportok közötti.</li>
+      <li><strong>MANOVA Wilks-lambda:</strong> $|W|/|T| \sim \Lambda(p, n-k, k-1)$.</li>
+      <li><strong>$k=2$:</strong> a Hotelling-féle kétmintás $T^2$-próba jön ki.</li>
+    </ul>
+    <strong>Wilks-lambda paraméterei MANOVA-ban:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>Első paraméter: $p$ (dimenzió)</li>
+      <li>Második paraméter: $n-k$ ($W$ szabadságfoka)</li>
+      <li>Harmadik paraméter: $k-1$ ($B$ szabadságfoka)</li>
+    </ul>
+    <strong>Mögöttes eszközök:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$W\sim W_p(\Sigma, n-k)$, $B\sim W_p(\Sigma, k-1)$ — Cochran-tétel.</li>
+      <li>$W$ és $B$ függetlenek — Craig-tétel ($C_1 C_2 = 0$).</li>
+      <li>Behrens–Fisher: $\Sigma_1\neq\Sigma_2$ esetén iteratív megoldás kell.</li>
+    </ul>
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <a href="tetel_05.html" class="nav-sb-item"><span class="nav-sb-num">T05</span><span>Wilks-lambda</span></a>
+    <a href="tetel_06.html" class="nav-sb-item"><span class="nav-sb-num">T06</span><span>ML becslések, kényszerek</span></a>
+    <a href="tetel_07.html" class="nav-sb-item"><span class="nav-sb-num">T07</span><span>Aszimptotika, megengedhetőség</span></a>
+    <a href="tetel_08.html" class="nav-sb-item"><span class="nav-sb-num">T08</span><span>Hipotézisvizsgálat 1: VHP</span></a>
+    <a href="tetel_09.html" class="nav-sb-item active"><span class="nav-sb-num">T09</span><span>Hipotézisvizsgálat 2: MANOVA</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_08.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_10.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

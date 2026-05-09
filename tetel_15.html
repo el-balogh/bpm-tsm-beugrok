@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 15 — Többdimenziós lineáris regresszió + logisztikus regresszió</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 15 · Többdim. lineáris regresszió + logisztikus regresszió</div>
+  <h1>Lineáris regresszió: <em>$\hat B$ becslése</em>, Gauss–Markov, logisztikus reg.</h1>
+  <div class="meta">Dóri jegyzet 54–60. oldal &nbsp;·&nbsp; vizsgára: ML formulák + Wilks-lambda hipotézis + log. reg.</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> Többdim regresszió: $Y = XB + U$, ahol $Y$ ($n\times p$) a függő, $X$ ($n\times q$) a független változók mátrixa, $B$ a regressziós paraméterek mátrixa, $U \sim N_p(0,\Sigma)$ adatmátrix a hibák. <strong>ML becslés:</strong> $\hat B = (X^TX)^{-1}X^TY$ (mint az 1-dim LSQ-becslésnél, csak mátrixosan), $n\hat\Sigma = Y^TPY \sim W_p(\Sigma, n-q)$. Hipotézisvizsgálat $B$ egy részére: a próbastatisztika <strong>Wilks-lambda</strong> eloszlású. <strong>Bónusz:</strong> a logisztikus regresszió ($\mathrm{logit}\,p_i = \beta^T x_i$) a klasszikus regresszió egy nemlineáris általánosítása indikátor-megfigyelésekre.
+  </div>
+</div>
+
+<!-- Modell -->
+<div class="step">
+  <div class="step-label">1. <span class="star">★</span> Lineáris regresszió modellje</div>
+
+  <div class="box green">
+    <strong>Modell:</strong>
+    $$\boxed{Y = XB + U}$$
+    ahol
+    <ul style="margin-bottom:0;">
+      <li>$Y$: $n\times p$-s mátrix — a <em>függő változók</em> (sorai = megfigyelések, oszlopai = változók).</li>
+      <li>$X$: $n\times q$-s — a <em>független változók</em> (ismert).</li>
+      <li>$B$: $q\times p$-s — <em>ismeretlen regressziós paraméterek</em>.</li>
+      <li>$U \sim N_p(\underline{0}, \Sigma)$ adatmátrix — a hibatagok.</li>
+    </ul>
+  </div>
+
+  <div class="why"><strong>1-dim összehasonlítás:</strong> ha $p=1$, akkor $Y$ egy $n$-hosszú vektor, $B = \underline{b}$ ($q$-dim vektor), és visszakapjuk a klasszikus $Y = X\underline{b} + \underline{u}$ regressziót. A többdim verzió több függő változót egy menetben kezel.</div>
+
+  <p>Feltevések: $n \geq p+q$, $\mathrm{rang}(X) = q$ (teljes rangú), és vezessük be a központi mátrixot:</p>
+  $$P = I_n - X(X^TX)^{-1}X^T.$$
+
+  <div class="box accent">
+    <strong>$P$ tulajdonságai:</strong> idempotens ($P^2 = P$), szimmetrikus, $PX = 0$, $\mathrm{tr}(P) = n - q$.
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">$P$ az $X$ képtér <em>komplementerére</em> vetít (a maradékok terére).</p>
+  </div>
+</div>
+
+<!-- ML becslés -->
+<div class="step">
+  <div class="step-label">2. <span class="star">★</span> $B$ és $\Sigma$ ML-becslése</div>
+
+  <div class="box green">
+    <strong>Tétel:</strong>
+    $$\hat B = (X^TX)^{-1}X^TY, \qquad \hat\Sigma = \tfrac{1}{n} Y^TPY.$$
+  </div>
+
+  <div class="why"><strong>Mit látunk?</strong>
+    <ul style="margin:6px 0 0;">
+      <li>$\hat B$ pontosan az 1-dim LSQ-becslés mátrixos megfelelője. Oszloponként: $\hat{\underline{b}}_{(j)} = (X^TX)^{-1}X^T \underline{y}_{(j)}$ — vagyis minden függő változót külön-külön regresszálunk.</li>
+      <li>$\hat\Sigma$ a hibák tap. szórásmátrixa: $\hat U = Y - X\hat B = PY$, és $\hat\Sigma = \tfrac{1}{n}\hat U^T \hat U$.</li>
+    </ul>
+  </div>
+
+  <div class="box accent">
+    <strong>$\hat B$ minimalizálja:</strong>
+    $$\|Y - XB\|_F^2 = \sum_{i=1}^n \sum_{j=1}^p \left(Y_{i,j} - \sum_{k=1}^q X_{i,k}B_{k,j}\right)^2.$$
+    Ez a Frobenius-normanégyzet — a lehető legkisebb teljes négyzetes hiba.
+  </div>
+</div>
+
+<!-- Becslések tulajdonságai -->
+<div class="step">
+  <div class="step-label">3. $\hat B$ és $\hat U$ tulajdonságai</div>
+
+  <div class="box green">
+    <ol style="margin-top:6px;margin-bottom:0;">
+      <li><strong>$\mathbb{E}(\hat B) = B$, $\mathbb{E}(\hat U) = 0$</strong> — torzítatlanok.</li>
+      <li><strong>$\hat B^V$ és $\hat U^V$ többdim normálisak</strong> (mivel $U$ lineáris transzformáltjai).</li>
+      <li><strong>$\hat B$ független $\hat U$-tól</strong> (és így $\hat\Sigma$-tól is).</li>
+    </ol>
+  </div>
+
+  <div class="why"><strong>Miért fontos a függetlenség?</strong> Ez teszi lehetővé, hogy $\hat B$-ra konfidencia-intervallumot számoljunk, és hipotéziseket teszteljünk — mert a $\hat B$ szórását $\hat\Sigma$-val becsüljük, és a kettő szétválasztható (heteroszkedaszticitás).</div>
+
+  <div class="box accent">
+    <strong>$\hat B$ kovarianciaszerkezete:</strong>
+    $$\mathrm{cov}(\hat B_{i,j}, \hat B_{k,l}) = \Sigma_{j,l} \cdot g_{i,k},$$
+    ahol $g_{i,k}$ a $G = (X^TX)^{-1}$ mátrix $(i,k)$-edik eleme.
+  </div>
+
+  <div class="box green">
+    <strong>$\hat\Sigma$ eloszlása:</strong>
+    $$n\hat\Sigma \sim W_p(\Sigma, n-q).$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Cochran-tétellel ($P$ idempotens, rangja $n-q$). Vagyis a regressziós residuumok kovarianciamátrixa Wishart-eloszlású — csakúgy, mint a tap. szórásmátrix.</p>
+  </div>
+</div>
+
+<!-- Gauss-Markov -->
+<div class="step">
+  <div class="step-label">4. Gauss–Markov tétel</div>
+
+  <p>A becsülhetőség és optimalitás kérdése: mit lehet jól becsülni $Y$-ból, és mi az optimális becslő?</p>
+
+  <div class="box accent">
+    <strong>Becsülhetőség:</strong> $D$ <em>becsülhető</em>, ha $\exists A: \mathbb{E}(AY) = D$.
+  </div>
+
+  <div class="box green">
+    <strong>Gauss–Markov tétel:</strong>
+    <ol style="margin-top:6px;margin-bottom:0;">
+      <li><strong>$CB$ becsülhető</strong> $\Leftrightarrow$ $C = AX$ valamilyen $A$-val. Ekkor $AY$ a $CB$ torzítatlan becslése.</li>
+      <li>Ha $AY$ torzítatlan, akkor $A^* = A(I-P)$ <em>minden</em> ilyen $A$-ra ugyanazt adja.</li>
+      <li>$A^*Y$ <em>minimális szórású</em> torzítatlan becslés a $CB$-re.</li>
+      <li>$A^*Y = C\hat B$ — vagyis a Gauss–Markov-becslés pontosan az ML-becslésen keresztül kapható.</li>
+    </ol>
+  </div>
+
+  <div class="why"><strong>Lényeg:</strong> minden, amit linkearis kombináció formájában becsülhetünk, az $C\hat B$ alakú — és a lehető legkisebb szórással. Ez a klasszikus 1-dim Gauss–Markov tétel többdim. megfelelője.</div>
+</div>
+
+<!-- Hipotézisvizsgálat -->
+<div class="step">
+  <div class="step-label">5. <span class="star">★</span> Hipotézisvizsgálat: $B$ egy részére = 0</div>
+
+  <p>Tipikus kérdés: van-e szükség a független változók egy részhalmazára? $H_0$: az $X$ első $g$ oszlopa nem fontos.</p>
+
+  <p>Felbontjuk: $X = (X_{(1)} | X_{(2)})$ ($g + (q-g)$), $B = \binom{B_1}{B_2}$. $H_0: B_1 = 0$.</p>
+
+  <div class="box accent">
+    <strong>$H_1$ alatt:</strong> $\hat\Sigma = \tfrac{1}{n}Y^T P Y$ (a teljes regresszió).
+    <p style="margin:8px 0 0;"><strong>$H_0$ alatt:</strong> redukált modell $Y = X_{(2)}B_2 + U$, $\tilde\Sigma = \tfrac{1}{n}Y^T \tilde P Y$, ahol $\tilde P = I - X_{(2)}(X_{(2)}^T X_{(2)})^{-1}X_{(2)}^T$.</p>
+  </div>
+
+  <div class="box green">
+    <strong>VHS Wilks-lambda formában:</strong>
+    $$\lambda^{2/n} = \frac{|Y^T P Y|}{|Y^T \tilde P Y|} \;\sim\; \Lambda(p,\, n-q,\, g).$$
+  </div>
+
+  <div class="why"><strong>Mit jelent ez?</strong> $H_0$ alatt $\tilde P - P$ idempotens, rangja $g$. A megfelelő Wishartok $Y^TPY \sim W_p(\Sigma, n-q)$ és $Y^T(\tilde P - P)Y \sim W_p(\Sigma, g)$ Cochran-tételből, függetlenek Craig-tételből. A hányadosuk Wilks-lambda definíció szerint.</div>
+
+  <div class="box accent">
+    <strong>Paraméter-mintázat:</strong>
+    <ul style="margin-bottom:0;">
+      <li>$p$ = függő változók száma</li>
+      <li>$n - q$ = a teljes regresszió szabadságfoka ("$W$" Wishart)</li>
+      <li>$g$ = a hipotézis dimenziója ("$B$" Wishart)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- Logisztikus regresszió -->
+<div class="step">
+  <div class="step-label">6. <span class="star">★</span> Logisztikus regresszió</div>
+
+  <p>A klasszikus regresszió <em>folytonos</em> $Y$-okkal dolgozik. Mit teszünk, ha $Y_i$-k <em>0/1 indikátorok</em>?</p>
+
+  <div class="box accent">
+    <strong>Megfigyelések:</strong> $Y_1, \dots, Y_n$ indikátorok, $\mathbb{P}(Y_i = 1) = p_i$. Magyarázó változók: $\underline{x}_1, \dots, \underline{x}_n$.
+  </div>
+
+  <div class="box green">
+    <strong>Modell:</strong>
+    $$\boxed{\mathrm{logit}\,p_i = \log\!\frac{p_i}{1-p_i} = \underline{\beta}^T \underline{x}_i.}$$
+    Ebből
+    $$p_i = \frac{\exp(\underline{\beta}^T\underline{x}_i)}{1 + \exp(\underline{\beta}^T\underline{x}_i)}, \qquad 1-p_i = \frac{1}{1 + \exp(\underline{\beta}^T\underline{x}_i)}.$$
+  </div>
+
+  <div class="why"><strong>Miért logit?</strong> A $p_i$ valószínűség $[0,1]$-ben mozog, de $\underline{\beta}^T\underline{x}_i$ egész $\mathbb{R}$-en. A $\mathrm{logit}: (0,1) \to \mathbb{R}$ függvény "kinyújtja" a valószínűséget egy lineáris függvény tartományává. A logaritmikus odds-ratio: pozitív $\underline{\beta}^T\underline{x}_i$ esetén $p_i > 0.5$.</div>
+
+  <div class="box accent">
+    <strong>Likelihood függvény:</strong>
+    $$L(\underline{y}, \underline{\beta}) = \prod_{i=1}^n p_i^{y_i}(1-p_i)^{1-y_i}.$$
+    <strong>Loglikelihood:</strong>
+    $$\ell = \sum_{i=1}^n y_i \underline{\beta}^T\underline{x}_i - \sum_{i=1}^n (1-y_i) \log\!\left(1 + \exp(\underline{\beta}^T\underline{x}_i)\right).$$
+  </div>
+
+  <div class="box accent">
+    <strong>ML egyenlet:</strong>
+    $$\frac{\partial \ell}{\partial \beta_j} = \sum_{i=1}^n y_i x_{i,j} - \sum_{i=1}^n (1-y_i)\,\frac{x_{i,j} \exp(\underline{\beta}^T\underline{x}_i)}{1 + \exp(\underline{\beta}^T\underline{x}_i)} = 0.$$
+    <p style="margin:8px 0 0;font-size:14px;color:var(--muted);">Nincs zárt megoldás — iteratív módszerrel (pl. Newton-Raphson) oldjuk meg.</p>
+  </div>
+
+  <div class="box blue">
+    <strong>Hol találkozunk vele:</strong> 02-es beugró — modellfelírás és likelihood függvény levezetése (7 pont).
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">A logisztikus regresszió a <em>generalizált lineáris modellek</em> (GLM) családjába tartozik: az identitás-link helyett egy nem-lineáris ($\mathrm{logit}$) függvénnyel kapcsolódik a várhatóérték a lineáris prediktorhoz.</p>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Lineáris regresszió modellje fejből:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$Y = XB + U$, $U \sim N_p(0,\Sigma)$ adatmátrix.</li>
+      <li>$P = I - X(X^TX)^{-1}X^T$ idempotens, $\mathrm{tr}(P) = n-q$.</li>
+    </ul>
+    <strong>ML-formulák:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$\hat B = (X^TX)^{-1}X^TY$ — torzítatlan, normál eloszlású, független $\hat\Sigma$-tól.</li>
+      <li>$\hat\Sigma = \tfrac{1}{n}Y^TPY$, és $n\hat\Sigma \sim W_p(\Sigma, n-q)$.</li>
+      <li>$\mathrm{cov}(\hat B_{i,j}, \hat B_{k,l}) = \Sigma_{j,l}\cdot (X^TX)^{-1}_{i,k}$.</li>
+    </ul>
+    <strong>Hipotézisvizsgálat ($B_1 = 0$):</strong> $\lambda^{2/n} = |Y^TPY|/|Y^T\tilde PY| \sim \Lambda(p, n-q, g)$.
+    <br><br>
+    <strong>Logisztikus regresszió:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$\mathrm{logit}\,p_i = \underline{\beta}^T\underline{x}_i$.</li>
+      <li>$p_i = \frac{\exp(\underline{\beta}^T\underline{x}_i)}{1 + \exp(\underline{\beta}^T\underline{x}_i)}$.</li>
+      <li>Likelihood: $\prod p_i^{y_i}(1-p_i)^{1-y_i}$.</li>
+    </ul>
+    <strong>Gauss–Markov fő üzenete:</strong> $A^*Y = C\hat B$ — minden lineárisan becsülhető függvény optimális becslője az $\hat B$-n keresztül kapható.
+    <br><br>
+    <strong>Hol találkozunk vele:</strong> 02-es beugró (logisztikus regresszió levezetés, 7 pont).
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <a href="tetel_05.html" class="nav-sb-item"><span class="nav-sb-num">T05</span><span>Wilks-lambda</span></a>
+    <a href="tetel_06.html" class="nav-sb-item"><span class="nav-sb-num">T06</span><span>ML becslések, kényszerek</span></a>
+    <a href="tetel_07.html" class="nav-sb-item"><span class="nav-sb-num">T07</span><span>Aszimptotika, megengedhetőség</span></a>
+    <a href="tetel_08.html" class="nav-sb-item"><span class="nav-sb-num">T08</span><span>Hipotézisvizsgálat 1: VHP</span></a>
+    <a href="tetel_09.html" class="nav-sb-item"><span class="nav-sb-num">T09</span><span>Hipotézisvizsgálat 2: MANOVA</span></a>
+    <a href="tetel_10.html" class="nav-sb-item"><span class="nav-sb-num">T10</span><span>Főkomponensanalízis</span></a>
+    <a href="tetel_11.html" class="nav-sb-item"><span class="nav-sb-num">T11</span><span>Faktoranalízis 1</span></a>
+    <a href="tetel_12.html" class="nav-sb-item"><span class="nav-sb-num">T12</span><span>Faktoranalízis 2: ML, Joreskog</span></a>
+    <a href="tetel_13.html" class="nav-sb-item"><span class="nav-sb-num">T13</span><span>Diszkriminanciaanalízis</span></a>
+    <a href="tetel_14.html" class="nav-sb-item"><span class="nav-sb-num">T14</span><span>Többdim. skálázás (MDS)</span></a>
+    <a href="tetel_15.html" class="nav-sb-item active"><span class="nav-sb-num">T15</span><span>Többdim. lin. regresszió</span></a>
+    <a href="tetel_16.html" class="nav-sb-item"><span class="nav-sb-num">T16</span><span>Kanonikus korreláció</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_14.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_16.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tétel 12 — Faktoranalízis 2.: ML, Joreskog, faktor-becslés</title>
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$','$'], ['\\(','\\)']], displayMath: [['$$','$$'], ['\\[','\\]']] },
+      options: { skipHtmlTags: ['script','noscript','style','textarea'] }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0f0f11; --surface: #17171a; --border: #2a2a30;
+      --accent: #c8a96e; --done: #6ec87a; --blue: #6e9ec8; --text: #e8e6e0; --muted: #7a7870;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif;
+           font-weight: 300; line-height: 1.75; padding: 0 0 80px; }
+    a.back { display: inline-flex; align-items: center; gap: 8px; padding: 24px 64px 0;
+             font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+             text-decoration: none; letter-spacing: 0.1em; }
+    a.back:hover { color: var(--accent); }
+    header { padding: 32px 64px 28px; border-bottom: 1px solid var(--border); }
+    .tag { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.18em;
+           color: var(--accent); text-transform: uppercase; margin-bottom: 10px; }
+    h1 { font-family: 'DM Serif Display', serif; font-size: clamp(22px,3.5vw,38px);
+         font-weight: 400; line-height: 1.2; margin-bottom: 8px; }
+    h1 em { font-style: italic; color: var(--accent); }
+    .meta { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+    main { max-width: 860px; margin: 0 auto; padding: 48px 64px; }
+    .step { margin-bottom: 44px; }
+    .step-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.15em;
+                  color: var(--accent); text-transform: uppercase; margin-bottom: 14px;
+                  display: flex; align-items: center; gap: 10px; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    h2 { font-family: 'DM Serif Display', serif; font-size: 20px; font-weight: 400;
+         margin-bottom: 12px; color: var(--text); }
+    p { margin-bottom: 14px; font-size: 15px; }
+    .box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+           padding: 20px 24px; margin: 18px 0; }
+    .box.accent { border-color: rgba(200,169,110,0.4); }
+    .box.green  { border-color: rgba(110,200,122,0.4); }
+    .box.blue   { border-color: rgba(110,158,200,0.4); }
+    .why { background: rgba(200,169,110,0.06); border-left: 3px solid var(--accent);
+           padding: 12px 18px; border-radius: 0 6px 6px 0; margin: 14px 0;
+           font-size: 14px; color: #c8b88a; }
+    .why strong { color: var(--accent); }
+    .tldr { background: rgba(110,158,200,0.07); border-left: 3px solid var(--blue);
+            padding: 14px 20px; border-radius: 0 6px 6px 0; margin: 14px 0;
+            font-size: 14.5px; color: #b8d0e4; }
+    .tldr strong { color: var(--blue); }
+    ul, ol { padding-left: 20px; margin-bottom: 14px; font-size: 15px; }
+    li { margin-bottom: 6px; }
+    code { font-family: 'DM Mono', monospace; font-size: 13px;
+           background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 3px; }
+    .star { color: var(--accent); }
+    @media(max-width:700px){ main,header,a.back { padding-left:24px; padding-right:24px; } }
+
+    .nav-toggle{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:100;background:var(--surface);border:1px solid var(--border);border-left:none;border-radius:0 6px 6px 0;color:var(--accent);font-size:16px;padding:10px 9px;cursor:pointer;transition:background 0.2s,border-color 0.2s;line-height:1;}
+    .nav-toggle:hover{background:#1d1c20;border-color:var(--accent);}
+    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;}
+    .nav-overlay.show{display:block;}
+    .nav-sidebar{position:fixed;left:0;top:0;height:100vh;width:280px;background:#1a1a1d;border-right:1px solid var(--border);z-index:300;transform:translateX(-100%);transition:transform 0.25s ease;overflow-y:auto;display:flex;flex-direction:column;}
+    .nav-sidebar.open{transform:translateX(0);}
+    .nav-sb-header{display:flex;align-items:center;justify-content:space-between;padding:20px 16px 14px;border-bottom:1px solid var(--border);flex-shrink:0;}
+    .nav-sb-title{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+    .nav-sb-close{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;line-height:1;}
+    .nav-sb-close:hover{color:var(--text);}
+    .nav-sb-list{padding:8px 0;flex:1;}
+    .nav-sb-section{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;padding:14px 16px 6px;}
+    .nav-sb-item{display:flex;align-items:center;gap:10px;padding:9px 16px;text-decoration:none;color:var(--muted);font-size:13px;transition:background 0.15s,color 0.15s;}
+    .nav-sb-item:hover{background:rgba(200,169,110,0.07);color:var(--text);}
+    .nav-sb-item.active{background:rgba(200,169,110,0.1);color:var(--accent);border-right:2px solid var(--accent);}
+    .nav-sb-num{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);width:28px;flex-shrink:0;text-align:right;}
+    .nav-sb-item.active .nav-sb-num{color:var(--accent);}
+    .page-bottom-nav{position:fixed;bottom:0;left:0;right:0;z-index:90;background:var(--surface);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 16px;}
+    .pbn-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 20px;background:transparent;border:1px solid var(--border);border-radius:5px;color:var(--muted);font-family:'DM Mono',monospace;font-size:12px;text-decoration:none;transition:border-color 0.2s,color 0.2s,background 0.2s;}
+    .pbn-btn:hover{border-color:var(--accent);color:var(--accent);background:rgba(200,169,110,0.07);}
+    .pbn-home{border-color:rgba(200,169,110,0.3);color:var(--accent);}
+    .pbn-home:hover{background:rgba(200,169,110,0.1);}
+    .pbn-disabled{opacity:0.3;pointer-events:none;cursor:default;}
+  </style>
+</head>
+<body>
+
+<a class="back" href="index.html">← vissza a listához</a>
+
+<header>
+  <div class="tag">Tétel 12 · Faktoranalízis 2. — ML, Joreskog, faktorbecslés</div>
+  <h1>ML faktoranalízis, <em>Joreskog-tétel</em>, $F$ becslése</h1>
+  <div class="meta">Dóri jegyzet 46–49. oldal &nbsp;·&nbsp; vizsgára: ML cél fv. + Joreskog kimondása + Bartlett/Thompson</div>
+</header>
+
+<main>
+
+<!-- Lényeg dióhéjban -->
+<div class="step">
+  <div class="step-label">Lényeg dióhéjban</div>
+  <div class="tldr">
+    <strong>Mi a sztori?</strong> Az előző tétel ($\Sigma = AA^T + \Psi$) <em>mikor lehetséges</em> volt a kérdés. Most: <em>hogyan becsüljük</em> $A$-t és $\Psi$-t maximum likelihooddal? A $-\log L$-ből származó cél $F(A,\Psi) = \mathrm{tr}(\Sigma^{-1}S) - \log|\Sigma^{-1}S| - p$ minimalizálandó. <strong>Joreskog-tétel</strong> adja a megoldást: ha $\Psi$ ismert, $A$ explicite kifejezhető a $\Psi^{-1/2}S\Psi^{-1/2}$ spektrálfelbontásából. A faktorértékek $F$ becslése külön probléma: <strong>Bartlett</strong> torzítatlan, <strong>Thompson</strong> torzított Bayes-i becslés.
+  </div>
+</div>
+
+<!-- ML setup -->
+<div class="step">
+  <div class="step-label">1. <span class="star">★</span> Maximum likelihood faktoranalízis — célfüggvény</div>
+
+  <p>Tegyük fel: $\underline{\xi}_i \sim N_p(\underline{\mu},\Sigma)$ minta. Ha $\underline{\mu}, \Sigma$ ismeretlenek, akkor $\hat{\underline{\mu}} = \bar{\underline{\xi}}$, és a $\Sigma$ becslése a faktormodell-szerkezet alatt történik.</p>
+
+  <p>A loglikelihood függvény (konstansokat elhagyva):</p>
+  $$\ell_0 = -\tfrac{n}{2}\log|2\pi\Sigma| - \tfrac{n}{2}\,\mathrm{tr}(\Sigma^{-1}S).$$
+
+  <div class="box green">
+    <strong>Ekvivalens minimalizálandó célfüggvény:</strong>
+    $$\boxed{F(A,\Psi) = \mathrm{tr}(\Sigma^{-1}S) - \log|\Sigma^{-1}S| - p}, \quad \text{ahol } \Sigma = AA^T + \Psi.$$
+  </div>
+
+  <div class="box accent">
+    Ekvivalensen: ha $a$ és $g$ a $\Sigma^{-1}S$ sajátértékeinek számtani és mértani közepe, akkor
+    $$F(A, \Psi) = p\,(a - \log g - 1).$$
+  </div>
+
+  <div class="why"><strong>Miért ez a forma?</strong> A számtani-mértani egyenlőtlenség miatt $a \geq g$, és $a-\log g - 1 \geq 0$. Egyenlőség akkor és csak akkor, ha $\Sigma^{-1}S$ minden sajátértéke 1, azaz $\Sigma = S$. A célfüggvény tehát egy "távolsági mérőszám" az $S$ tap. szórásmátrix és a modellbeli $\Sigma = AA^T + \Psi$ között.</div>
+</div>
+
+<!-- Joreskog tétel -->
+<div class="step">
+  <div class="step-label">2. <span class="star">★</span> Joreskog-tétel</div>
+
+  <p>Az ML becslés zárt formában adható meg, ha $\Psi$-t (egyedi varianciákat) ismertnek tekintjük.</p>
+
+  <div class="box accent">
+    <strong>Beállítások:</strong> $\Psi > 0$ (PD, egyik egyedi variancia sem 0). Standardizáljuk az $S$-t $\Psi$-vel:
+    $$S^* = \Psi^{-1/2} S \Psi^{-1/2}, \qquad S^* = \Gamma\Theta\Gamma^T \text{ a spektrálfelbontása,}$$
+    ahol $\Gamma$ az ortonormált sajátvektorok mátrixa, $\Theta$ főátlóján a sajátértékek $\Theta_1 \geq \Theta_2 \geq \dots \geq \Theta_p$.
+  </div>
+
+  <div class="box green">
+    <strong>Joreskog-tétel:</strong> Az $A^T\Psi^{-1}A$ diagonális feltétel mellett (azonosítás), $F(A,\Psi)$ minimumhelye $A$-ban
+    $$\hat A = \Psi^{1/2} A^*, \qquad A^* = (A_1^* \mid \dots \mid A_k^*),$$
+    ahol
+    $$A_i^* = c_i\,\underline{\gamma}_{(i)}, \qquad c_i = \sqrt{\max(\Theta_i - 1,\, 0)}.$$
+  </div>
+
+  <div class="why"><strong>Mit jelent ez?</strong>
+    <ul style="margin:6px 0 0;">
+      <li>Az $A$ oszlopai a $S^*$ <em>legnagyobb</em> sajátértékéhez tartozó sajátvektorokból építhetők.</li>
+      <li>A skálázás $\sqrt{\Theta_i - 1}$: csak azok a sajátértékek számítanak, amelyek <em>nagyobbak 1-nél</em>. (Ha $\Theta_i \leq 1$, akkor $c_i = 0$ — az adott irány nem ad faktort.)</li>
+      <li>Magyarul: ha $\Psi$ tudott, akkor a faktorszerkezet a $\Psi$-standardizált $S^*$ spektrálfelbontásából <em>explicite</em> kiolvasható.</li>
+    </ul>
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">A $\Theta_i \leq 1$ küszöb intuitív: $S^*$ sajátértékei a "standardizált" varianciákat mérik. Ha valamelyik koordináta-irány $\leq 1$, az nem hordoz többletinformációt a $\Psi$-zajon felül — szakítható, nem kell faktor.</p>
+</div>
+
+<!-- Joreskog stationáris feltétel -->
+<div class="step">
+  <div class="step-label">3. Stacionáris feltétel ($\hat A, \hat\Psi$-re)</div>
+
+  <p>Joreskog megadja $A$-t $\Psi$ ismeretében. De az ML algoritmus $\Psi$-t is becsüli — iteratívan. Mire kell figyelni?</p>
+
+  <div class="box green">
+    <strong>Tétel:</strong> Ha $\hat A, \hat\Psi$ az $F$ minimumhelye ($\hat\Psi > 0$ feltétellel), akkor
+    $$\mathrm{diag}(\hat A \hat A^T + \hat\Psi - S) = \underline{0}.$$
+  </div>
+
+  <div class="why"><strong>Mit mond?</strong> Az ML-becslés mindig úgy állítja be $\Psi$-t, hogy a modellbeli $\hat\Sigma = \hat A \hat A^T + \hat\Psi$ <em>diagonális elemei</em> egyezzenek $S$ diagonális elemeivel. Vagyis az egyedi varianciák kalibrálódnak az adatokhoz: $\hat\Psi_{ii} = S_{ii} - \sum_{j} \hat a_{ij}^2$.</div>
+</div>
+
+<!-- Faktorértékek becslése -->
+<div class="step">
+  <div class="step-label">4. <span class="star">★</span> Faktorértékek ($F$) becslése</div>
+
+  <p>Most már tudjuk $A, \Psi$-t. <em>Adott egy konkrét $\underline{\xi}$ megfigyelésre</em> — mi a legjobb becslés a látens $F$ faktorra?</p>
+
+  <h2>4.1 Bartlett-féle torzítatlan becslés</h2>
+
+  <p>Tegyük fel, hogy $\underline{\xi} \sim N_p(AF + \underline{\mu}, \Psi)$ — vagyis $F$-et úgy kezeljük, mint egy <em>paramétert</em>. Az ML becslés $F$-re:</p>
+
+  <div class="box green">
+    $$\hat F_{\text{Bartlett}} = (A^T \Psi^{-1} A)^{-1} A^T \Psi^{-1}(\underline{\xi} - \underline{\mu}).$$
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Súlyozott legkisebb négyzetes becslés: a $\Psi^{-1}$ súlyozza a koordinátákat (kis egyedi var $\to$ nagy súly). <em>Torzítatlan</em>: $\mathbb{E}(\hat F | F) = F$.</p>
+
+  <h2>4.2 Thompson-féle torzított (Bayes-i) becslés</h2>
+
+  <p>Most $F \sim N_k(\underline{0}, I_k)$ a priori — ezt használjuk, mint a faktormodell sajátos feltevését. A feltételes várhatóérték:</p>
+
+  <div class="box green">
+    $$\hat F_{\text{Thompson}} = \mathbb{E}(F \mid \underline{\xi}) = (I_k + A^T\Psi^{-1}A)^{-1} A^T\Psi^{-1}(\underline{\xi}-\underline{\mu}).$$
+  </div>
+
+  <div class="why"><strong>Két filozófia:</strong>
+    <ul style="margin:6px 0 0;">
+      <li><strong>Bartlett:</strong> $F$ paraméter, egy adott megfigyelésre ML-becslünk.</li>
+      <li><strong>Thompson:</strong> $F$ vv. eloszlásával, és a posteriori várhatóérték adja a becslést. A különbség: Thompson $I_k$-val "rángat" a 0 felé — kissé zsugorít (shrinkage).</li>
+    </ul>
+    A két formula szerkezete majdnem azonos: az $I_k$ tag jelenléte az egyetlen különbség.
+  </div>
+</div>
+
+<!-- Hipotézisvizsgálat -->
+<div class="step">
+  <div class="step-label">5. Hipotézisvizsgálat (vázlat)</div>
+
+  <p>Lehet kérdezni: <em>elég-e $k$-faktormodell?</em> Vagyis: $H_0$: a $k$-faktormodell érvényes vs. $H_1$: nem érvényes (vagy "telített" kovmátrix-modell).</p>
+
+  <div class="box accent">
+    <strong>VHS:</strong> $-2\log\lambda = n\,F(\hat A, \hat\Psi)$, ami $H_0$ alatt aszimptotikusan $\chi^2$-eloszlású. A szabadságfok $s = \tfrac{(p-k)^2 - (p+k)}{2}$ (lásd Tétel 11 paraméterszámolás).
+  </div>
+
+  <p style="font-size:14px;color:var(--muted);">Vizsgára: nem kell részletesen, csak azt tudni, hogy az ML keretrendszer $\chi^2$-próbát ad a "modell illeszkedésére".</p>
+</div>
+
+<!-- Mit kell tudni -->
+<div class="step">
+  <div class="step-label">Mit kell tudni a 3-ashoz?</div>
+
+  <div class="box blue">
+    <strong>Célfüggvény fejből:</strong>
+    <ul style="margin-bottom:8px;">
+      <li>$F(A,\Psi) = \mathrm{tr}(\Sigma^{-1}S) - \log|\Sigma^{-1}S| - p$, ahol $\Sigma = AA^T + \Psi$.</li>
+      <li>Ekvivalensen: $F = p(a - \log g - 1)$, ahol $a, g$ a $\Sigma^{-1}S$ SÉ-i számtani és mértani közepe.</li>
+    </ul>
+    <strong>Tételeket kimondani:</strong>
+    <ul style="margin-bottom:8px;">
+      <li><strong>Joreskog (★):</strong> $\Psi$ ismeretében $\hat A = \Psi^{1/2}A^*$, ahol $A^*$ oszlopai $\sqrt{\max(\Theta_i-1,0)}\,\underline{\gamma}_{(i)}$ — itt $\Theta_i, \underline{\gamma}_{(i)}$ a $\Psi^{-1/2}S\Psi^{-1/2}$ sajátértékei és sajátvektorai.</li>
+      <li><strong>Diag-feltétel:</strong> ML-megoldásnál $\mathrm{diag}(\hat A\hat A^T + \hat\Psi - S) = 0$.</li>
+      <li><strong>Bartlett (★):</strong> $\hat F = (A^T\Psi^{-1}A)^{-1} A^T\Psi^{-1}(\underline{\xi}-\underline{\mu})$ — torzítatlan.</li>
+      <li><strong>Thompson (★):</strong> $\hat F = (I_k + A^T\Psi^{-1}A)^{-1} A^T\Psi^{-1}(\underline{\xi}-\underline{\mu})$ — Bayes-i, torzított.</li>
+    </ul>
+    <strong>A két becslés közti különbség:</strong> Thompson ad egy $I_k$ "regularizációs" tagot. Bartlett tisztán súlyozott LSQ; Thompson zsugorít a 0 felé.
+    <br><br>
+    <strong>Vizsga-szempont:</strong> a Joreskog-tételt ki kell tudni mondani — magát a részletes algoritmikus eljárást (iteráció $\Psi$-re) nem kérik részletesen.
+  </div>
+</div>
+
+</main>
+
+<button class="nav-toggle" id="navToggle" title="Fejezetek">&#9776;</button>
+<div class="nav-overlay" id="navOverlay"></div>
+<aside class="nav-sidebar" id="navSidebar">
+  <div class="nav-sb-header">
+    <span class="nav-sb-title">Fejezetek</span>
+    <button class="nav-sb-close" id="navClose">&#10005;</button>
+  </div>
+  <div class="nav-sb-list">
+    <div class="nav-sb-section">Tételek</div>
+    <a href="tetel_01.html" class="nav-sb-item"><span class="nav-sb-num">T01</span><span>Karfv &amp; norm. korr.</span></a>
+    <a href="tetel_02.html" class="nav-sb-item"><span class="nav-sb-num">T02</span><span>Norm. AM &amp; Kronecker</span></a>
+    <a href="tetel_03.html" class="nav-sb-item"><span class="nav-sb-num">T03</span><span>Wishart 1: Cochran &amp; Craig</span></a>
+    <a href="tetel_04.html" class="nav-sb-item"><span class="nav-sb-num">T04</span><span>Wishart 2: karfv, SFV</span></a>
+    <a href="tetel_05.html" class="nav-sb-item"><span class="nav-sb-num">T05</span><span>Wilks-lambda</span></a>
+    <a href="tetel_06.html" class="nav-sb-item"><span class="nav-sb-num">T06</span><span>ML becslések, kényszerek</span></a>
+    <a href="tetel_07.html" class="nav-sb-item"><span class="nav-sb-num">T07</span><span>Aszimptotika, megengedhetőség</span></a>
+    <a href="tetel_08.html" class="nav-sb-item"><span class="nav-sb-num">T08</span><span>Hipotézisvizsgálat 1: VHP</span></a>
+    <a href="tetel_09.html" class="nav-sb-item"><span class="nav-sb-num">T09</span><span>Hipotézisvizsgálat 2: MANOVA</span></a>
+    <a href="tetel_10.html" class="nav-sb-item"><span class="nav-sb-num">T10</span><span>Főkomponensanalízis</span></a>
+    <a href="tetel_11.html" class="nav-sb-item"><span class="nav-sb-num">T11</span><span>Faktoranalízis 1</span></a>
+    <a href="tetel_12.html" class="nav-sb-item active"><span class="nav-sb-num">T12</span><span>Faktoranalízis 2: ML, Joreskog</span></a>
+    <a href="tetel_13.html" class="nav-sb-item"><span class="nav-sb-num">T13</span><span>Diszkriminanciaanalízis</span></a>
+    <div class="nav-sb-section">Beugrók</div>
+    <a href="index.html" class="nav-sb-item"><span class="nav-sb-num">→</span><span>Vissza az indexbe</span></a>
+  </div>
+</aside>
+<nav class="page-bottom-nav">
+  <a href="tetel_11.html" class="pbn-btn">&#8592; Előző</a>
+  <a href="index.html" class="pbn-btn pbn-home">&#8962; Kezdőlap</a>
+  <a href="tetel_13.html" class="pbn-btn">Következő &#8594;</a>
+</nav>
+<script>
+(function(){
+  var t=document.getElementById('navToggle'),
+      s=document.getElementById('navSidebar'),
+      o=document.getElementById('navOverlay'),
+      c=document.getElementById('navClose');
+  function openNav(){s.classList.add('open');o.classList.add('show');}
+  function closeNav(){s.classList.remove('open');o.classList.remove('show');}
+  t.addEventListener('click',openNav);
+  c.addEventListener('click',closeNav);
+  o.addEventListener('click',closeNav);
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeNav();});
+})();
+</script>
+</body>
+</html>
